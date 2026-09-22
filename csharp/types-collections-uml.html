@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>C# pas à pas — Types, collections & UML</title>
+<title>Codex — C# · Types, collections & UML</title>
 <meta name="description" content="Référence C# : les types de données, les collections de la bibliothèque, et comment rédiger un diagramme de classes UML.">
 <link rel="stylesheet" href="../assets/style.css">
 </head>
@@ -408,8 +408,8 @@ employes.ToDictionary(e => e.Id);             // → Dictionary<Id, Employe>
   <h2 id="uml-classe" data-group="Rédiger de l'UML">Rédiger de l'UML — la boîte de classe</h2>
   <p>Un diagramme de classes communique la <strong>structure</strong> d'un modèle : les types, leurs membres visibles, et surtout leurs <strong>relations</strong>. On y met ce qui aide à comprendre, pas chaque détail du code.</p>
   <figure>
-    <svg viewBox="0 0 560 220" role="img" aria-label="Anatomie d'une classe UML">
-      <rect class="svg-bg" x="0" y="0" width="560" height="220" rx="6"/>
+    <svg viewBox="0 0 620 220" role="img" aria-label="Anatomie d'une classe UML">
+      <rect class="svg-bg" x="0" y="0" width="620" height="220" rx="6"/>
       <rect class="uml-box" x="30" y="20" width="290" height="26"/>
       <rect class="uml-box" x="30" y="46" width="290" height="74"/>
       <rect class="uml-box" x="30" y="120" width="290" height="78"/>
@@ -438,7 +438,7 @@ employes.ToDictionary(e => e.Id);             // → Dictionary<Id, Employe>
 
   <h2 id="uml-relations" data-group="Rédiger de l'UML">Les relations — et leur traduction en C#</h2>
   <figure>
-    <svg viewBox="0 0 560 320" role="img" aria-label="Types de relations UML">
+    <svg viewBox="0 0 560 370" role="img" aria-label="Types de relations UML">
       <defs>
         <marker id="rk-tri" markerWidth="18" markerHeight="16" refX="16" refY="8" orient="auto">
           <path d="M2 2 L16 8 L2 14 Z" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5"/></marker>
@@ -449,7 +449,7 @@ employes.ToDictionary(e => e.Id);             // → Dictionary<Id, Employe>
         <marker id="rk-hd" markerWidth="24" markerHeight="14" refX="22" refY="7" orient="auto">
           <path d="M2 7 L11 2 L20 7 L11 12 Z" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5"/></marker>
       </defs>
-      <rect class="svg-bg" x="0" y="0" width="560" height="320" rx="6"/>
+      <rect class="svg-bg" x="0" y="0" width="560" height="370" rx="6"/>
 
       <text class="uml-name" x="16" y="28">Généralisation (héritage)</text>
       <path class="uml-rel" style="marker-end:url(#rk-tri)" d="M20 44 H180"/>
@@ -471,9 +471,9 @@ employes.ToDictionary(e => e.Id);             // → Dictionary<Id, Employe>
       <path class="uml-rel" style="marker-end:url(#rk-arr)" d="M20 276 H180"/>
       <text class="uml-legend" x="200" y="280">un champ / une propriété vers l'autre classe</text>
 
-      <text class="uml-name" x="16" y="306">Dépendance (utilise ponctuellement)</text>
-      <path class="uml-rel-d" style="marker-end:url(#rk-arr)" d="M20 316 H180"/>
-      <text class="uml-legend" x="200" y="310">passé en paramètre / variable locale</text>
+      <text class="uml-name" x="16" y="318">Dépendance (utilise ponctuellement)</text>
+      <path class="uml-rel-d" style="marker-end:url(#rk-arr)" d="M20 334 H180"/>
+      <text class="uml-legend" x="200" y="338">passé en paramètre / variable locale</text>
     </svg>
     <figcaption>Composition et agrégation partent d'un losange côté « tout ». La flèche indique le sens de navigation.</figcaption>
   </figure>

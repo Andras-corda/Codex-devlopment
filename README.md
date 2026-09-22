@@ -1,7 +1,9 @@
-# Pas à pas
+# Codex
 
-Site statique **multi-langage** (100 % HTML/CSS/JS, aucune dépendance, aucun build) de guides de
-programmation pas à pas. Thème repris du mode sombre de GitHub, schémas SVG, code coloré.
+Site statique **multi-langage** (100 % HTML/CSS/JS, aucune dépendance, aucun build) : un
+**aide-mémoire personnel** de programmation, pas un guide — ce que j'ai appris et retenu au fil
+du temps (algorithmes, syntaxe, façons de structurer un projet), par langage. Thème repris du
+mode sombre de GitHub, schémas SVG, code coloré.
 
 ## Architecture
 
@@ -40,6 +42,10 @@ Rien n'est codé en dur deux fois :
 
 C'est tout : la page d'accueil du site, la barre de navigation et le sélecteur de langage se mettent à jour automatiquement.
 
+Un langage pas encore écrit peut être annoncé sur l'accueil (carte grisée « à venir ») en
+l'ajoutant simplement au tableau `planned` de `assets/site.config.js` — le basculer dans
+`languages` une fois ses pages prêtes.
+
 ## Ajouter une page à un langage existant
 
 Ajouter le fichier `.html` (même modèle) et une entrée dans le tableau `pages` du langage concerné, dans `assets/site.config.js`.
@@ -58,7 +64,7 @@ sur certains navigateurs en `file://`) ; les pages restent lisibles sans serveur
 ```bash
 git init
 git add .
-git commit -m "Site pas à pas"
+git commit -m "Site Codex"
 git branch -M main
 git remote add origin https://github.com/<utilisateur>/<repo>.git
 git push -u origin main

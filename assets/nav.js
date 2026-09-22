@@ -106,7 +106,11 @@
         '<div class="lang-name">' + esc(l.label) + "</div>" +
         '<div class="lang-desc">' + esc(l.tagline || "") + "</div></a>";
     });
-    html += '<div class="lang-card-add">+ un langage se rajoute ici via assets/site.config.js</div>';
+    (cfg.planned || []).forEach(function (l) {
+      html += '<div class="lang-card lang-card-planned">' +
+        '<div class="lang-name">' + esc(l.label) + ' <span class="lang-soon">à venir</span></div>' +
+        '<div class="lang-desc">pas encore écrit</div></div>';
+    });
     grid.innerHTML = html;
   }
 

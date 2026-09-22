@@ -203,9 +203,14 @@ main.hub .lead{font-size:18px;max-width:60ch}
 .lang-card:hover{border-color:var(--link);transform:translateY(-2px);text-decoration:none}
 .lang-card .lang-name{font-size:18px;font-weight:600;margin-bottom:6px}
 .lang-card .lang-desc{color:var(--muted);font-size:13.5px}
-.lang-card-add{
-  display:flex;align-items:center;justify-content:center;min-height:88px;
-  border:1px dashed var(--border);border-radius:var(--radius);color:var(--muted);font-size:13.5px;text-align:center;padding:16px;
+.lang-card-planned{
+  border-style:dashed;color:var(--muted);cursor:default;
+}
+.lang-card-planned:hover{border-color:var(--border);transform:none}
+.lang-card-planned .lang-name{color:var(--muted);font-weight:600;display:flex;align-items:center;gap:8px}
+.lang-soon{
+  font-size:10.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;
+  color:var(--muted);border:1px solid var(--border);border-radius:999px;padding:2px 8px;
 }
 
 /* ---- Responsive ---- */

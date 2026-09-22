@@ -14,7 +14,7 @@
  *      sélecteur de langage, sommaire).
  */
 window.SITE_CONFIG = {
-  brand: "Pas à pas",
+  brand: "Codex",
   languages: [
     {
       id: "csharp",
@@ -42,5 +42,15 @@ window.SITE_CONFIG = {
       ]
     }
     // { id: "python", label: "Python", home: "index.html", pages: [ ... ] }
+  ],
+  // Langages prévus mais pas encore écrits : affichés sur l'accueil comme repères,
+  // pas de dossier ni de page. Basculer l'entrée dans "languages" ci-dessus quand
+  // les pages existent — rien d'autre à changer ici.
+  planned: [
+    { id: "javascript", label: "JavaScript" },
+    { id: "lua", label: "Lua" },
+    { id: "python", label: "Python" },
+    { id: "java", label: "Java" },
+    { id: "cpp", label: "C++" }
   ]
 };

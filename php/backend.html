@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PHP pas à pas — Backend & MVC</title>
+<title>Codex — PHP · Backend & MVC</title>
 <meta name="description" content="PHP côté serveur sans framework : superglobales, routage, PDO, requêtes préparées, pattern MVC, sécurité, sessions.">
 <link rel="stylesheet" href="../assets/style.css">
 </head>
@@ -26,18 +26,18 @@
         <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
       <rect class="svg-bg" x="0" y="0" width="700" height="260" rx="6"/>
       <rect class="svg-box" x="16" y="30" width="110" height="46" rx="6"/><text class="svg-t" x="71" y="58" text-anchor="middle">Navigateur</text>
-      <rect class="svg-box-a" x="176" y="30" width="110" height="46" rx="6"/><text class="svg-t" x="231" y="52" text-anchor="middle">index.php</text><text class="svg-tm" x="231" y="68" text-anchor="middle">front controller</text>
-      <rect class="svg-box-a" x="336" y="30" width="110" height="46" rx="6"/><text class="svg-t" x="391" y="52" text-anchor="middle">Routeur</text><text class="svg-tm" x="391" y="68" text-anchor="middle">URL → action</text>
+      <rect class="svg-box-a" x="176" y="30" width="110" height="46" rx="6"/><text class="svg-t" x="231" y="52" text-anchor="middle">index.php</text><text class="svg-tm" x="231" y="72" text-anchor="middle">front controller</text>
+      <rect class="svg-box-a" x="336" y="30" width="110" height="46" rx="6"/><text class="svg-t" x="391" y="52" text-anchor="middle">Routeur</text><text class="svg-tm" x="391" y="72" text-anchor="middle">URL → action</text>
       <rect class="svg-box-a" x="496" y="30" width="150" height="46" rx="6"/><text class="svg-t" x="571" y="58" text-anchor="middle">Contrôleur</text>
       <path class="svg-arrow" d="M128 53 H174"/><path class="svg-arrow" d="M288 53 H334"/><path class="svg-arrow" d="M448 53 H494"/>
 
-      <rect class="uml-box-g" x="380" y="150" width="150" height="46" rx="6"/><text class="svg-t" x="455" y="172" text-anchor="middle">Modèle</text><text class="svg-tm" x="455" y="188" text-anchor="middle">via PDO</text>
+      <rect class="uml-box-g" x="380" y="150" width="150" height="46" rx="6"/><text class="svg-t" x="455" y="172" text-anchor="middle">Modèle</text><text class="svg-tm" x="455" y="192" text-anchor="middle">via PDO</text>
       <rect class="svg-box" x="560" y="150" width="120" height="46" rx="6"/><text class="svg-t" x="620" y="178" text-anchor="middle">Base de données</text>
-      <rect class="uml-box-g" x="180" y="150" width="150" height="46" rx="6"/><text class="svg-t" x="255" y="172" text-anchor="middle">Vue</text><text class="svg-tm" x="255" y="188" text-anchor="middle">gabarit PHP</text>
+      <rect class="uml-box-g" x="180" y="150" width="150" height="46" rx="6"/><text class="svg-t" x="255" y="172" text-anchor="middle">Vue</text><text class="svg-tm" x="255" y="192" text-anchor="middle">gabarit PHP</text>
 
-      <path class="svg-arrow" d="M540 76 L480 148"/><text class="svg-tm" x="505" y="115">données</text>
+      <path class="svg-arrow" d="M610 76 L490 148"/><text class="svg-tm" x="560" y="108">données</text>
       <path class="svg-arrow" d="M530 173 H558"/>
-      <path class="svg-arrow" d="M560 76 L290 148"/><text class="svg-tm" x="400" y="115">rendu</text>
+      <path class="svg-arrow" d="M520 76 L300 148"/><text class="svg-tm" x="390" y="108">rendu</text>
       <path class="svg-arrow" d="M180 173 H86 V78" style="marker-end:url(#be-arr)"/>
       <text class="svg-tm" x="90" y="130">réponse HTML</text>
     </svg>
@@ -237,6 +237,158 @@ function transferer(PDO $pdo, int $depuis, int $vers, float $montant): void
       <tr><td><strong>Contrôleur</strong></td><td>reçoit la requête, appelle le modèle, choisit la vue</td><td>ne contient pas de SQL, ni de HTML</td></tr>
     </tbody>
   </table>
+
+  <h2 id="mvc-styles">Deux façons de l'implémenter : objet ou procédural</h2>
+  <p>MVC est une idée de séparation des responsabilités, pas une syntaxe imposée. On peut l'appliquer avec des classes (la version détaillée plus bas) ou avec de simples fonctions et fichiers inclus — la version qu'on trouve dans beaucoup de petits sites PHP, souvent plus rapide à lire d'un bout à l'autre pour un projet modeste.</p>
+
+  <table>
+    <thead><tr><th></th><th>Procédural (fonctions + fichiers)</th><th>Orienté objet (classes)</th></tr></thead>
+    <tbody>
+      <tr><td>Où vit la logique</td><td>des fonctions groupées par fichier (<code>modele_articles.php</code>)</td><td>des méthodes sur des classes dédiées</td></tr>
+      <tr><td>Passer les données à la vue</td><td>variables locales, visibles telles quelles dans le fichier inclus</td><td>tableau passé à une méthode <code>rendre()</code></td></tr>
+      <tr><td>Faire varier le comportement</td><td>dupliquer/adapter une fonction</td><td>hériter, ou injecter une autre implémentation</td></tr>
+      <tr><td>Tester une couche isolément</td><td>plus difficile (dépend de <code>$pdo</code> en portée)</td><td>facile (on injecte un faux <code>PDO</code> au constructeur)</td></tr>
+      <tr><td>Erreur base de données</td><td>attrapée dans la fonction, loggée, valeur de repli renvoyée</td><td>remonte au contrôleur (ou plus haut) via une exception</td></tr>
+      <tr><td>Bon pour</td><td>petit site, script unique, prototype</td><td>projet qui grossit, plusieurs contributeurs</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Version procédurale (sans classes)</h3>
+  <p>Le routage se fait sur l'URL elle-même (pas un paramètre <code>?page=</code>), avec des fonctions de contrôleur groupées par domaine — proche de ce que fait <a href="https://github.com/Andras-corda/blenderHeajWeb" target="_blank" rel="noopener">un projet réel sans framework</a> : un <code>index.php</code> minimal, un contrôleur central qui route et délègue, des modèles qui n'exposent que des fonctions.</p>
+  <pre class="code" data-lang="php"><script type="text/plain">
+// public/index.php — le SEUL point d'entrée, volontairement minimal
+declare(strict_types=1);
+
+session_start([
+    'cookie_httponly' => true,
+    'cookie_secure'   => true,
+    'use_strict_mode' => true,
+]);
+
+require __DIR__ . '/../src/pdo.php';              // fournit $pdo
+require __DIR__ . '/../src/mainController.php';    // route ET dispatche
+</script></pre>
+  <pre class="code" data-lang="php"><script type="text/plain">
+// src/mainController.php — routage par URL + fonctions "contrôleur"
+require_once __DIR__ . '/articlesController.php';
+
+$uri = strtolower(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
+
+if ($uri === '/' || $uri === '/articles') {
+    listeArticles($pdo);
+} elseif (str_starts_with($uri, '/articles/')) {
+    afficherArticle($pdo, (int) substr($uri, strlen('/articles/')));
+} else {
+    page404();
+}
+
+// --- src/articlesController.php (chargé ci-dessus) ---
+
+function listeArticles(PDO $pdo): void
+{
+    require_once __DIR__ . '/../modeles/articlesModel.php';   // chargé seulement quand on en a besoin
+
+    $titre    = 'Articles';
+    $articles = articles_tous($pdo);
+    $template = __DIR__ . '/../vues/articles/liste.php';
+    require __DIR__ . '/../vues/base.php';
+}
+
+function afficherArticle(PDO $pdo, int $id): void
+{
+    require_once __DIR__ . '/../modeles/articlesModel.php';
+
+    $article = articles_trouver($pdo, $id);
+    if ($article === null) {
+        page404();
+        return;
+    }
+
+    $titre    = $article['titre'];
+    $template = __DIR__ . '/../vues/articles/detail.php';
+    require __DIR__ . '/../vues/base.php';
+}
+
+function page404(): void
+{
+    http_response_code(404);
+    $titre    = 'Page introuvable';
+    $template = __DIR__ . '/../vues/erreur/404.php';
+    require __DIR__ . '/../vues/base.php';
+}
+</script></pre>
+  <pre class="code" data-lang="php"><script type="text/plain">
+// modeles/articlesModel.php — des fonctions, rien de plus ; on encaisse l'erreur ici
+function articles_tous(PDO $pdo): array
+{
+    try {
+        return $pdo->query('SELECT * FROM articles ORDER BY cree_le DESC')->fetchAll();
+    } catch (PDOException $e) {
+        error_log('articles_tous: ' . $e->getMessage());
+        return [];   // la page s'affiche quand même, juste vide
+    }
+}
+
+function articles_trouver(PDO $pdo, int $id): ?array
+{
+    try {
+        $stmt = $pdo->prepare('SELECT * FROM articles WHERE id = :id');
+        $stmt->execute(['id' => $id]);
+        return $stmt->fetch() ?: null;
+    } catch (PDOException $e) {
+        error_log('articles_trouver: ' . $e->getMessage());
+        return null;
+    }
+}
+</script></pre>
+  <pre class="code" data-lang="php"><script type="text/plain">
+<!-- vues/base.php — le gabarit commun, avec un "trou" rempli par $template -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title><?= htmlspecialchars($titre ?? 'Articles', ENT_QUOTES) ?></title>
+    <link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+    <?php require __DIR__ . '/entete.php'; ?>
+
+    <main>
+        <?php require $template; ?>
+    </main>
+
+    <?php require __DIR__ . '/pied.php'; ?>
+</body>
+</html>
+</script></pre>
+  <pre class="code" data-lang="php"><script type="text/plain">
+<!-- vues/articles/liste.php — $articles et $titre sont déjà en portée -->
+<h1>Articles</h1>
+<ul>
+<?php foreach ($articles as $article): ?>
+    <li>
+        <a href="/articles/<?= (int) $article['id'] ?>">
+            <?= htmlspecialchars($article['titre'], ENT_QUOTES) ?>
+        </a>
+    </li>
+<?php endforeach; ?>
+</ul>
+</script></pre>
+  <div class="callout info">
+    <span class="label">Le gabarit à trou : la vraie astuce de ce style</span>
+    <p><code>require</code> partage la portée locale du fichier appelant. Le contrôleur pose <code>$template</code> (un chemin de fichier) puis <code>require</code> <code>vues/base.php</code> ; celui-ci fait à son tour <code>require $template;</code> exactement là où il veut insérer le contenu. Résultat : un layout unique (en-tête, pied de page, CSS) partagé par toutes les pages, sans classe ni moteur de template — juste deux <code>require</code> imbriqués.</p>
+  </div>
+  <div class="callout warn">
+    <span class="label">Le choix « try/catch + valeur de repli » a un coût</span>
+    <p>Chaque fonction modèle avale l'exception et journalise avec <code>error_log()</code> : la page ne plante jamais sur un souci de base de données, mais l'appelant ne sait pas qu'une erreur a eu lieu — seuls les logs le disent. C'est un compromis délibéré pour un site public ; la version objet ci-dessous laisse l'exception remonter, à charge pour un point unique de l'attraper.</p>
+  </div>
+  <div class="callout tip">
+    <span class="label">Laquelle choisir ?</span>
+    <p>Les deux sont légitimes. Commencer en procédural pour un script ou un petit site ; basculer vers l'objet quand les routes, les modèles ou les variantes de vue se multiplient et que la duplication devient pénible à maintenir.</p>
+  </div>
+
+  <h3>Version orientée objet</h3>
+  <p>C'est celle détaillée dans les trois sections qui suivent (<a href="#modele">Le Modèle</a>, <a href="#vue">La Vue</a>, <a href="#controleur">Le Contrôleur</a>) : mêmes responsabilités que ci-dessus, mais chaque couche est une classe qu'on peut étendre, remplacer par injection, ou tester isolément avec un faux <code>PDO</code>.</p>
 
   <h2 id="modele">Le Modèle</h2>
   <pre class="code" data-lang="php"><script type="text/plain">

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PHP pas à pas — Orienté objet</title>
+<title>Codex — PHP · Orienté objet</title>
 <meta name="description" content="POO en PHP : classes, propriétés, constructeurs, visibilité, héritage, interfaces, traits, enums, composition, SOLID.">
 <link rel="stylesheet" href="../assets/style.css">
 </head>
@@ -276,11 +276,11 @@ foreach ($equipe as $emp) {
       <defs><marker id="pi-tri" markerWidth="18" markerHeight="16" refX="16" refY="8" orient="auto">
         <path d="M2 2 L16 8 L2 14 Z" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
       <rect class="svg-bg" x="0" y="0" width="580" height="250" rx="6"/>
-      <rect class="uml-box-a" x="24" y="20" width="180" height="38"/>
-      <rect class="uml-box-a" x="24" y="58" width="180" height="24"/>
-      <text class="uml-stereo" x="114" y="36" text-anchor="middle">« interface »</text>
-      <text class="uml-name" x="114" y="52" text-anchor="middle">Exportable</text>
-      <text class="uml-m" x="32" y="75">+ enCsv() : string</text>
+      <rect class="uml-box-a" x="24" y="20" width="180" height="44"/>
+      <rect class="uml-box-a" x="24" y="64" width="180" height="24"/>
+      <text class="uml-stereo" x="114" y="38" text-anchor="middle">« interface »</text>
+      <text class="uml-name" x="114" y="58" text-anchor="middle">Exportable</text>
+      <text class="uml-m" x="32" y="81">+ enCsv() : string</text>
       <rect class="uml-box" x="340" y="80" width="210" height="22"/>
       <rect class="uml-box" x="340" y="102" width="210" height="40"/>
       <rect class="uml-box" x="340" y="142" width="210" height="24"/>
@@ -288,7 +288,7 @@ foreach ($equipe as $emp) {
       <text class="uml-m" x="348" y="119">+ montant : float</text>
       <text class="uml-m" x="348" y="136">+ date : DateTimeImmutable</text>
       <text class="uml-m" x="348" y="159">+ enCsv() : string</text>
-      <path class="uml-rel-d" style="marker-end:url(#pi-tri)" d="M340 105 L206 62"/>
+      <path class="uml-rel-d" style="marker-end:url(#pi-tri)" d="M340 105 L206 68"/>
     </svg>
     <figcaption>Trait pointillé + triangle creux = « implémente l'interface ».</figcaption>
   </figure>
@@ -461,17 +461,17 @@ echo Devise::from("USD")->symbole();   // "$"
       <text class="uml-name" x="114" y="86" text-anchor="middle">Voiture</text>
       <text class="uml-m" x="32" y="109">- moteur : Moteur</text>
       <text class="uml-m" x="32" y="133">+ rouler() : void</text>
-      <rect class="uml-box-a" x="360" y="20" width="200" height="38"/>
-      <rect class="uml-box-a" x="360" y="58" width="200" height="24"/>
-      <text class="uml-stereo" x="460" y="36" text-anchor="middle">« interface »</text>
-      <text class="uml-name" x="460" y="52" text-anchor="middle">Moteur</text>
-      <text class="uml-m" x="368" y="75">+ demarrer() : void</text>
+      <rect class="uml-box-a" x="360" y="20" width="200" height="44"/>
+      <rect class="uml-box-a" x="360" y="64" width="200" height="24"/>
+      <text class="uml-stereo" x="460" y="38" text-anchor="middle">« interface »</text>
+      <text class="uml-name" x="460" y="58" text-anchor="middle">Moteur</text>
+      <text class="uml-m" x="368" y="81">+ demarrer() : void</text>
       <rect class="uml-box" x="360" y="150" width="200" height="22"/>
       <rect class="uml-box" x="360" y="172" width="200" height="24"/>
       <text class="uml-name" x="460" y="166" text-anchor="middle">MoteurElectrique</text>
       <text class="uml-m" x="368" y="189">+ demarrer() : void</text>
-      <path class="uml-rel" style="marker-start:url(#pc-fd);marker-end:url(#pc-arr)" d="M204 100 L360 60"/>
-      <path class="uml-rel-d" style="marker-end:url(#pc-tri)" d="M460 150 L460 82"/>
+      <path class="uml-rel" style="marker-start:url(#pc-fd);marker-end:url(#pc-arr)" d="M204 100 L360 64"/>
+      <path class="uml-rel-d" style="marker-end:url(#pc-tri)" d="M460 150 L460 88"/>
     </svg>
     <figcaption>Losange plein côté <code>Voiture</code> : elle dépend de l'interface <code>Moteur</code>, pas d'une implémentation précise.</figcaption>
   </figure>
