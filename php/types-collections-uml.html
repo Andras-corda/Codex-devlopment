@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PHP pas à pas — Types, tableaux & UML</title>
+<meta name="description" content="Référence PHP : types de données, type juggling, tableaux et SPL, et comment rédiger un diagramme de classes UML.">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-lang="php" data-page="types">
+
+<div class="topbar" id="topbar"></div>
+
+<div class="wrap">
+<aside class="side" id="side"></aside>
+
+<main>
+  <h1>4 · Types, tableaux &amp; UML</h1>
+  <p class="lead">Une page de référence : le vocabulaire des <strong>types PHP</strong>, les <strong>tableaux</strong> et la SPL, et la méthode pour <strong>rédiger un diagramme de classes</strong>.</p>
+
+  <h2 id="systeme" data-group="Types de données">Le système de types</h2>
+  <p>PHP est <em>dynamiquement typé</em> : le type se détermine à l'exécution, pas à l'écriture. Les tableaux se comportent comme des types valeur (copiés), les objets comme des types référence (partagés) — détaillé sur la page <a href="procedural.html#types">Procédural</a>.</p>
+  <figure>
+    <svg viewBox="0 0 600 230" role="img" aria-label="Familles de types PHP">
+      <rect class="svg-bg" x="0" y="0" width="600" height="230" rx="6"/>
+      <rect class="uml-box" x="230" y="14" width="140" height="28"/>
+      <text class="uml-name" x="300" y="32" text-anchor="middle">Type PHP</text>
+      <path class="svg-line" d="M300 42 V60 M150 60 H450 M150 60 V78 M450 60 V78"/>
+      <rect class="uml-box-a" x="40" y="78" width="230" height="26"/>
+      <text class="uml-name" x="155" y="96" text-anchor="middle">Scalaires & compounds "valeur"</text>
+      <rect class="uml-box-g" x="330" y="78" width="230" height="26"/>
+      <text class="uml-name" x="445" y="96" text-anchor="middle">object — référence partagée</text>
+      <text class="uml-m" x="50" y="128">int, float, string, bool</text>
+      <text class="uml-m" x="50" y="148">array (copié à l'affectation)</text>
+      <text class="uml-m" x="50" y="168">null</text>
+      <text class="uml-m" x="340" y="128">object (class, enum)</text>
+      <text class="uml-m" x="340" y="148">resource</text>
+      <text class="uml-m" x="340" y="168">Closure (fonctions anonymes)</text>
+    </svg>
+    <figcaption>Un tableau copié via <code>=</code> devient indépendant ; un objet copié via <code>=</code> reste le même objet (utiliser <code>clone</code> pour dupliquer).</figcaption>
+  </figure>
+
+  <h2 id="scalaires" data-group="Types de données">Types scalaires</h2>
+  <table>
+    <thead><tr><th>Type</th><th>Détail</th><th>Exemple</th></tr></thead>
+    <tbody>
+      <tr><td><code>int</code></td><td>entier, taille de la plateforme (64 bits en pratique)</td><td><code>PHP_INT_MAX</code>, <code>1_000_000</code>, <code>0x1F</code>, <code>0b1010</code></td></tr>
+      <tr><td><code>float</code></td><td>virgule flottante double précision</td><td><code>3.14</code>, <code>1.5e3</code></td></tr>
+      <tr><td><code>string</code></td><td>chaîne de taille arbitraire, encodage libre (souvent UTF-8)</td><td><code>"texte"</code>, <code>'texte'</code></td></tr>
+      <tr><td><code>bool</code></td><td><code>true</code> / <code>false</code></td><td>—</td></tr>
+    </tbody>
+  </table>
+  <pre class="code" data-lang="php"><script type="text/plain">
+$prix = 19.99;
+$nom  = 'Ada';                                // pas d'interpolation dans les guillemets simples
+$msg  = "Bonjour {$nom}, total {$prix} €";     // interpolation dans les guillemets doubles
+
+$long = "plusieurs
+lignes possibles
+sans rien de spécial";                          // les chaînes PHP acceptent les retours à la ligne
+
+strlen($nom);              // 3 (octets)
+mb_strlen("héllo");        // 5 caractères (multi-octet) — préférer mb_* pour l'UTF-8
+strtoupper($nom);          // "ADA"
+str_contains($msg, "€");   // true
+sprintf("%05.2f", 3.1);    // "03.10"
+</script></pre>
+
+  <h2 id="conversions" data-group="Types de données">Conversions & <em>type juggling</em></h2>
+  <p>PHP convertit automatiquement les types aux endroits où c'est ambigu — pratique, mais source classique de bugs si on ne le sait pas.</p>
+  <pre class="code" data-lang="php"><script type="text/plain">
+"5" + 3;            // 8   (conversion automatique en nombre)
+"5" . 3;             // "53" (concaténation : force en chaîne)
+(int) "42px";        // 42  (cast explicite, s'arrête au premier caractère non numérique)
+(bool) "0";           // false — mais (bool) "0.0" est true !
+(string) 3.140;       // "3.14"
+
+0 == "abc";           // false depuis PHP 8 (avant : true — piège historique corrigé)
+"1" == "01";           // true  (comparés comme des nombres)
+"1" === "01";           // false (types ET valeurs, pas de conversion)
+0 <=> "0";               // 0 (égaux numériquement)
+
+settype($x, "integer");           // convertit $x EN PLACE
+is_numeric("3.14");                // true
+</script></pre>
+  <div class="callout warn">
+    <span class="label">== vs ===</span>
+    <p>Toujours préférer <code>===</code> / <code>!==</code> sauf besoin explicite de conversion. <code>==</code> a des règles historiques surprenantes (bien qu'améliorées en PHP 8).</p>
+  </div>
+
+  <h2 id="falsy" data-group="Types de données">Valeurs « falsy » & <code>null</code></h2>
+  <p>Dans un contexte booléen (<code>if</code>, <code>&amp;&amp;</code>…), plusieurs valeurs différentes de <code>false</code> sont tout de même considérées fausses.</p>
+  <pre class="code" data-lang="php"><script type="text/plain">
+// Toutes "falsy" (évaluées à false dans un if) :
+false, 0, 0.0, "", "0", [], null
+
+if ("0") { /* jamais atteint : "0" est falsy ! */ }
+if ("0.0") { /* atteint : "0.0" est TRUTHY (seule "0" exacte est falsy) */ }
+
+$valeur = null;
+isset($valeur);          // false — $valeur vaut null (ou n'existe pas)
+is_null($valeur);         // true
+empty($valeur);            // true — vide OU falsy
+empty("0");                  // true  (piège : "0" est "empty" même si la variable existe)
+
+$config["cle"] ?? "défaut";   // valeur de repli si absente/null, SANS avertissement
+</script></pre>
+  <div class="callout tip">
+    <span class="label">isset vs empty vs is_null</span>
+    <p><code>isset($x)</code> : existe et n'est pas <code>null</code>. <code>empty($x)</code> : n'existe pas, ou vaut une valeur « falsy ». <code>is_null($x)</code> : vaut exactement <code>null</code> (variable déjà déclarée). Dans le doute, <code>??</code> couvre la majorité des cas.</p>
+  </div>
+
+  <h2 id="speciaux" data-group="Types de données">Types spéciaux</h2>
+  <table>
+    <thead><tr><th>Type</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>enum</code></td><td>ensemble fini de cas nommés, valeur optionnelle (<em>backed enum</em>) — voir <a href="oriente-objet.html#enums">Orienté objet</a></td></tr>
+      <tr><td><code>DateTimeImmutable</code></td><td>date/heure, à préférer à <code>DateTime</code> (mutable, source de bugs)</td></tr>
+      <tr><td><code>mixed</code></td><td>« n'importe quel type » en annotation — équivalent d'une absence de contrainte</td></tr>
+      <tr><td><code>never</code></td><td>la fonction ne retourne jamais (lève toujours, ou boucle infiniment)</td></tr>
+      <tr><td><code>void</code></td><td>la fonction ne retourne rien d'utile</td></tr>
+      <tr><td><code>Closure</code></td><td>type d'une fonction anonyme ou fléchée (<code>fn()</code>, <code>function()</code>)</td></tr>
+      <tr><td><code>resource</code></td><td>handle bas niveau (fichier, connexion) — de moins en moins utilisé (remplacé par des objets)</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="litteraux" data-group="Types de données">Littéraux &amp; mots-clés utiles</h2>
+  <table>
+    <thead><tr><th>Écriture</th><th>Sens</th></tr></thead>
+    <tbody>
+      <tr><td><code>1_000_000</code>, <code>0x1F</code>, <code>0b1010</code></td><td>séparateur de milliers, hexadécimal, binaire</td></tr>
+      <tr><td><code>gettype($x)</code></td><td>le type de <code>$x</code>, sous forme de texte</td></tr>
+      <tr><td><code>var_dump($x)</code></td><td>type ET valeur, en détail — le réflexe de debug</td></tr>
+      <tr><td><code>$x instanceof Type</code></td><td>test de type sur un objet</td></tr>
+      <tr><td><code>self::class</code>, <code>$obj::class</code></td><td>le nom de la classe, en texte (PHP 8)</td></tr>
+      <tr><td><code>match</code></td><td>comparaison stricte, retourne une valeur (voir <a href="procedural.html#conditions">Conditions</a>)</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="panorama" data-group="Collections">Panorama</h2>
+  <p>PHP n'a qu'une seule structure native pour « une collection » : le <code>array</code>. La SPL (<em>Standard PHP Library</em>) ajoute des structures spécialisées quand <code>array</code> ne suffit pas.</p>
+  <table>
+    <thead><tr><th>Structure</th><th>Nature</th><th>Pour…</th></tr></thead>
+    <tbody>
+      <tr><td><code>array</code> (liste)</td><td>liste ordonnée, indices numériques</td><td>l'usage par défaut — 90 % des cas</td></tr>
+      <tr><td><code>array</code> (associatif)</td><td>table clé → valeur, ordre d'insertion préservé</td><td>dictionnaire, config, JSON décodé</td></tr>
+      <tr><td><code>Generator</code></td><td>séquence paresseuse, un élément à la fois</td><td>gros volumes, pagination, flux</td></tr>
+      <tr><td><code>SplStack</code> / <code>SplQueue</code></td><td>pile (LIFO) / file (FIFO) dédiées</td><td>quand la sémantique doit être explicite</td></tr>
+      <tr><td><code>SplObjectStorage</code></td><td>ensemble/table dont les <strong>clés sont des objets</strong></td><td>associer une donnée à des objets sans <code>spl_object_hash</code></td></tr>
+      <tr><td><code>ArrayObject</code></td><td>enrobe un array pour le rendre orienté objet</td><td>passer un « tableau » par référence à travers des objets</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="array-list" data-group="Collections">Le tableau comme liste</h2>
+  <pre class="code" data-lang="php"><script type="text/plain">
+$fruits = ["pomme", "kiwi", "café"];
+
+$fruits[] = "beurre";             // ajoute à la fin
+array_unshift($fruits, "lait");    // ajoute au début
+array_pop($fruits);                 // retire et renvoie le dernier
+array_shift($fruits);                // retire et renvoie le premier
+$fruits = array_values($fruits);      // ré-indexe 0, 1, 2… après des trous
+
+count($fruits);
+in_array("kiwi", $fruits);
+array_search("kiwi", $fruits);       // renvoie l'index, ou false
+sort($fruits);                        // trie en place, ré-indexe
+$slice = array_slice($fruits, 1, 2);   // sous-tableau, comme un substring
+</script></pre>
+
+  <h2 id="array-map" data-group="Collections">Le tableau comme table associative</h2>
+  <pre class="code" data-lang="php"><script type="text/plain">
+$ages = ["ada" => 36, "alan" => 41];
+
+$ages["grace"] = 45;
+$ages["ada"] += 1;
+unset($ages["alan"]);
+
+array_key_exists("ada", $ages);
+$ages["bob"] ?? -1;                    // valeur de repli si la clé n'existe pas
+
+foreach ($ages as $nom => $age) {
+    echo "{$nom} : {$age}\n";
+}
+
+array_keys($ages);          // ["ada", "grace"]
+array_values($ages);        // [37, 45]
+ksort($ages);                // trie par clé, en place
+</script></pre>
+  <div class="callout warn">
+    <span class="label">Clés</span>
+    <p>Les clés de tableau sont des <code>int</code> ou des <code>string</code> uniquement. Une clé numérique sous forme de chaîne (<code>"3"</code>) est silencieusement convertie en entier (<code>3</code>).</p>
+  </div>
+
+  <h2 id="spl" data-group="Collections">Structures SPL</h2>
+  <pre class="code" data-lang="php"><script type="text/plain">
+// SplStack : pile — dernier entré, premier sorti
+$pile = new SplStack();
+$pile->push(1);
+$pile->push(2);
+$pile->pop();          // 2
+
+// SplQueue : file — premier entré, premier sorti
+$file = new SplQueue();
+$file->enqueue("client1");
+$file->enqueue("client2");
+$file->dequeue();      // "client1"
+
+// SplObjectStorage : associer une donnée à des OBJETS (pas possible avec un array)
+$statuts = new SplObjectStorage();
+$commande = new stdClass();
+$statuts[$commande] = "en cours";
+echo $statuts[$commande];      // "en cours"
+
+// Generator : ne matérialise jamais toute la séquence en mémoire
+function nombresPairs(int $max): Generator
+{
+    for ($i = 0; $i <= $max; $i += 2) {
+        yield $i;
+    }
+}
+foreach (nombresPairs(1_000_000) as $n) { /* traité un par un */ }
+</script></pre>
+
+  <h2 id="interfaces-col" data-group="Collections">Interfaces de collection (SPL)</h2>
+  <p>Comme <code>List&lt;T&gt;</code> implémente <code>IList&lt;T&gt;</code> en C#, les structures PHP implémentent des interfaces standard qu'on peut aussi adopter dans ses propres classes.</p>
+  <figure>
+    <svg viewBox="0 0 560 230" role="img" aria-label="Interfaces de collection SPL">
+      <defs><marker id="pspl-tri" markerWidth="18" markerHeight="16" refX="16" refY="8" orient="auto">
+        <path d="M2 2 L16 8 L2 14 Z" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
+      <rect class="svg-bg" x="0" y="0" width="560" height="230" rx="6"/>
+      <rect class="uml-box-a" x="180" y="14" width="200" height="40"/>
+      <text class="uml-name" x="280" y="38" text-anchor="middle">Traversable</text>
+      <rect class="uml-box" x="30" y="100" width="220" height="22"/>
+      <rect class="uml-box" x="30" y="122" width="220" height="20"/>
+      <text class="uml-name" x="140" y="116" text-anchor="middle">Iterator</text>
+      <text class="uml-m" x="38" y="136">current(), next(), valid()</text>
+      <rect class="uml-box" x="310" y="100" width="220" height="22"/>
+      <rect class="uml-box" x="310" y="122" width="220" height="20"/>
+      <text class="uml-name" x="420" y="116" text-anchor="middle">ArrayAccess</text>
+      <text class="uml-m" x="318" y="136">offsetGet/Set/Exists/Unset</text>
+      <rect class="uml-box" x="30" y="180" width="220" height="22"/>
+      <text class="uml-name" x="140" y="196" text-anchor="middle">Countable</text>
+      <rect class="uml-box" x="310" y="180" width="220" height="22"/>
+      <text class="uml-name" x="420" y="196" text-anchor="middle">IteratorAggregate</text>
+      <path class="uml-rel" style="marker-end:url(#pspl-tri)" d="M140 100 L260 58"/>
+      <path class="uml-rel" style="marker-end:url(#pspl-tri)" d="M140 180 L200 60"/>
+      <path class="uml-rel" style="marker-end:url(#pspl-tri)" d="M420 180 L320 60"/>
+    </svg>
+    <figcaption><code>foreach</code> fonctionne sur tout ce qui implémente <code>Traversable</code> (directement <code>Iterator</code>, ou indirectement via <code>IteratorAggregate</code>).</figcaption>
+  </figure>
+  <pre class="code" data-lang="php"><script type="text/plain">
+final class Panier implements Countable, IteratorAggregate
+{
+    private array $articles = [];
+
+    public function ajouter(string $article): void
+    {
+        $this->articles[] = $article;
+    }
+
+    public function count(): int                     // permet count($panier)
+    {
+        return count($this->articles);
+    }
+
+    public function getIterator(): Iterator          // permet foreach ($panier as $a)
+    {
+        return new ArrayIterator($this->articles);
+    }
+}
+
+$p = new Panier();
+$p->ajouter("pain");
+$p->ajouter("lait");
+echo count($p);              // 2 — grâce à Countable
+foreach ($p as $article) {    // grâce à IteratorAggregate
+    echo $article;
+}
+</script></pre>
+
+  <h2 id="fonctionnel" data-group="Collections">Style fonctionnel : l'équivalent de LINQ</h2>
+  <p>PHP n'a pas de LINQ intégré, mais les fonctions <code>array_*</code> se combinent pour obtenir le même résultat.</p>
+  <pre class="code" data-lang="php"><script type="text/plain">
+$employes = [
+    ["nom" => "Ada", "salaire" => 3000, "actif" => true],
+    ["nom" => "Bob", "salaire" => 2200, "actif" => false],
+];
+
+$resume = array_values(array_map(
+    fn($e) => ["nom" => $e["nom"], "salaire" => $e["salaire"]],
+    array_filter($employes, fn($e) => $e["actif"])
+));
+
+array_sum(array_column($employes, "salaire"));
+array_column($employes, "salaire", "nom");        // ["Ada" => 3000, "Bob" => 2200]
+
+usort($employes, fn($a, $b) => $b["salaire"] <=> $a["salaire"]);   // tri décroissant
+
+// Regrouper (pas de group_by natif — un petit reduce suffit)
+$parStatut = array_reduce($employes, function (array $acc, array $e) {
+    $acc[$e["actif"] ? "actifs" : "inactifs"][] = $e["nom"];
+    return $acc;
+}, []);
+</script></pre>
+
+  <h2 id="choisir" data-group="Collections">Quelle structure choisir</h2>
+  <table>
+    <thead><tr><th>Besoin</th><th>Structure</th></tr></thead>
+    <tbody>
+      <tr><td>cas général, liste ou dictionnaire</td><td><code>array</code></td></tr>
+      <tr><td>gros volume, traitement au fil de l'eau</td><td><code>Generator</code> (<code>yield</code>)</td></tr>
+      <tr><td>pile / file avec une API explicite</td><td><code>SplStack</code> / <code>SplQueue</code></td></tr>
+      <tr><td>associer une donnée à des objets</td><td><code>SplObjectStorage</code> / <code>WeakMap</code></td></tr>
+      <tr><td>rendre une classe utilisable dans un <code>foreach</code></td><td><code>Iterator</code> / <code>IteratorAggregate</code></td></tr>
+      <tr><td>rendre une classe utilisable avec <code>$obj[...]</code></td><td><code>ArrayAccess</code></td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="uml-classe" data-group="Rédiger de l'UML">Rédiger de l'UML — la boîte de classe</h2>
+  <p>Un diagramme de classes communique la <strong>structure</strong> d'un modèle. On y met ce qui aide à comprendre, pas chaque détail du code — la notation ne dépend d'aucun langage, seule sa traduction en code change.</p>
+  <figure>
+    <svg viewBox="0 0 560 220" role="img" aria-label="Anatomie d'une classe UML">
+      <rect class="svg-bg" x="0" y="0" width="560" height="220" rx="6"/>
+      <rect class="uml-box" x="30" y="20" width="290" height="26"/>
+      <rect class="uml-box" x="30" y="46" width="290" height="74"/>
+      <rect class="uml-box" x="30" y="120" width="290" height="78"/>
+      <text class="uml-abual" x="175" y="38" text-anchor="middle">CompteBancaire</text>
+      <text class="uml-m" x="40" y="66">- solde : float</text>
+      <text class="uml-m" x="40" y="84">+ titulaire : string</text>
+      <text class="uml-m" x="40" y="102"># decouvertAutorise : float = 0</text>
+      <text class="uml-m" x="40" y="140">+ deposer(montant : float) : void</text>
+      <text class="uml-m" x="40" y="158">+ retirer(montant : float) : bool</text>
+      <text class="uml-m" x="40" y="176" style="text-decoration:underline">+ tauxLivret() : float</text>
+      <text class="uml-legend" x="350" y="35">nom en italique = classe abstraite</text>
+      <text class="uml-legend" x="350" y="61">compartiment 2 : attributs (propriétés)</text>
+      <text class="uml-legend" x="350" y="87">visibilité : + public  - privé</text>
+      <text class="uml-legend" x="350" y="105">   # protégé</text>
+      <text class="uml-legend" x="350" y="131">compartiment 3 : opérations (méthodes)</text>
+      <text class="uml-legend" x="350" y="157">nom(param : type) : retour</text>
+      <text class="uml-legend" x="350" y="183">souligné = membre statique</text>
+    </svg>
+    <figcaption>Format d'un attribut : <code>visibilité nom : type [= défaut]</code>. Format d'une opération : <code>visibilité nom(param : type) : typeRetour</code>.</figcaption>
+  </figure>
+
+  <h2 id="uml-relations" data-group="Rédiger de l'UML">Les relations — et leur traduction en PHP</h2>
+  <figure>
+    <svg viewBox="0 0 560 320" role="img" aria-label="Types de relations UML">
+      <defs>
+        <marker id="prk-tri" markerWidth="18" markerHeight="16" refX="16" refY="8" orient="auto">
+          <path d="M2 2 L16 8 L2 14 Z" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5"/></marker>
+        <marker id="prk-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+          <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker>
+        <marker id="prk-fd" markerWidth="24" markerHeight="14" refX="22" refY="7" orient="auto">
+          <path d="M2 7 L11 2 L20 7 L11 12 Z" fill="var(--muted)"/></marker>
+        <marker id="prk-hd" markerWidth="24" markerHeight="14" refX="22" refY="7" orient="auto">
+          <path d="M2 7 L11 2 L20 7 L11 12 Z" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5"/></marker>
+      </defs>
+      <rect class="svg-bg" x="0" y="0" width="560" height="320" rx="6"/>
+      <text class="uml-name" x="16" y="28">Généralisation (héritage)</text>
+      <path class="uml-rel" style="marker-end:url(#prk-tri)" d="M20 44 H180"/>
+      <text class="uml-legend" x="200" y="48">class Chien extends Animal</text>
+      <text class="uml-name" x="16" y="86">Réalisation (implémente)</text>
+      <path class="uml-rel-d" style="marker-end:url(#prk-tri)" d="M20 102 H180"/>
+      <text class="uml-legend" x="200" y="106">class Chien implements Animal</text>
+      <text class="uml-name" x="16" y="144">Composition (possède, vie liée)</text>
+      <path class="uml-rel" style="marker-start:url(#prk-fd)" d="M22 160 H180"/>
+      <text class="uml-legend" x="200" y="164">la propriété est créée dans le constructeur (new)</text>
+      <text class="uml-name" x="16" y="202">Agrégation (référence, vie séparée)</text>
+      <path class="uml-rel" style="marker-start:url(#prk-hd)" d="M24 218 H180"/>
+      <text class="uml-legend" x="200" y="222">la propriété est reçue en paramètre</text>
+      <text class="uml-name" x="16" y="260">Association (connaît durablement)</text>
+      <path class="uml-rel" style="marker-end:url(#prk-arr)" d="M20 276 H180"/>
+      <text class="uml-legend" x="200" y="280">une propriété typée vers l'autre classe</text>
+      <text class="uml-name" x="16" y="306">Dépendance (utilise ponctuellement)</text>
+      <path class="uml-rel-d" style="marker-end:url(#prk-arr)" d="M20 316 H180"/>
+      <text class="uml-legend" x="200" y="310">type utilisé dans un paramètre de méthode</text>
+    </svg>
+    <figcaption>Composition et agrégation partent d'un losange côté « tout ». La flèche indique le sens de navigation.</figcaption>
+  </figure>
+  <table>
+    <thead><tr><th>Relation</th><th>Notation</th><th>Indice en PHP</th></tr></thead>
+    <tbody>
+      <tr><td>Généralisation</td><td>trait plein, triangle creux</td><td><code>class B extends A</code></td></tr>
+      <tr><td>Réalisation</td><td>trait pointillé, triangle creux</td><td><code>class C implements Ix</code></td></tr>
+      <tr><td>Composition</td><td>losange <strong>plein</strong></td><td>propriété instanciée dans <code>__construct</code> ; disparaît avec l'objet</td></tr>
+      <tr><td>Agrégation</td><td>losange <strong>creux</strong></td><td>propriété passée au constructeur (injection) ; survit à l'objet</td></tr>
+      <tr><td>Association</td><td>trait plein, flèche ouverte</td><td>propriété typée vers l'autre classe</td></tr>
+      <tr><td>Dépendance</td><td>trait pointillé, flèche ouverte</td><td>type utilisé dans un paramètre / une variable locale</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="uml-exemple" data-group="Rédiger de l'UML">Exemple complet — d'un modèle PHP au diagramme</h2>
+  <pre class="code" data-lang="php"><script type="text/plain">
+abstract class Personne
+{
+    public function __construct(
+        protected string $nom,
+        protected string $email,
+    ) {}
+}
+
+final class Membre extends Personne
+{
+    public array $emprunts = [];   // Emprunt[]
+
+    public function __construct(
+        string $nom,
+        string $email,
+        public readonly string $numeroCarte,
+    ) {
+        parent::__construct($nom, $email);
+    }
+}
+
+final class Livre
+{
+    public bool $disponible = true;
+
+    public function __construct(
+        public readonly string $titre,
+        public readonly string $isbn,
+    ) {}
+}
+
+final class Emprunt
+{
+    public function __construct(
+        public readonly Livre $livre,
+        public readonly Membre $membre,
+        public readonly DateTimeImmutable $debut = new DateTimeImmutable(),
+        public ?DateTimeImmutable $retour = null,
+    ) {}
+}
+
+final class Bibliotheque
+{
+    /** @var Livre[] */
+    private array $catalogue = [];      // créés/possédés ici → composition
+
+    /** @var Membre[] */
+    private array $membres = [];         // inscrits, vie propre → agrégation
+
+    public function preter(Livre $livre, Membre $membre): Emprunt
+    {
+        return new Emprunt($livre, $membre);
+    }
+}
+</script></pre>
+  <figure>
+    <svg viewBox="0 0 640 400" role="img" aria-label="Diagramme de classes du modèle bibliothèque">
+      <defs>
+        <marker id="pex-tri" markerWidth="18" markerHeight="16" refX="16" refY="8" orient="auto">
+          <path d="M2 2 L16 8 L2 14 Z" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5"/></marker>
+        <marker id="pex-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+          <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker>
+        <marker id="pex-fd" markerWidth="24" markerHeight="14" refX="3" refY="7" orient="auto">
+          <path d="M4 7 L13 2 L22 7 L13 12 Z" fill="var(--muted)"/></marker>
+        <marker id="pex-hd" markerWidth="24" markerHeight="14" refX="3" refY="7" orient="auto">
+          <path d="M4 7 L13 2 L22 7 L13 12 Z" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5"/></marker>
+      </defs>
+      <rect class="svg-bg" x="0" y="0" width="640" height="400" rx="6"/>
+      <rect class="uml-box-a" x="420" y="16" width="200" height="22"/>
+      <rect class="uml-box-a" x="420" y="38" width="200" height="40"/>
+      <text class="uml-abual" x="520" y="32" text-anchor="middle">Personne</text>
+      <text class="uml-m" x="428" y="55"># nom : string</text>
+      <text class="uml-m" x="428" y="73"># email : string</text>
+      <rect class="uml-box" x="24" y="16" width="240" height="22"/>
+      <rect class="uml-box" x="24" y="38" width="240" height="40"/>
+      <rect class="uml-box" x="24" y="78" width="240" height="24"/>
+      <text class="uml-name" x="144" y="32" text-anchor="middle">Bibliotheque</text>
+      <text class="uml-m" x="32" y="55">- catalogue : Livre[]</text>
+      <text class="uml-m" x="32" y="73">- membres : Membre[]</text>
+      <text class="uml-m" x="32" y="95">+ preter(l : Livre, m : Membre) : Emprunt</text>
+      <rect class="uml-box" x="24" y="230" width="220" height="22"/>
+      <rect class="uml-box" x="24" y="252" width="220" height="40"/>
+      <text class="uml-name" x="134" y="246" text-anchor="middle">Livre</text>
+      <text class="uml-m" x="32" y="269">+ titre : string</text>
+      <text class="uml-m" x="32" y="287">+ disponible : bool</text>
+      <rect class="uml-box" x="410" y="210" width="210" height="22"/>
+      <rect class="uml-box" x="410" y="232" width="210" height="40"/>
+      <text class="uml-name" x="515" y="226" text-anchor="middle">Membre</text>
+      <text class="uml-m" x="418" y="249">+ numeroCarte : string</text>
+      <text class="uml-m" x="418" y="267">+ emprunts : Emprunt[]</text>
+      <rect class="uml-box" x="220" y="330" width="210" height="22"/>
+      <rect class="uml-box" x="220" y="352" width="210" height="40"/>
+      <text class="uml-name" x="325" y="346" text-anchor="middle">Emprunt</text>
+      <text class="uml-m" x="228" y="369">+ debut : DateTimeImmutable</text>
+      <text class="uml-m" x="228" y="387">+ retour : ?DateTimeImmutable</text>
+      <path class="uml-rel" style="marker-end:url(#pex-tri)" d="M515 210 L520 78"/>
+      <path class="uml-rel" style="marker-start:url(#pex-fd);marker-end:url(#pex-arr)" d="M120 102 L134 230"/>
+      <text class="uml-legend" x="96" y="130">1</text><text class="uml-legend" x="140" y="222">*</text>
+      <path class="uml-rel" style="marker-start:url(#pex-hd);marker-end:url(#pex-arr)" d="M264 60 L410 224"/>
+      <text class="uml-legend" x="276" y="70">1</text><text class="uml-legend" x="388" y="214">*</text>
+      <path class="uml-rel" style="marker-end:url(#pex-arr)" d="M240 350 L200 310"/>
+      <text class="uml-legend" x="210" y="332">1</text>
+      <path class="uml-rel" style="marker-end:url(#pex-arr)" d="M420 345 L470 272"/>
+      <text class="uml-legend" x="440" y="320">1</text>
+    </svg>
+    <figcaption><code>Bibliotheque</code> <strong>compose</strong> son catalogue et <strong>agrège</strong> ses membres. <code>Emprunt</code> <strong>associe</strong> un <code>Livre</code> et un <code>Membre</code>. <code>Membre</code> <strong>hérite</strong> de <code>Personne</code>.</figcaption>
+  </figure>
+
+  <h2 id="uml-texte" data-group="Rédiger de l'UML">Générer l'UML en texte (Mermaid, PlantUML)</h2>
+  <p><strong>Mermaid</strong> (rendu par GitHub, GitLab, VS Code…) :</p>
+  <pre class="code" data-lang="mermaid"><script type="text/plain">
+classDiagram
+    class Personne {
+        <<abstract>>
+        #nom : string
+        #email : string
+    }
+    class Membre {
+        +numeroCarte : string
+    }
+    class Livre {
+        +titre : string
+        +disponible : bool
+    }
+    class Emprunt {
+        +debut : DateTimeImmutable
+        +retour : DateTimeImmutable?
+    }
+    Personne <|-- Membre
+    Bibliotheque "1" *-- "*" Livre : catalogue
+    Bibliotheque "1" o-- "*" Membre : membres
+    Emprunt --> "1" Livre
+    Emprunt --> "1" Membre
+</script></pre>
+  <table>
+    <thead><tr><th>Symbole</th><th>Mermaid / PlantUML</th><th>Sens</th></tr></thead>
+    <tbody>
+      <tr><td>héritage</td><td><code>A &lt;|-- B</code></td><td>B hérite de A</td></tr>
+      <tr><td>réalisation</td><td><code>A &lt;|.. B</code></td><td>B implémente A</td></tr>
+      <tr><td>composition</td><td><code>A *-- B</code></td><td>A possède B</td></tr>
+      <tr><td>agrégation</td><td><code>A o-- B</code></td><td>A référence B</td></tr>
+      <tr><td>association</td><td><code>A --&gt; B</code></td><td>A connaît B</td></tr>
+      <tr><td>dépendance</td><td><code>A ..&gt; B</code></td><td>A utilise B</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="uml-conseils" data-group="Rédiger de l'UML">Conseils de rédaction</h2>
+  <ul>
+    <li><strong>Un diagramme = une intention.</strong> « Vue d'ensemble du domaine », « le sous-système de facturation »… pas « toutes les classes ».</li>
+    <li><strong>Omettez le bruit</strong> : getters/setters triviaux, constructeurs, classes techniques (DTO, helpers).</li>
+    <li><strong>Nommez les extrémités</strong> quand ce n'est pas évident : rôle et multiplicité (<code>1</code>, <code>*</code>).</li>
+    <li><strong>Le sens des flèches compte</strong> : dessinez la navigation réelle (qui référence qui).</li>
+    <li><strong>Préférez la composition à l'héritage</strong> dans le modèle — et le diagramme le montrera.</li>
+    <li><strong>Gardez-le vivant</strong> : le texte (Mermaid/PlantUML) versionné avec le code vieillit mieux qu'une image.</li>
+  </ul>
+
+  <footer class="pg">
+    <span><a href="concurrence.html">← Concurrence</a></span>
+    <span><a href="backend.html">Suivant : Backend & MVC →</a></span>
+  </footer>
+</main>
+</div>
+
+<script src="../assets/site.config.js"></script>
+<script src="../assets/highlighters/php.js"></script>
+<script src="../assets/main.js"></script>
+<script src="../assets/nav.js"></script>
+</body>
+</html>

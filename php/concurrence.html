@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PHP pas à pas — Concurrence</title>
+<meta name="description" content="PHP et la concurrence : modèle bloquant par défaut, curl_multi, générateurs, Fibers, pièges.">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-lang="php" data-page="concurrence">
+
+<div class="topbar" id="topbar"></div>
+
+<div class="wrap">
+<aside class="side" id="side"></aside>
+
+<main>
+  <h1>3 · Concurrence</h1>
+  <p class="lead">PHP n'est <strong>pas</strong> asynchrone par défaut, contrairement à C# ou JavaScript. Comprendre pourquoi, et ce que le langage offre quand même pour paralléliser.</p>
+
+  <h2 id="probleme">Le modèle par défaut : bloquant, une requête = un script</h2>
+  <p>Historiquement, chaque requête HTTP lance (ou réutilise via PHP-FPM) un processus qui exécute le script <strong>du début à la fin, séquentiellement</strong>. Un appel réseau (<code>file_get_contents</code>, une requête SQL) bloque ce processus jusqu'à la réponse — il n'y a pas d'event loop intégré comme dans Node.js ou de runtime <code>async</code>/<code>await</code> comme en C#.</p>
+  <figure>
+    <svg viewBox="0 0 560 140" role="img" aria-label="Modèle bloquant de PHP">
+      <rect class="svg-bg" x="0" y="0" width="560" height="140" rx="6"/>
+      <text class="svg-tm" x="16" y="28">Un script PHP classique — tout est séquentiel</text>
+      <rect class="svg-box-a" x="16" y="38" width="70" height="22"/><text class="svg-mono" x="24" y="54">calcul</text>
+      <rect class="svg-box-w" x="86" y="38" width="330" height="22"/><text class="svg-mono" x="150" y="54">appel réseau — le PROCESSUS attend</text>
+      <rect class="svg-box-a" x="416" y="38" width="70" height="22"/><text class="svg-mono" x="424" y="54">suite</text>
+      <text class="svg-tm" x="16" y="98">→ pendant l'attente, CE processus ne fait rien d'autre.</text>
+      <text class="svg-tm" x="16" y="118">Le parallélisme vient soit de PLUSIEURS processus (PHP-FPM), soit d'outils dédiés ci-dessous.</text>
+    </svg>
+    <figcaption>Contrairement à <code>await</code> en C#, une attente bloque le processus PHP courant.</figcaption>
+  </figure>
+  <div class="callout info">
+    <span class="label">Ce que ça change au quotidien</span>
+    <p>Le serveur web (PHP-FPM, Apache) absorbe la charge en lançant <strong>plusieurs processus PHP en parallèle</strong> pour plusieurs requêtes — mais <em>à l'intérieur</em> d'un seul script, un appel réseau après l'autre reste séquentiel, sauf à utiliser explicitement l'un des outils ci-dessous.</p>
+  </div>
+
+  <h2 id="curl-multi">Paralléliser des appels réseau : curl_multi</h2>
+  <p>Sans bibliothèque tierce, l'extension <code>curl</code> (native) permet de lancer plusieurs requêtes HTTP <strong>en parallèle</strong> et d'attendre l'ensemble.</p>
+  <pre class="code" data-lang="php"><script type="text/plain">
+$urls = [
+    "https://example.com",
+    "https://www.php.net",
+    "https://www.wikipedia.org",
+];
+
+$mh = curl_multi_init();
+$handles = [];
+
+foreach ($urls as $url) {
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    curl_multi_add_handle($mh, $ch);
+    $handles[$url] = $ch;
+}
+
+// Boucle d'exécution : toutes les requêtes avancent EN MÊME TEMPS
+$actifs = null;
+do {
+    curl_multi_exec($mh, $actifs);
+    curl_multi_select($mh);           // attend qu'un handle progresse (évite une boucle qui tourne à vide)
+} while ($actifs > 0);
+
+foreach ($handles as $url => $ch) {
+    $taille = strlen(curl_multi_getcontent($ch));
+    echo "{$url} → {$taille} octets\n";
+    curl_multi_remove_handle($mh, $ch);
+}
+curl_multi_close($mh);
+</script></pre>
+  <div class="callout tip">
+    <span class="label">Le plus proche de Task.WhenAll en C#</span>
+    <p><code>curl_multi_*</code> est l'outil natif de référence pour « lancer N requêtes, attendre toutes les réponses » sans dépendance externe.</p>
+  </div>
+
+  <h2 id="generateurs">Générateurs — itération paresseuse</h2>
+  <p>Un générateur (<code>yield</code>) produit ses valeurs <strong>une à la fois, à la demande</strong>, sans tout charger en mémoire — l'équivalent PHP du <code>yield return</code> / <code>IEnumerable</code> de C#. Ce n'est pas du parallélisme, mais c'est la brique qui permet d'écrire du code coopératif.</p>
+  <pre class="code" data-lang="php"><script type="text/plain">
+function lirePages(): Generator
+{
+    for ($page = 1; $page <= 5; $page++) {
+        // ici, un vrai appel réseau paginé par exemple
+        yield $page => "contenu de la page {$page}";
+    }
+}
+
+foreach (lirePages() as $numero => $contenu) {
+    echo "{$numero}: {$contenu}\n";     // traité au fil de l'eau, pas tout d'un coup
+}
+
+// Un générateur peut aussi RECEVOIR des valeurs (send) — utile pour des coroutines simples
+function accumulateur(): Generator
+{
+    $total = 0;
+    while (true) {
+        $total += yield $total;
+    }
+}
+$gen = accumulateur();
+$gen->current();     // amorce le générateur
+$gen->send(10);      // total = 10
+$gen->send(5);        // total = 15
+</script></pre>
+
+  <h2 id="fibers">Fibers (PHP 8.1) — suspendre une fonction en cours</h2>
+  <p>Une <code>Fiber</code> permet de <strong>suspendre</strong> l'exécution d'une fonction n'importe où (pas seulement à un <code>yield</code> de premier niveau) et de la reprendre plus tard — la brique bas niveau sur laquelle les bibliothèques asynchrones (ReactPHP, Amp) construisent leur <code>async</code>/<code>await</code>.</p>
+  <pre class="code" data-lang="php"><script type="text/plain">
+$fiber = new Fiber(function (): void {
+    echo "début\n";
+    $valeurReçue = Fiber::suspend("je me mets en pause");   // rend la main à l'appelant
+    echo "reprise avec : {$valeurReçue}\n";
+});
+
+$valeurSuspension = $fiber->start();     // lance la fiber jusqu'à la 1re suspension
+echo "reçu de la fiber : {$valeurSuspension}\n";
+
+$fiber->resume("bonjour");               // reprend l'exécution, transmet une valeur
+// affiche : début / reçu de la fiber : je me mets en pause / reprise avec : bonjour
+</script></pre>
+  <div class="callout warn">
+    <span class="label">Une Fiber seule ne parallélise rien</span>
+    <p>Elle change <em>quand</em> le code s'exécute, pas <em>combien de choses</em> s'exécutent en même temps. C'est un outil pour <strong>bâtir</strong> un ordonnanceur asynchrone (comme le fait ReactPHP en interne), rarement utilisé directement dans du code applicatif.</p>
+  </div>
+
+  <h2 id="pieges">Pièges & idées reçues</h2>
+  <table>
+    <thead><tr><th>Idée reçue</th><th>Réalité</th></tr></thead>
+    <tbody>
+      <tr><td>« PHP peut faire de l'<code>async</code>/<code>await</code> comme C# »</td><td>pas nativement — il faut une bibliothèque (ReactPHP, Amp, Swoole) qui gère sa propre boucle d'événements</td></tr>
+      <tr><td>« PHP-FPM = du parallélisme dans mon script »</td><td>non : plusieurs <em>requêtes différentes</em> tournent en parallèle, pas plusieurs opérations d'<em>un même</em> script</td></tr>
+      <tr><td>« <code>curl_multi</code> suffit toujours »</td><td>oui pour du HTTP, mais pas pour du calcul CPU pur (là, il faut des processus séparés ou l'extension <code>parallel</code>)</td></tr>
+      <tr><td>« un générateur tourne en arrière-plan »</td><td>non : il s'exécute uniquement quand on itère dessus (<code>foreach</code>, <code>next()</code>, <code>send()</code>)</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="aller-plus-loin">Pour aller plus loin (hors de ce guide)</h2>
+  <p>Sans sortir du PHP « pur », ce guide s'arrête aux outils natifs ci-dessus. Pour une vraie boucle d'événements et un <code>async</code>/<code>await</code> proche de celui de C#, l'écosystème propose des bibliothèques dédiées — <strong>aucune n'est requise</strong> pour le reste du site :</p>
+  <ul>
+    <li><strong>ReactPHP</strong> / <strong>Amp</strong> — boucle d'événements et primitives asynchrones en PHP pur</li>
+    <li><strong>Swoole</strong> / <strong>OpenSwoole</strong> — extension C qui ajoute coroutines et serveur asynchrone</li>
+  </ul>
+
+  <h2 id="exemple">Exemple complet — mesurer plusieurs pages en parallèle</h2>
+  <pre class="code" data-lang="php"><script type="text/plain">
+function telechargerEnParallele(array $urls, int $timeoutSecondes = 10): array
+{
+    $mh = curl_multi_init();
+    $handles = [];
+
+    foreach ($urls as $url) {
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT        => $timeoutSecondes,
+            CURLOPT_NOBODY         => false,
+        ]);
+        curl_multi_add_handle($mh, $ch);
+        $handles[$url] = $ch;
+    }
+
+    $actifs = null;
+    do {
+        curl_multi_exec($mh, $actifs);
+        curl_multi_select($mh);
+    } while ($actifs > 0);
+
+    $resultats = [];
+    foreach ($handles as $url => $ch) {
+        $resultats[$url] = [
+            "taille" => strlen((string) curl_multi_getcontent($ch)),
+            "code"   => curl_getinfo($ch, CURLINFO_HTTP_CODE),
+            "erreur" => curl_error($ch) ?: null,
+        ];
+        curl_multi_remove_handle($mh, $ch);
+        curl_close($ch);
+    }
+    curl_multi_close($mh);
+
+    return $resultats;
+}
+
+$urls = ["https://example.com", "https://www.php.net"];
+foreach (telechargerEnParallele($urls) as $url => $info) {
+    printf("%-24s code=%d taille=%d\n", $url, $info["code"], $info["taille"]);
+}
+</script></pre>
+
+  <footer class="pg">
+    <span><a href="oriente-objet.html">← Orienté objet</a></span>
+    <span><a href="types-collections-uml.html">Suivant : Types & UML →</a></span>
+  </footer>
+</main>
+</div>
+
+<script src="../assets/site.config.js"></script>
+<script src="../assets/highlighters/php.js"></script>
+<script src="../assets/main.js"></script>
+<script src="../assets/nav.js"></script>
+</body>
+</html>

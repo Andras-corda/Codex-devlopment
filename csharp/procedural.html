@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C# pas à pas — Procédural</title>
+<meta name="description" content="Programmation procédurale en C# : variables, constantes, enum, types, conditions, boucles, méthodes, génériques, erreurs.">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-lang="csharp" data-page="procedural">
+
+<div class="topbar" id="topbar"></div>
+
+<div class="wrap">
+<aside class="side" id="side"></aside>
+
+<main>
+  <h1>1 · Programmation procédurale</h1>
+  <p class="lead">On décrit <em>comment</em> faire : une séquence d'instructions, des décisions, des répétitions, le tout rangé dans des méthodes réutilisables.</p>
+
+  <h2 id="idee">L'idée</h2>
+  <p>Un programme procédural, c'est une recette : les instructions s'exécutent de haut en bas, sauf quand une condition ou une boucle change le chemin.</p>
+  <figure>
+    <svg viewBox="0 0 460 260" role="img" aria-label="Flux d'exécution">
+      <defs><marker id="ah" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0l8 4-8 4z" fill="var(--muted)"/></marker></defs>
+      <rect class="svg-bg" x="0" y="0" width="460" height="260" rx="6"/>
+      <rect class="svg-box" x="160" y="16" width="140" height="34" rx="6"/><text class="svg-mono" x="230" y="37" text-anchor="middle">lire données</text>
+      <path class="svg-arrow" d="M230 50 V70"/>
+      <path class="svg-box-w" d="M230 72 l70 26 -70 26 -70 -26 z"/><text class="svg-mono" x="230" y="102" text-anchor="middle">valide ?</text>
+      <path class="svg-arrow" d="M300 98 H360 V150 H302"/><text class="svg-tm" x="330" y="92">non</text>
+      <rect class="svg-box" x="300" y="133" width="110" height="34" rx="6"/><text class="svg-mono" x="355" y="154" text-anchor="middle">erreur</text>
+      <path class="svg-arrow" d="M230 124 V150"/><text class="svg-tm" x="238" y="140">oui</text>
+      <rect class="svg-box-a" x="160" y="150" width="140" height="34" rx="6"/><text class="svg-mono" x="230" y="171" text-anchor="middle">traiter (boucle)</text>
+      <path class="svg-arrow" d="M230 184 V206"/>
+      <rect class="svg-box-g" x="160" y="208" width="140" height="34" rx="6"/><text class="svg-mono" x="230" y="229" text-anchor="middle">afficher résultat</text>
+    </svg>
+    <figcaption>Séquence → décision → répétition → sortie. Tous les programmes procéduraux suivent ce schéma.</figcaption>
+  </figure>
+
+  <h2 id="variables">Variables & affectation</h2>
+  <p>Une variable est un nom qui désigne une valeur en mémoire. En C#, on annonce son type (ou on laisse <code>var</code> le déduire), puis on peut réaffecter.</p>
+  <pre class="code"><script type="text/plain">
+int compteur = 0;        // déclaration + initialisation
+compteur = compteur + 1; // réaffectation → 1
+compteur += 4;           // raccourci → 5
+
+const double Pi = 3.14159;   // const : ne changera jamais
+// Pi = 3;   → erreur de compilation
+
+var nom = "Ada";         // le compilateur déduit : string
+var actif = true;        // déduit : bool
+
+int x = 10, y = 20;      // plusieurs d'un coup
+(int a, int b) = (1, 2); // déstructuration d'un tuple
+</script></pre>
+  <div class="callout warn">
+    <span class="label">Piège</span>
+    <p>Une variable locale non initialisée ne peut pas être lue : <code>int n; Console.WriteLine(n);</code> ne compile pas. C'est une sécurité, pas un défaut.</p>
+  </div>
+
+  <h2 id="const">Constantes (<code>const</code>)</h2>
+  <p>Une constante est une valeur nommée qui ne change jamais. <code>const</code> exige une valeur <strong>connue à la compilation</strong> (un littéral, ou un calcul de littéraux) : le compilateur remplace chaque usage par la valeur elle-même.</p>
+  <pre class="code"><script type="text/plain">
+const int JoursParSemaine = 7;
+const double TauxTva = 0.20;
+const string Pays = "France";
+const double Coefficient = 1 + TauxTva;    // OK : calcul entre constantes
+
+// JoursParSemaine = 5;   // erreur de compilation : on ne réaffecte pas une const
+
+double heures = 8 * JoursParSemaine;        // le compilateur écrit directement '8 * 7'
+</script></pre>
+  <table>
+    <thead><tr><th></th><th>Fixée</th><th>Remarque</th></tr></thead>
+    <tbody>
+      <tr><td><code>const</code></td><td>à la compilation</td><td>littéral obligatoire ; nom en <code>PascalCase</code> par convention</td></tr>
+      <tr><td>variable normale</td><td>jamais (peut changer)</td><td>calculée à l'exécution</td></tr>
+      <tr><td><code>readonly</code></td><td>après le constructeur</td><td>pour une valeur connue seulement à l'exécution — voir la page <a href="oriente-objet.html#readonly">Orienté objet</a></td></tr>
+    </tbody>
+  </table>
+  <div class="callout tip">
+    <span class="label">enum : des constantes nommées et regroupées</span>
+    <p>Quand plusieurs constantes forment un ensemble (des états, des choix possibles), un <code>enum</code> est plus lisible qu'une série de <code>const int</code>.</p>
+  </div>
+  <pre class="code"><script type="text/plain">
+enum Jour { Lundi, Mardi, Mercredi, Jeudi, Vendredi, Samedi, Dimanche }
+
+Jour j = Jour.Mercredi;
+
+if (j == Jour.Samedi || j == Jour.Dimanche)
+    Console.WriteLine("week-end");
+
+Console.WriteLine((int)Jour.Mercredi);   // 2  (numérotées à partir de 0)
+</script></pre>
+
+  <h2 id="types">Types : valeur vs référence</h2>
+  <p>C# distingue deux familles. Comprendre cette distinction évite 90 % des surprises.</p>
+  <table>
+    <thead><tr><th></th><th>Type valeur</th><th>Type référence</th></tr></thead>
+    <tbody>
+      <tr><td>Exemples</td><td><code>int</code>, <code>double</code>, <code>bool</code>, <code>char</code>, <code>struct</code>, <code>enum</code></td><td><code>string</code>, tableaux, <code>class</code>, <code>record</code> (par défaut)</td></tr>
+      <tr><td>Contient</td><td>la valeur elle-même</td><td>une <em>référence</em> vers un objet ailleurs en mémoire</td></tr>
+      <tr><td>Affectation / passage</td><td>copie la valeur</td><td>copie la référence (même objet partagé)</td></tr>
+      <tr><td>Vit typiquement sur…</td><td>la pile (stack)</td><td>le tas (heap)</td></tr>
+    </tbody>
+  </table>
+  <figure>
+    <svg viewBox="0 0 560 220" role="img" aria-label="Pile et tas">
+      <rect class="svg-bg" x="0" y="0" width="560" height="220" rx="6"/>
+      <text class="svg-tm" x="20" y="24">PILE (stack)</text>
+      <text class="svg-tm" x="330" y="24">TAS (heap)</text>
+      <rect class="svg-box" x="20" y="38" width="220" height="30"/><text class="svg-mono" x="30" y="58">int a = 5</text><text class="svg-mono" x="200" y="58">5</text>
+      <rect class="svg-box" x="20" y="72" width="220" height="30"/><text class="svg-mono" x="30" y="92">int b = a</text><text class="svg-mono" x="200" y="92">5</text>
+      <text class="svg-tm" x="30" y="120">→ b est une copie indépendante</text>
+      <rect class="svg-box-a" x="20" y="140" width="220" height="30"/><text class="svg-mono" x="30" y="160">int[] t</text><text class="svg-mono" x="150" y="160">◆──────</text>
+      <rect class="svg-box-a" x="20" y="174" width="220" height="30"/><text class="svg-mono" x="30" y="194">int[] u = t</text><text class="svg-mono" x="150" y="194">◆──────</text>
+      <rect class="svg-box-g" x="330" y="150" width="200" height="46"/><text class="svg-mono" x="340" y="178">[ 1, 2, 3 ]  (un seul objet)</text>
+      <path class="svg-line" d="M240 158 H330"/>
+      <path class="svg-line" d="M240 192 C 290 192, 300 176, 330 176"/>
+      <text class="svg-tm" x="330" y="214">→ t et u pointent le MÊME tableau</text>
+    </svg>
+    <figcaption>Copier un <code>int</code> duplique la valeur ; copier un tableau ne duplique que le pointeur.</figcaption>
+  </figure>
+  <pre class="code"><script type="text/plain">
+int a = 5;
+int b = a;      // copie
+b = 99;
+// a vaut toujours 5
+
+int[] t = { 1, 2, 3 };
+int[] u = t;    // même tableau
+u[0] = 99;
+// t[0] vaut maintenant 99 aussi
+</script></pre>
+
+  <h3>Types courants</h3>
+  <table>
+    <thead><tr><th>Type</th><th>Contenu</th><th>Littéral</th></tr></thead>
+    <tbody>
+      <tr><td><code>int</code> / <code>long</code></td><td>entier 32 / 64 bits</td><td><code>42</code>, <code>9_000_000_000L</code></td></tr>
+      <tr><td><code>double</code> / <code>decimal</code></td><td>flottant / décimal exact (monnaie)</td><td><code>9.99</code>, <code>9.99m</code></td></tr>
+      <tr><td><code>bool</code></td><td><code>true</code> / <code>false</code></td><td><code>true</code></td></tr>
+      <tr><td><code>char</code> / <code>string</code></td><td>un caractère / du texte</td><td><code>'A'</code>, <code>"texte"</code></td></tr>
+      <tr><td><code>int?</code></td><td>entier <em>ou</em> <code>null</code> (nullable)</td><td><code>null</code></td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="operateurs">Opérateurs</h2>
+  <pre class="code"><script type="text/plain">
+// Arithmétique
+7 / 2        // 3   (division entière !)
+7 / 2.0      // 3.5
+7 % 2        // 1   (reste / modulo)
+
+// Comparaison → bool
+a == b   a != b   a < b   a >= b
+
+// Logique
+(x > 0) && (x < 10)     // ET  (court-circuit)
+estAdmin || estAuteur   // OU
+!estActif               // NON
+
+// Opérateurs pratiques
+string? s = null;
+string nom = s ?? "inconnu";   // ?? : valeur par défaut si null
+int? len = s?.Length;          // ?. : n'appelle .Length que si s != null
+int note = x > 10 ? 1 : 0;     // ternaire : condition ? siVrai : siFaux
+</script></pre>
+
+  <h2 id="conditions">Conditions</h2>
+  <pre class="code"><script type="text/plain">
+int temp = 18;
+
+if (temp < 0)
+    Console.WriteLine("gel");
+else if (temp < 20)
+    Console.WriteLine("frais");
+else
+    Console.WriteLine("chaud");
+
+// switch classique
+switch (jour)
+{
+    case "sam":
+    case "dim":
+        Console.WriteLine("week-end");
+        break;
+    default:
+        Console.WriteLine("semaine");
+        break;
+}
+
+// switch expression (concis, renvoie une valeur)
+string categorie = temp switch
+{
+    < 0        => "gel",
+    >= 0 and < 20 => "frais",
+    _          => "chaud"        // _ = tous les autres cas
+};
+</script></pre>
+
+  <h2 id="boucles">Boucles</h2>
+  <table>
+    <thead><tr><th>Boucle</th><th>Quand</th></tr></thead>
+    <tbody>
+      <tr><td><code>for</code></td><td>nombre de tours connu, besoin d'un compteur</td></tr>
+      <tr><td><code>foreach</code></td><td>parcourir chaque élément d'une collection</td></tr>
+      <tr><td><code>while</code></td><td>répéter tant qu'une condition tient (0 tour possible)</td></tr>
+      <tr><td><code>do…while</code></td><td>comme <code>while</code>, mais au moins 1 tour</td></tr>
+    </tbody>
+  </table>
+  <pre class="code"><script type="text/plain">
+for (int i = 0; i < 5; i++)
+    Console.WriteLine(i);          // 0 1 2 3 4
+
+string[] noms = { "Ada", "Alan", "Grace" };
+foreach (string n in noms)
+    Console.WriteLine(n);
+
+int reste = 100;
+while (reste > 0)
+    reste -= 30;                   // 100 → 70 → 40 → 10 → -20, stop
+
+do
+{
+    Console.Write("Tape 'ok' : ");
+} while (Console.ReadLine() != "ok");
+
+// Contrôle de flux
+foreach (int n in Enumerable.Range(1, 20))
+{
+    if (n % 2 == 0) continue;      // passe au tour suivant
+    if (n > 9) break;              // sort de la boucle
+    Console.WriteLine(n);          // 1 3 5 7 9
+}
+</script></pre>
+
+  <h2 id="tableaux">Tableaux & collections</h2>
+  <pre class="code"><script type="text/plain">
+// Tableau : taille fixe
+int[] scores = new int[3];       // { 0, 0, 0 }
+scores[0] = 10;
+Console.WriteLine(scores.Length); // 3
+
+// List<T> : taille dynamique (System.Collections.Generic)
+var courses = new List<string> { "pain", "lait" };
+courses.Add("café");
+courses.Remove("lait");
+Console.WriteLine(courses.Count); // 2
+
+// Dictionary<clé, valeur>
+var ages = new Dictionary<string, int> { ["Ada"] = 36 };
+ages["Alan"] = 41;
+if (ages.TryGetValue("Ada", out int age))
+    Console.WriteLine(age);
+
+// LINQ : requêtes sur collections (System.Linq)
+var longs = courses.Where(c => c.Length > 3)
+                   .OrderBy(c => c)
+                   .ToList();
+</script></pre>
+
+  <h2 id="methodes">Méthodes</h2>
+  <p>Une méthode nomme un bloc de code paramétrable. Signature = <em>type de retour + nom + paramètres</em>.</p>
+  <pre class="code"><script type="text/plain">
+// Déclaration
+int Addition(int a, int b)
+{
+    return a + b;
+}
+
+// Appel
+int r = Addition(3, 4);           // 7
+
+// Corps-expression (une seule expression)
+double Aire(double rayon) => Math.PI * rayon * rayon;
+
+// void = ne retourne rien
+void Log(string msg) => Console.WriteLine($"[LOG] {msg}");
+
+// Paramètre optionnel + argument nommé
+void Servir(string plat, int parts = 1) { }
+Servir("soupe");
+Servir("soupe", parts: 3);
+
+// Surcharge : même nom, signatures différentes
+int Max(int a, int b) => a > b ? a : b;
+double Max(double a, double b) => a > b ? a : b;
+
+// out : renvoyer plusieurs valeurs
+bool TryDiviser(int a, int b, out int q)
+{
+    q = 0;
+    if (b == 0) return false;
+    q = a / b;
+    return true;
+}
+
+// params : nombre variable d'arguments
+int Somme(params int[] valeurs)
+{
+    int total = 0;
+    foreach (int v in valeurs) total += v;
+    return total;
+}
+Somme(1, 2, 3, 4);               // 10
+</script></pre>
+  <div class="callout tip">
+    <span class="label">Bonne pratique</span>
+    <p>Une méthode = une responsabilité, un nom qui dit ce qu'elle fait. Si tu écris « et » dans le nom (<code>ValiderEtEnregistrer</code>), c'est souvent deux méthodes.</p>
+  </div>
+
+  <h2 id="generiques">Génériques</h2>
+  <p>Un générique est un type ou une méthode <strong>paramétré par un type</strong>, noté <code>&lt;T&gt;</code>. On écrit le code une seule fois et il fonctionne pour n'importe quel type, sans perdre la vérification à la compilation et sans passer par <code>object</code>.</p>
+
+  <h3>Méthode générique</h3>
+  <pre class="code"><script type="text/plain">
+// T est un paramètre de type, choisi automatiquement à l'appel
+T Premier<T>(T[] elements) => elements[0];
+
+int n     = Premier(new[] { 3, 5, 8 });       // T = int
+string s  = Premier(new[] { "a", "b" });      // T = string
+
+// échanger deux valeurs, quel que soit leur type
+void Echanger<T>(ref T x, ref T y)
+{
+    T tmp = x;
+    x = y;
+    y = tmp;
+}
+
+int p = 1, q = 2;
+Echanger(ref p, ref q);        // p = 2, q = 1
+</script></pre>
+
+  <h3>Contraintes (<code>where</code>)</h3>
+  <p>Pour appeler des opérations sur <code>T</code>, il faut restreindre ce qu'il peut être.</p>
+  <pre class="code"><script type="text/plain">
+// T doit implémenter IComparable<T> → on peut appeler CompareTo
+T Max<T>(T a, T b) where T : IComparable<T>
+    => a.CompareTo(b) >= 0 ? a : b;
+
+Console.WriteLine(Max(3, 9));           // 9
+Console.WriteLine(Max("abc", "abd"));   // abd
+</script></pre>
+  <table>
+    <thead><tr><th>Contrainte</th><th>Signifie</th></tr></thead>
+    <tbody>
+      <tr><td><code>where T : class</code></td><td>T est un type référence</td></tr>
+      <tr><td><code>where T : struct</code></td><td>T est un type valeur</td></tr>
+      <tr><td><code>where T : new()</code></td><td>T a un constructeur sans paramètre</td></tr>
+      <tr><td><code>where T : IComparable&lt;T&gt;</code></td><td>T implémente cette interface</td></tr>
+      <tr><td><code>where T : Forme</code></td><td>T est <code>Forme</code> ou en hérite</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Pourquoi c'est partout</h3>
+  <p>Les collections de la bibliothèque sont génériques : <code>List&lt;T&gt;</code>, <code>Dictionary&lt;TCle, TValeur&gt;</code>, <code>Nullable&lt;T&gt;</code> (qu'on écrit <code>T?</code>). Sans génériques, il faudrait une <code>ListeInt</code>, une <code>ListeString</code>… ou tout stocker en <code>object</code> avec des conversions risquées.</p>
+  <pre class="code"><script type="text/plain">
+var scores = new List<int>();     // une liste D'ENTIERS, garantie par le compilateur
+scores.Add(10);
+// scores.Add("oups");            // refusé à la compilation
+int premier = scores[0];          // aucune conversion, aucun risque
+</script></pre>
+
+  <h2 id="portee">Portée des variables</h2>
+  <pre class="code"><script type="text/plain">
+int total = 0;                    // visible dans toute la méthode
+
+for (int i = 0; i < 3; i++)
+{
+    int carre = i * i;            // visible seulement dans la boucle
+    total += carre;
+}
+// Console.WriteLine(i);          // erreur : i n'existe plus ici
+// Console.WriteLine(carre);      // erreur : carre non plus
+Console.WriteLine(total);         // OK
+</script></pre>
+  <p>Règle : une variable existe entre l'accolade <code>{</code> qui la déclare et l'accolade <code>}</code> correspondante. Déclare au plus près de l'usage.</p>
+
+  <h2 id="erreurs">Gestion des erreurs</h2>
+  <pre class="code"><script type="text/plain">
+try
+{
+    int[] t = { 1, 2 };
+    Console.WriteLine(t[5]);              // lève IndexOutOfRangeException
+}
+catch (IndexOutOfRangeException ex)
+{
+    Console.WriteLine($"Hors limites : {ex.Message}");
+}
+catch (Exception ex)                      // filet de sécurité générique
+{
+    Console.WriteLine($"Autre erreur : {ex.Message}");
+}
+finally
+{
+    Console.WriteLine("Toujours exécuté (nettoyage)");
+}
+
+// Lever soi-même une exception
+int Retirer(int montant)
+{
+    if (montant <= 0)
+        throw new ArgumentException("Le montant doit être positif");
+    return montant;
+}
+</script></pre>
+  <div class="callout warn">
+    <span class="label">À éviter</span>
+    <p>Ne pas « avaler » une exception avec un <code>catch</code> vide : l'erreur disparaît sans trace. Attrape seulement ce que tu sais traiter.</p>
+  </div>
+
+  <h2 id="exemple">Exemple complet — FizzBuzz + stats</h2>
+  <p>Tout ce qui précède, dans un seul programme.</p>
+  <pre class="code"><script type="text/plain">
+int fizz = 0, buzz = 0, autres = 0;
+
+for (int n = 1; n <= 30; n++)
+{
+    string sortie = (n % 3, n % 5) switch
+    {
+        (0, 0) => "FizzBuzz",
+        (0, _) => "Fizz",
+        (_, 0) => "Buzz",
+        _      => n.ToString()
+    };
+
+    if (sortie.Contains("Fizz")) fizz++;
+    else if (sortie.Contains("Buzz")) buzz++;
+    else autres++;
+
+    Console.WriteLine(sortie);
+}
+
+Console.WriteLine($"Fizz : {fizz} | Buzz : {buzz} | Nombres : {autres}");
+
+static int CompterMultiples(int limite, int diviseur)
+{
+    int c = 0;
+    for (int i = 1; i <= limite; i++)
+        if (i % diviseur == 0) c++;
+    return c;
+}
+
+Console.WriteLine($"Multiples de 3 ≤ 30 : {CompterMultiples(30, 3)}");
+</script></pre>
+
+  <footer class="pg">
+    <span><a href="index.html">← Accueil</a></span>
+    <span><a href="oriente-objet.html">Suivant : Orienté objet →</a></span>
+  </footer>
+</main>
+</div>
+
+<script src="../assets/site.config.js"></script>
+<script src="../assets/highlighters/csharp.js"></script>
+<script src="../assets/main.js"></script>
+<script src="../assets/nav.js"></script>
+</body>
+</html>

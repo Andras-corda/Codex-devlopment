@@ -1,0 +1,25 @@
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Éditeurs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Secrets / config locale (ex. les exemples PDO de php/backend.html)
+.env
+.env.*
+!.env.example
+
+# Si un jour composer/npm sont ajoutés
+vendor/
+node_modules/
+npm-debug.log*
+
+# Logs et fichiers temporaires
+*.log
+__pycache__/

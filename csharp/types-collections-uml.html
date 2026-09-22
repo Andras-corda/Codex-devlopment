@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C# pas à pas — Types, collections & UML</title>
+<meta name="description" content="Référence C# : les types de données, les collections de la bibliothèque, et comment rédiger un diagramme de classes UML.">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-lang="csharp" data-page="types">
+
+<div class="topbar" id="topbar"></div>
+
+<div class="wrap">
+<aside class="side" id="side"></aside>
+
+<main>
+  <h1>4 · Types, collections &amp; UML</h1>
+  <p class="lead">Une page de référence : tout le vocabulaire des <strong>types de données</strong>, les <strong>collections</strong> de la bibliothèque standard, et la méthode pour <strong>rédiger un diagramme de classes</strong>.</p>
+
+  <h2 id="systeme" data-group="Types de données">Le système de types</h2>
+  <p>Chaque type C# appartient à l'une de deux familles. La différence gouverne la copie, l'égalité et le passage en paramètre (détaillé sur la page <a href="procedural.html#types">Procédural</a>).</p>
+  <figure>
+    <svg viewBox="0 0 600 250" role="img" aria-label="Familles de types C#">
+      <rect class="svg-bg" x="0" y="0" width="600" height="250" rx="6"/>
+      <rect class="uml-box" x="230" y="14" width="140" height="28"/>
+      <text class="uml-name" x="300" y="32" text-anchor="middle">Type C#</text>
+      <path class="svg-line" d="M300 42 V60 M150 60 H450 M150 60 V78 M450 60 V78"/>
+      <rect class="uml-box-a" x="40" y="78" width="230" height="26"/>
+      <text class="uml-name" x="155" y="96" text-anchor="middle">Type valeur — copié</text>
+      <rect class="uml-box-g" x="330" y="78" width="230" height="26"/>
+      <text class="uml-name" x="445" y="96" text-anchor="middle">Type référence — partagé</text>
+      <text class="uml-m" x="50" y="128">int, long, double, decimal</text>
+      <text class="uml-m" x="50" y="148">bool, char</text>
+      <text class="uml-m" x="50" y="168">struct  (ex. DateTime, Guid)</text>
+      <text class="uml-m" x="50" y="188">enum</text>
+      <text class="uml-m" x="50" y="208">(int, string) — tuple / ValueTuple</text>
+      <text class="uml-m" x="340" y="128">string</text>
+      <text class="uml-m" x="340" y="148">class, record</text>
+      <text class="uml-m" x="340" y="168">tableaux : int[], string[]</text>
+      <text class="uml-m" x="340" y="188">object, dynamic</text>
+      <text class="uml-m" x="340" y="208">delegate, Func&lt;&gt;, Action&lt;&gt;</text>
+    </svg>
+    <figcaption>Un type valeur <em>est</em> sa donnée ; un type référence <em>pointe</em> vers sa donnée.</figcaption>
+  </figure>
+
+  <h2 id="entiers" data-group="Types de données">Entiers</h2>
+  <table>
+    <thead><tr><th>Type</th><th>Taille</th><th>Plage</th><th>Usage</th></tr></thead>
+    <tbody>
+      <tr><td><code>byte</code></td><td>8 bits</td><td>0 … 255</td><td>octets, données binaires, couleurs</td></tr>
+      <tr><td><code>sbyte</code></td><td>8 bits</td><td>−128 … 127</td><td>rare</td></tr>
+      <tr><td><code>short</code></td><td>16 bits</td><td>−32 768 … 32 767</td><td>mémoire serrée</td></tr>
+      <tr><td><code>int</code></td><td>32 bits</td><td>≈ ±2,1 milliards</td><td><strong>le défaut</strong> pour un entier</td></tr>
+      <tr><td><code>uint</code></td><td>32 bits</td><td>0 … ≈ 4,2 milliards</td><td>interop, drapeaux de bits</td></tr>
+      <tr><td><code>long</code></td><td>64 bits</td><td>≈ ±9,2 × 10¹⁸</td><td>identifiants, horodatage, gros compteurs</td></tr>
+      <tr><td><code>ulong</code></td><td>64 bits</td><td>0 … ≈ 1,8 × 10¹⁹</td><td>interop bas niveau</td></tr>
+      <tr><td><code>nint</code> / <code>nuint</code></td><td>natif (32/64)</td><td>selon la plateforme</td><td>pointeurs, interop</td></tr>
+    </tbody>
+  </table>
+  <pre class="code"><script type="text/plain">
+int population = 67_400_000;      // séparateur _ pour la lisibilité
+long distance = 9_460_730_472_580_800L;   // suffixe L
+byte octet = 0b_1010_0101;        // littéral binaire
+int couleur = 0xFF8800;           // littéral hexadécimal
+
+int.MaxValue        // 2147483647
+int.MinValue        // -2147483648
+
+// Débordement : silencieux par défaut, exception avec 'checked'
+int trop = checked(int.MaxValue + 1);   // OverflowException
+</script></pre>
+
+  <h2 id="reels" data-group="Types de données">Nombres réels</h2>
+  <table>
+    <thead><tr><th>Type</th><th>Précision</th><th>Pour…</th></tr></thead>
+    <tbody>
+      <tr><td><code>float</code></td><td>~7 chiffres (32 bits)</td><td>graphismes, jeux, capteurs — suffixe <code>f</code></td></tr>
+      <tr><td><code>double</code></td><td>~15-17 chiffres (64 bits)</td><td><strong>le défaut</strong> pour un calcul scientifique</td></tr>
+      <tr><td><code>decimal</code></td><td>28-29 chiffres, base 10 (128 bits)</td><td><strong>argent</strong> et finance — suffixe <code>m</code></td></tr>
+    </tbody>
+  </table>
+  <div class="callout warn">
+    <span class="label">float / double sont approximatifs</span>
+    <p><code>0.1 + 0.2 == 0.3</code> renvoie <code>false</code> en <code>double</code> (représentation binaire). Pour de l'argent, toujours <code>decimal</code> : <code>0.1m + 0.2m == 0.3m</code> est <code>true</code>.</p>
+  </div>
+  <pre class="code"><script type="text/plain">
+double vitesse = 3.0e8;      // notation scientifique : 300 000 000
+float ratio = 0.5f;
+decimal prix = 19.99m;
+
+Math.Round(2.555, 2);        // 2.56
+double.IsNaN(0.0 / 0.0);     // true
+double.PositiveInfinity;     // 1.0 / 0.0
+</script></pre>
+
+  <h2 id="texte" data-group="Types de données"><code>bool</code>, <code>char</code>, <code>string</code></h2>
+  <pre class="code"><script type="text/plain">
+bool actif = true;
+char lettre = 'A';           // UN caractère UTF-16, guillemets simples
+char.IsDigit('7');           // true
+
+string nom = "Ada";          // texte, guillemets doubles — TYPE RÉFÉRENCE mais immuable
+string chemin = @"C:\dev\app";               // verbatim : pas d'échappement
+string phrase = $"Bonjour {nom}, {2 + 3} !"; // interpolation
+string bloc = """
+    texte
+    multi-ligne (raw string, C# 11)
+    """;
+
+// La string est IMMUABLE : chaque opération crée une NOUVELLE chaîne
+string s = "abc";
+s = s.ToUpper();             // "ABC" (nouvelle instance)
+
+nom.Length;                  // 3
+nom.Contains("d");           // true
+nom.Substring(0, 2);         // "Ad"
+"a,b,c".Split(',');          // ["a","b","c"]
+string.Join("-", 1, 2, 3);   // "1-2-3"
+string.IsNullOrWhiteSpace("  ");   // true
+"  x  ".Trim();              // "x"
+</script></pre>
+  <div class="callout tip">
+    <span class="label">Concaténation en boucle → StringBuilder</span>
+    <p>Assembler des milliers de fragments avec <code>+</code> crée autant de chaînes intermédiaires. Utiliser <code>System.Text.StringBuilder</code> : <code>var sb = new StringBuilder(); sb.Append(x); … sb.ToString();</code>.</p>
+  </div>
+
+  <h2 id="conversions" data-group="Types de données">Conversions entre types</h2>
+  <table>
+    <thead><tr><th>Méthode</th><th>Quand</th><th>En cas d'échec</th></tr></thead>
+    <tbody>
+      <tr><td>implicite : <code>double d = monInt;</code></td><td>aucune perte possible (petit → grand)</td><td>—</td></tr>
+      <tr><td>cast explicite : <code>int i = (int)monDouble;</code></td><td>perte possible (tronque)</td><td>silencieux / <code>OverflowException</code> en <code>checked</code></td></tr>
+      <tr><td><code>int.Parse("42")</code></td><td>texte → nombre, entrée sûre</td><td><code>FormatException</code></td></tr>
+      <tr><td><code>int.TryParse(s, out n)</code></td><td>texte → nombre, entrée douteuse</td><td>renvoie <code>false</code></td></tr>
+      <tr><td><code>Convert.ToInt32(x)</code></td><td>depuis n'importe quel type, gère <code>null</code></td><td>exceptions variées</td></tr>
+      <tr><td><code>x.ToString()</code></td><td>n'importe quoi → texte</td><td>—</td></tr>
+    </tbody>
+  </table>
+  <pre class="code"><script type="text/plain">
+double pi = 3.99;
+int tronque = (int)pi;              // 3  (ne fait PAS d'arrondi)
+
+if (int.TryParse(Console.ReadLine(), out int age))
+    Console.WriteLine($"Dans 10 ans : {age + 10}");
+else
+    Console.WriteLine("Ce n'est pas un nombre.");
+
+// Conversion entre types objets : 'as' et 'is'
+object o = "texte";
+string? peutEtre = o as string;    // null si ce n'est pas une string
+if (o is int valeur) { /* utilise valeur */ }
+</script></pre>
+
+  <h2 id="null" data-group="Types de données">Nullable — l'absence de valeur</h2>
+  <h3>Types valeur nullables : <code>int?</code></h3>
+  <pre class="code"><script type="text/plain">
+int? note = null;              // raccourci de Nullable<int>
+note = 15;
+
+if (note.HasValue) Console.WriteLine(note.Value);
+int sur = note ?? 0;           // ?? : valeur de repli si null
+int? doublee = note * 2;       // propagation : null * 2 == null
+</script></pre>
+  <h3>Types référence nullables : <code>string?</code> (C# 8)</h3>
+  <p>Avec <code>&lt;Nullable&gt;enable&lt;/Nullable&gt;</code>, le compilateur distingue <code>string</code> (jamais <code>null</code>) de <code>string?</code> (peut l'être) et <strong>avertit</strong> quand on risque un <code>NullReferenceException</code>.</p>
+  <pre class="code"><script type="text/plain">
+string sur = "toujours là";
+string? incertain = ObtenirOuNull();
+
+// Console.WriteLine(incertain.Length);   // ⚠ avertissement : possible null
+Console.WriteLine(incertain?.Length);    // ?. : null au lieu de planter
+Console.WriteLine(incertain?.Length ?? 0);
+Console.WriteLine(incertain!.Length);    // ! : "je garantis que ce n'est pas null"
+</script></pre>
+
+  <h2 id="speciaux" data-group="Types de données">Types spéciaux</h2>
+  <table>
+    <thead><tr><th>Type</th><th>Rôle</th><th>Exemple</th></tr></thead>
+    <tbody>
+      <tr><td><code>enum</code></td><td>ensemble fini de constantes nommées</td><td><code>enum Etat { Actif, Suspendu }</code></td></tr>
+      <tr><td><code>enum</code> <code>[Flags]</code></td><td>combinaison de bits (<code>|</code>, <code>HasFlag</code>)</td><td><code>Droits.Lire | Droits.Ecrire</code></td></tr>
+      <tr><td>tuple <code>(a, b)</code></td><td>regrouper 2-3 valeurs sans créer de type</td><td><code>(string Nom, int Age) p = ("Ada", 36);</code></td></tr>
+      <tr><td><code>DateTime</code> / <code>DateOnly</code> / <code>TimeOnly</code></td><td>instants et durées</td><td><code>DateOnly.FromDateTime(DateTime.Now)</code></td></tr>
+      <tr><td><code>TimeSpan</code></td><td>une durée</td><td><code>TimeSpan.FromMinutes(90)</code></td></tr>
+      <tr><td><code>Guid</code></td><td>identifiant unique 128 bits</td><td><code>Guid.NewGuid()</code></td></tr>
+      <tr><td><code>object</code></td><td>racine de tous les types</td><td>à éviter sauf nécessité</td></tr>
+      <tr><td><code>dynamic</code></td><td>typage repoussé à l'exécution</td><td>interop COM, JSON dynamique</td></tr>
+    </tbody>
+  </table>
+  <pre class="code"><script type="text/plain">
+[Flags]
+enum Droits { Aucun = 0, Lire = 1, Ecrire = 2, Executer = 4 }
+
+Droits d = Droits.Lire | Droits.Ecrire;
+Console.WriteLine(d.HasFlag(Droits.Ecrire));   // true
+
+// tuple : retour multiple sans classe
+(int min, int max) Etendue(int[] xs) => (xs.Min(), xs.Max());
+var (bas, haut) = Etendue(new[] { 4, 9, 1 }); // bas=1, haut=9
+</script></pre>
+
+  <h2 id="litteraux" data-group="Types de données">Littéraux &amp; mots-clés de type</h2>
+  <table>
+    <thead><tr><th>Écriture</th><th>Sens</th></tr></thead>
+    <tbody>
+      <tr><td><code>42</code>, <code>3.14</code>, <code>3.14f</code>, <code>3.14m</code>, <code>42L</code>, <code>42u</code></td><td>littéraux typés par leur suffixe</td></tr>
+      <tr><td><code>1_000_000</code></td><td>séparateur de chiffres (ignoré)</td></tr>
+      <tr><td><code>0xFF</code>, <code>0b1010</code></td><td>hexadécimal, binaire</td></tr>
+      <tr><td><code>'A'</code>, <code>"txt"</code>, <code>@"c:\x"</code>, <code>$"..{x}.."</code></td><td>char, string, verbatim, interpolée</td></tr>
+      <tr><td><code>var</code></td><td>type déduit par le compilateur (statique quand même)</td></tr>
+      <tr><td><code>default(T)</code> / <code>default</code></td><td>valeur par défaut : <code>0</code>, <code>false</code>, <code>null</code>…</td></tr>
+      <tr><td><code>typeof(int)</code></td><td>l'objet <code>Type</code> décrivant <code>int</code></td></tr>
+      <tr><td><code>nameof(variable)</code></td><td>le nom en texte : <code>"variable"</code> (refactor-safe)</td></tr>
+      <tr><td><code>x is T</code>, <code>x as T</code></td><td>test / conversion de type sûre</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="panorama" data-group="Collections">Collections : panorama</h2>
+  <p>Toutes dans <code>System.Collections.Generic</code> (importé par défaut) sauf mention. Le suffixe <code>&lt;T&gt;</code> fixe le type des éléments, vérifié à la compilation.</p>
+  <table>
+    <thead><tr><th>Type</th><th>Structure</th><th>Recherche</th><th>Ordre</th></tr></thead>
+    <tbody>
+      <tr><td><code>T[]</code></td><td>tableau, taille fixe</td><td>par index O(1)</td><td>d'insertion</td></tr>
+      <tr><td><code>List&lt;T&gt;</code></td><td>tableau dynamique</td><td>index O(1), valeur O(n)</td><td>d'insertion</td></tr>
+      <tr><td><code>Dictionary&lt;K,V&gt;</code></td><td>table de hachage</td><td>par clé O(1)</td><td>non garanti</td></tr>
+      <tr><td><code>HashSet&lt;T&gt;</code></td><td>table de hachage</td><td>présence O(1)</td><td>non garanti</td></tr>
+      <tr><td><code>SortedDictionary&lt;K,V&gt;</code></td><td>arbre équilibré</td><td>par clé O(log n)</td><td>trié par clé</td></tr>
+      <tr><td><code>Queue&lt;T&gt;</code></td><td>file FIFO</td><td>bouts seulement</td><td>d'arrivée</td></tr>
+      <tr><td><code>Stack&lt;T&gt;</code></td><td>pile LIFO</td><td>sommet seulement</td><td>inverse</td></tr>
+      <tr><td><code>LinkedList&lt;T&gt;</code></td><td>liste chaînée</td><td>O(n)</td><td>d'insertion</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="array" data-group="Collections">Tableaux</h2>
+  <pre class="code"><script type="text/plain">
+int[] a = new int[3];              // { 0, 0, 0 } — taille FIXE
+int[] b = { 10, 20, 30 };          // littéral
+int[] c = new[] { 1, 2, 3 };
+
+b[1] = 99;
+b.Length;                          // 3
+Array.Sort(b);
+Array.IndexOf(b, 99);
+
+// Tableau multidimensionnel (rectangulaire)
+int[,] grille = new int[2, 3];
+grille[0, 2] = 5;
+
+// Tableau en escalier (jagged) : un tableau de tableaux
+int[][] lignes = { new[] { 1, 2 }, new[] { 3, 4, 5 } };
+lignes[1][2];                      // 5
+</script></pre>
+
+  <h2 id="list" data-group="Collections"><code>List&lt;T&gt;</code></h2>
+  <pre class="code"><script type="text/plain">
+var l = new List<string> { "a", "b" };
+
+l.Add("c");
+l.AddRange(new[] { "d", "e" });
+l.Insert(0, "z");
+l.Remove("a");            // par valeur
+l.RemoveAt(0);            // par index
+l.RemoveAll(s => s == "d");
+l.Contains("b");          // O(n)
+l.IndexOf("c");
+l.Count;
+l[2];                     // accès indexé
+l.Sort();
+l.Reverse();
+l.ForEach(Console.WriteLine);
+var copie = l.ToArray();
+
+foreach (var x in l) { }
+</script></pre>
+
+  <h2 id="dict" data-group="Collections"><code>Dictionary&lt;TCle, TValeur&gt;</code></h2>
+  <pre class="code"><script type="text/plain">
+var d = new Dictionary<string, int>
+{
+    ["ada"] = 36,
+    ["alan"] = 41,
+};
+
+d["grace"] = 45;                 // ajoute ou remplace
+d["ada"] += 1;                   // 37
+d.Remove("alan");
+
+d.ContainsKey("ada");            // true
+d.TryGetValue("bob", out int v); // false, v = 0
+d.GetValueOrDefault("bob", -1);  // -1
+
+foreach (var (nom, age) in d)
+    Console.WriteLine($"{nom} → {age}");
+
+d.Keys;      // collection des clés
+d.Values;    // collection des valeurs
+d.Count;
+</script></pre>
+  <div class="callout warn">
+    <span class="label">Clés</span>
+    <p>Une clé doit être <strong>unique</strong> et posséder une égalité stable. <code>string</code>, les nombres et les <code>enum</code> conviennent ; une <code>class</code> mutable est un mauvais choix (redéfinir <code>Equals</code>/<code>GetHashCode</code>, ou utiliser un <code>record</code>).</p>
+  </div>
+
+  <h2 id="autres" data-group="Collections"><code>HashSet</code>, <code>Queue</code>, <code>Stack</code>…</h2>
+  <pre class="code"><script type="text/plain">
+// HashSet<T> : ensemble sans doublon, appartenance ultra-rapide
+var vus = new HashSet<int>();
+vus.Add(1); vus.Add(1);          // le 2e Add renvoie false
+vus.Contains(1);                 // true  O(1)
+vus.UnionWith(new[] { 2, 3 });
+vus.IntersectWith(new[] { 1, 2 });
+
+// Queue<T> : premier entré, premier sorti
+var file = new Queue<string>();
+file.Enqueue("client1");
+file.Enqueue("client2");
+file.Dequeue();                  // "client1"
+file.Peek();                     // "client2" (sans retirer)
+
+// Stack<T> : dernier entré, premier sorti
+var pile = new Stack<int>();
+pile.Push(1); pile.Push(2);
+pile.Pop();                      // 2
+</script></pre>
+
+  <h2 id="interfaces-col" data-group="Collections">Interfaces de collection</h2>
+  <p>On expose souvent une collection par une <em>interface</em> plutôt que par <code>List&lt;T&gt;</code> : le code appelant ne dépend que de ce dont il a besoin.</p>
+  <figure>
+    <svg viewBox="0 0 560 250" role="img" aria-label="Hiérarchie des interfaces de collection">
+      <defs><marker id="ci-tri" markerWidth="18" markerHeight="16" refX="16" refY="8" orient="auto">
+        <path d="M2 2 L16 8 L2 14 Z" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
+      <rect class="svg-bg" x="0" y="0" width="560" height="250" rx="6"/>
+      <rect class="uml-box-a" x="180" y="14" width="200" height="40"/>
+      <rect class="uml-box-a" x="180" y="54" width="200" height="20"/>
+      <text class="uml-name" x="280" y="32" text-anchor="middle">IEnumerable&lt;T&gt;</text>
+      <text class="uml-m" x="192" y="68">parcourir : foreach</text>
+
+      <rect class="uml-box" x="180" y="104" width="200" height="22"/>
+      <rect class="uml-box" x="180" y="126" width="200" height="20"/>
+      <text class="uml-name" x="280" y="120" text-anchor="middle">ICollection&lt;T&gt;</text>
+      <text class="uml-m" x="192" y="140">+ Count, Add, Remove, Contains</text>
+
+      <rect class="uml-box" x="20" y="196" width="230" height="22"/>
+      <rect class="uml-box" x="20" y="218" width="230" height="20"/>
+      <text class="uml-name" x="135" y="212" text-anchor="middle">IList&lt;T&gt;</text>
+      <text class="uml-m" x="32" y="232">+ accès par index  [i]</text>
+
+      <rect class="uml-box" x="310" y="196" width="240" height="22"/>
+      <rect class="uml-box" x="310" y="218" width="240" height="20"/>
+      <text class="uml-name" x="430" y="212" text-anchor="middle">IDictionary&lt;K,V&gt;</text>
+      <text class="uml-m" x="322" y="232">+ accès par clé  [k]</text>
+
+      <path class="uml-rel" style="marker-end:url(#ci-tri)" d="M280 104 V78"/>
+      <path class="uml-rel" style="marker-end:url(#ci-tri)" d="M135 196 L250 150"/>
+      <path class="uml-rel" style="marker-end:url(#ci-tri)" d="M430 196 L310 150"/>
+    </svg>
+    <figcaption><code>List&lt;T&gt;</code> implémente <code>IList&lt;T&gt;</code> ; <code>Dictionary&lt;K,V&gt;</code> implémente <code>IDictionary&lt;K,V&gt;</code>. Les deux sont des <code>IEnumerable&lt;T&gt;</code>.</figcaption>
+  </figure>
+  <table>
+    <thead><tr><th>Exposer en…</th><th>quand le code appelant doit…</th></tr></thead>
+    <tbody>
+      <tr><td><code>IEnumerable&lt;T&gt;</code></td><td>seulement parcourir (le plus permissif pour vous)</td></tr>
+      <tr><td><code>IReadOnlyList&lt;T&gt;</code></td><td>parcourir + compter + indexer, sans modifier</td></tr>
+      <tr><td><code>ICollection&lt;T&gt;</code> / <code>IList&lt;T&gt;</code></td><td>ajouter / retirer / réordonner</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="linq" data-group="Collections">LINQ en un coup d'œil</h2>
+  <p>LINQ (<code>System.Linq</code>) ajoute des opérations de requête sur toute <code>IEnumerable&lt;T&gt;</code>. Elles se chaînent et sont <em>paresseuses</em> (rien ne s'exécute avant l'énumération / le <code>ToList()</code>).</p>
+  <pre class="code"><script type="text/plain">
+var employes = new List<Employe> { /* … */ };
+
+var resume = employes
+    .Where(e => e.Actif)                       // filtrer
+    .OrderByDescending(e => e.Salaire)         // trier
+    .Select(e => new { e.Nom, e.Salaire })     // projeter
+    .Take(5)                                   // limiter
+    .ToList();                                 // matérialiser
+
+employes.Any(e => e.Salaire > 5000);          // au moins un ?
+employes.All(e => e.Actif);                   // tous ?
+employes.Count(e => e.Actif);
+employes.Sum(e => e.Salaire);
+employes.Average(e => e.Salaire);
+employes.FirstOrDefault(e => e.Nom == "Ada"); // null si absent
+employes.GroupBy(e => e.Service)
+        .Select(g => new { Service = g.Key, Effectif = g.Count() });
+employes.ToDictionary(e => e.Id);             // → Dictionary<Id, Employe>
+</script></pre>
+
+  <h2 id="choisir" data-group="Collections">Quelle collection choisir</h2>
+  <table>
+    <thead><tr><th>Besoin</th><th>Collection</th></tr></thead>
+    <tbody>
+      <tr><td>liste qui grandit, parcours et accès par position</td><td><code>List&lt;T&gt;</code></td></tr>
+      <tr><td>taille connue et fixe, performance maximale</td><td><code>T[]</code></td></tr>
+      <tr><td>retrouver par identifiant / clé</td><td><code>Dictionary&lt;K,V&gt;</code></td></tr>
+      <tr><td>éliminer les doublons, tester l'appartenance</td><td><code>HashSet&lt;T&gt;</code></td></tr>
+      <tr><td>toujours trié par clé</td><td><code>SortedDictionary&lt;K,V&gt;</code></td></tr>
+      <tr><td>file d'attente / traitement dans l'ordre</td><td><code>Queue&lt;T&gt;</code></td></tr>
+      <tr><td>annuler / historique / parcours en profondeur</td><td><code>Stack&lt;T&gt;</code></td></tr>
+      <tr><td>exposer sans permettre la modification</td><td><code>IReadOnlyList&lt;T&gt;</code>, <code>IReadOnlyDictionary&lt;,&gt;</code></td></tr>
+      <tr><td>partage entre threads sans verrou</td><td><code>ConcurrentDictionary&lt;,&gt;</code>, <code>ImmutableList&lt;T&gt;</code></td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="uml-classe" data-group="Rédiger de l'UML">Rédiger de l'UML — la boîte de classe</h2>
+  <p>Un diagramme de classes communique la <strong>structure</strong> d'un modèle : les types, leurs membres visibles, et surtout leurs <strong>relations</strong>. On y met ce qui aide à comprendre, pas chaque détail du code.</p>
+  <figure>
+    <svg viewBox="0 0 560 220" role="img" aria-label="Anatomie d'une classe UML">
+      <rect class="svg-bg" x="0" y="0" width="560" height="220" rx="6"/>
+      <rect class="uml-box" x="30" y="20" width="290" height="26"/>
+      <rect class="uml-box" x="30" y="46" width="290" height="74"/>
+      <rect class="uml-box" x="30" y="120" width="290" height="78"/>
+      <text class="uml-abual" x="175" y="38" text-anchor="middle">CompteBancaire</text>
+      <text class="uml-m" x="40" y="66">- solde : decimal</text>
+      <text class="uml-m" x="40" y="84">+ Titulaire : string</text>
+      <text class="uml-m" x="40" y="102"># decouvertAutorise : decimal = 0</text>
+      <text class="uml-m" x="40" y="140">+ Deposer(montant : decimal) : void</text>
+      <text class="uml-m" x="40" y="158">+ Retirer(montant : decimal) : bool</text>
+      <text class="uml-m" x="40" y="176" style="text-decoration:underline">+ TauxLivret() : decimal</text>
+      <text class="uml-legend" x="350" y="35">nom en italique = classe abstraite</text>
+      <text class="uml-legend" x="350" y="61">compartiment 2 : attributs</text>
+      <text class="uml-legend" x="350" y="87">visibilité : + public  - privé</text>
+      <text class="uml-legend" x="350" y="105">   # protégé   ~ interne</text>
+      <text class="uml-legend" x="350" y="131">compartiment 3 : opérations</text>
+      <text class="uml-legend" x="350" y="157">nom(param : type) : retour</text>
+      <text class="uml-legend" x="350" y="183">souligné = membre statique</text>
+    </svg>
+    <figcaption>Format d'un attribut : <code>visibilité nom : type [= défaut]</code>. Format d'une opération : <code>visibilité nom(param : type) : typeRetour</code>.</figcaption>
+  </figure>
+  <ul>
+    <li>N'affichez que les membres <strong>utiles au lecteur</strong> — souvent la partie <code>public</code> et les champs qui portent une relation.</li>
+    <li>Les <em>propriétés</em> C# se notent comme des attributs (pas besoin de montrer <code>get</code>/<code>set</code>).</li>
+    <li>Un <code>«stereotype»</code> au-dessus du nom précise la nature : <code>«interface»</code>, <code>«enumeration»</code>, <code>«record»</code>, <code>«abstract»</code>.</li>
+  </ul>
+
+  <h2 id="uml-relations" data-group="Rédiger de l'UML">Les relations — et leur traduction en C#</h2>
+  <figure>
+    <svg viewBox="0 0 560 320" role="img" aria-label="Types de relations UML">
+      <defs>
+        <marker id="rk-tri" markerWidth="18" markerHeight="16" refX="16" refY="8" orient="auto">
+          <path d="M2 2 L16 8 L2 14 Z" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5"/></marker>
+        <marker id="rk-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+          <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker>
+        <marker id="rk-fd" markerWidth="24" markerHeight="14" refX="22" refY="7" orient="auto">
+          <path d="M2 7 L11 2 L20 7 L11 12 Z" fill="var(--muted)"/></marker>
+        <marker id="rk-hd" markerWidth="24" markerHeight="14" refX="22" refY="7" orient="auto">
+          <path d="M2 7 L11 2 L20 7 L11 12 Z" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5"/></marker>
+      </defs>
+      <rect class="svg-bg" x="0" y="0" width="560" height="320" rx="6"/>
+
+      <text class="uml-name" x="16" y="28">Généralisation (héritage)</text>
+      <path class="uml-rel" style="marker-end:url(#rk-tri)" d="M20 44 H180"/>
+      <text class="uml-legend" x="200" y="48">class Chien : Animal</text>
+
+      <text class="uml-name" x="16" y="86">Réalisation (implémente)</text>
+      <path class="uml-rel-d" style="marker-end:url(#rk-tri)" d="M20 102 H180"/>
+      <text class="uml-legend" x="200" y="106">class Chien : IAnimal</text>
+
+      <text class="uml-name" x="16" y="144">Composition (possède, vie liée)</text>
+      <path class="uml-rel" style="marker-start:url(#rk-fd)" d="M22 160 H180"/>
+      <text class="uml-legend" x="200" y="164">le champ est créé dans la classe (new)</text>
+
+      <text class="uml-name" x="16" y="202">Agrégation (référence, vie séparée)</text>
+      <path class="uml-rel" style="marker-start:url(#rk-hd)" d="M24 218 H180"/>
+      <text class="uml-legend" x="200" y="222">le champ est reçu par le constructeur</text>
+
+      <text class="uml-name" x="16" y="260">Association (connaît durablement)</text>
+      <path class="uml-rel" style="marker-end:url(#rk-arr)" d="M20 276 H180"/>
+      <text class="uml-legend" x="200" y="280">un champ / une propriété vers l'autre classe</text>
+
+      <text class="uml-name" x="16" y="306">Dépendance (utilise ponctuellement)</text>
+      <path class="uml-rel-d" style="marker-end:url(#rk-arr)" d="M20 316 H180"/>
+      <text class="uml-legend" x="200" y="310">passé en paramètre / variable locale</text>
+    </svg>
+    <figcaption>Composition et agrégation partent d'un losange côté « tout ». La flèche indique le sens de navigation.</figcaption>
+  </figure>
+  <table>
+    <thead><tr><th>Relation</th><th>Notation</th><th>Indice en C#</th><th>Multiplicité typique</th></tr></thead>
+    <tbody>
+      <tr><td>Généralisation</td><td>trait plein, triangle creux</td><td><code>class B : A</code></td><td>—</td></tr>
+      <tr><td>Réalisation</td><td>trait pointillé, triangle creux</td><td><code>class C : IX</code></td><td>—</td></tr>
+      <tr><td>Composition</td><td>losange <strong>plein</strong></td><td>le champ est <code>new</code> dans la classe ; disparaît avec elle</td><td>1 → 1..*</td></tr>
+      <tr><td>Agrégation</td><td>losange <strong>creux</strong></td><td>le champ vient du constructeur ; survit à la classe</td><td>1 → 0..*</td></tr>
+      <tr><td>Association</td><td>trait plein, flèche ouverte</td><td>champ / propriété vers l'autre type</td><td>selon le cas</td></tr>
+      <tr><td>Dépendance</td><td>trait pointillé, flèche ouverte</td><td>type utilisé dans un paramètre ou en local</td><td>—</td></tr>
+    </tbody>
+  </table>
+  <div class="callout info">
+    <span class="label">Composition ou agrégation ?</span>
+    <p>Posez la question : « si je détruis le tout, la partie a-t-elle encore un sens ? » Une <code>Facture</code> et ses <code>LigneFacture</code> → composition. Une <code>Equipe</code> et ses <code>Joueur</code> → agrégation (le joueur existe sans l'équipe). En pratique, beaucoup de gens ne distinguent que composition vs association.</p>
+  </div>
+
+  <h2 id="uml-exemple" data-group="Rédiger de l'UML">Exemple complet — d'un modèle C# au diagramme</h2>
+  <pre class="code"><script type="text/plain">
+abstract class Personne
+{
+    public string Nom { get; init; } = "";
+    public string Email { get; init; } = "";
+}
+
+class Membre : Personne
+{
+    public string NumeroCarte { get; init; } = "";
+    public List<Emprunt> Emprunts { get; } = new();
+}
+
+class Livre
+{
+    public string Titre { get; init; } = "";
+    public string Isbn { get; init; } = "";
+    public bool Disponible { get; set; } = true;
+}
+
+class Emprunt
+{
+    public Livre Livre { get; init; } = null!;
+    public Membre Membre { get; init; } = null!;
+    public DateOnly Debut { get; init; }
+    public DateOnly? Retour { get; set; }
+}
+
+class Bibliotheque
+{
+    private readonly List<Livre> _catalogue = new();     // créés/possédés ici
+    private readonly List<Membre> _membres = new();       // inscrits, vie propre
+
+    public Emprunt Preter(Livre livre, Membre membre) { /* … */ return null!; }
+}
+</script></pre>
+  <figure>
+    <svg viewBox="0 0 640 400" role="img" aria-label="Diagramme de classes du modèle bibliothèque">
+      <defs>
+        <marker id="ex-tri" markerWidth="18" markerHeight="16" refX="16" refY="8" orient="auto">
+          <path d="M2 2 L16 8 L2 14 Z" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5"/></marker>
+        <marker id="ex-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+          <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker>
+        <marker id="ex-fd" markerWidth="24" markerHeight="14" refX="3" refY="7" orient="auto">
+          <path d="M4 7 L13 2 L22 7 L13 12 Z" fill="var(--muted)"/></marker>
+        <marker id="ex-hd" markerWidth="24" markerHeight="14" refX="3" refY="7" orient="auto">
+          <path d="M4 7 L13 2 L22 7 L13 12 Z" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5"/></marker>
+      </defs>
+      <rect class="svg-bg" x="0" y="0" width="640" height="400" rx="6"/>
+
+      <rect class="uml-box-a" x="420" y="16" width="200" height="22"/>
+      <rect class="uml-box-a" x="420" y="38" width="200" height="40"/>
+      <text class="uml-abual" x="520" y="32" text-anchor="middle">Personne</text>
+      <text class="uml-m" x="428" y="55"># Nom : string</text>
+      <text class="uml-m" x="428" y="73"># Email : string</text>
+
+      <rect class="uml-box" x="24" y="16" width="240" height="22"/>
+      <rect class="uml-box" x="24" y="38" width="240" height="40"/>
+      <rect class="uml-box" x="24" y="78" width="240" height="24"/>
+      <text class="uml-name" x="144" y="32" text-anchor="middle">Bibliotheque</text>
+      <text class="uml-m" x="32" y="55">- catalogue : List&lt;Livre&gt;</text>
+      <text class="uml-m" x="32" y="73">- membres : List&lt;Membre&gt;</text>
+      <text class="uml-m" x="32" y="95">+ Preter(l : Livre, m : Membre) : Emprunt</text>
+
+      <rect class="uml-box" x="24" y="230" width="220" height="22"/>
+      <rect class="uml-box" x="24" y="252" width="220" height="58"/>
+      <text class="uml-name" x="134" y="246" text-anchor="middle">Livre</text>
+      <text class="uml-m" x="32" y="269">+ Titre : string</text>
+      <text class="uml-m" x="32" y="287">+ Isbn : string</text>
+      <text class="uml-m" x="32" y="305">+ Disponible : bool</text>
+
+      <rect class="uml-box" x="410" y="210" width="210" height="22"/>
+      <rect class="uml-box" x="410" y="232" width="210" height="40"/>
+      <text class="uml-name" x="515" y="226" text-anchor="middle">Membre</text>
+      <text class="uml-m" x="418" y="249">+ NumeroCarte : string</text>
+      <text class="uml-m" x="418" y="267">+ Emprunts : List&lt;Emprunt&gt;</text>
+
+      <rect class="uml-box" x="220" y="330" width="210" height="22"/>
+      <rect class="uml-box" x="220" y="352" width="210" height="40"/>
+      <text class="uml-name" x="325" y="346" text-anchor="middle">Emprunt</text>
+      <text class="uml-m" x="228" y="369">+ Debut : DateOnly</text>
+      <text class="uml-m" x="228" y="387">+ Retour : DateOnly?</text>
+
+      <!-- Membre --|> Personne -->
+      <path class="uml-rel" style="marker-end:url(#ex-tri)" d="M515 210 L520 78"/>
+      <!-- Bibliotheque <>-- Livre : composition -->
+      <path class="uml-rel" style="marker-start:url(#ex-fd);marker-end:url(#ex-arr)" d="M120 102 L134 230"/>
+      <text class="uml-legend" x="96" y="130">1</text><text class="uml-legend" x="140" y="222">*</text>
+      <!-- Bibliotheque o-- Membre : agrégation -->
+      <path class="uml-rel" style="marker-start:url(#ex-hd);marker-end:url(#ex-arr)" d="M264 60 L410 224"/>
+      <text class="uml-legend" x="276" y="70">1</text><text class="uml-legend" x="388" y="214">*</text>
+      <!-- Emprunt --> Livre -->
+      <path class="uml-rel" style="marker-end:url(#ex-arr)" d="M240 350 L200 310"/>
+      <text class="uml-legend" x="210" y="332">1</text>
+      <!-- Emprunt --> Membre -->
+      <path class="uml-rel" style="marker-end:url(#ex-arr)" d="M420 345 L470 272"/>
+      <text class="uml-legend" x="440" y="320">1</text>
+    </svg>
+    <figcaption><code>Bibliotheque</code> <strong>compose</strong> son catalogue (losange plein) et <strong>agrège</strong> ses membres (losange creux). <code>Emprunt</code> <strong>associe</strong> un <code>Livre</code> et un <code>Membre</code>. <code>Membre</code> <strong>hérite</strong> de <code>Personne</code>.</figcaption>
+  </figure>
+
+  <h2 id="uml-texte" data-group="Rédiger de l'UML">Générer l'UML en texte (Mermaid, PlantUML)</h2>
+  <p>Plutôt que de dessiner à la main, on décrit le diagramme en texte et un outil le rend. Pratique dans une doc Markdown ou une revue de code.</p>
+  <p><strong>Mermaid</strong> (rendu par GitHub, GitLab, VS Code…) :</p>
+  <pre class="code" data-lang="mermaid"><script type="text/plain">
+classDiagram
+    class Personne {
+        <<abstract>>
+        #Nom : string
+        #Email : string
+    }
+    class Membre {
+        +NumeroCarte : string
+    }
+    class Livre {
+        +Titre : string
+        +Disponible : bool
+    }
+    class Emprunt {
+        +Debut : DateOnly
+        +Retour : DateOnly?
+    }
+    Personne <|-- Membre
+    Bibliotheque "1" *-- "*" Livre : catalogue
+    Bibliotheque "1" o-- "*" Membre : membres
+    Emprunt --> "1" Livre
+    Emprunt --> "1" Membre
+</script></pre>
+  <p><strong>PlantUML</strong> :</p>
+  <pre class="code" data-lang="plantuml"><script type="text/plain">
+@startuml
+abstract class Personne {
+  #Nom : string
+}
+Personne <|-- Membre
+Bibliotheque "1" *-- "*" Livre
+Bibliotheque "1" o-- "*" Membre
+Emprunt --> Livre
+Emprunt --> Membre
+@enduml
+</script></pre>
+  <table>
+    <thead><tr><th>Symbole</th><th>Mermaid</th><th>PlantUML</th><th>Sens</th></tr></thead>
+    <tbody>
+      <tr><td>héritage</td><td><code>A &lt;|-- B</code></td><td><code>A &lt;|-- B</code></td><td>B hérite de A</td></tr>
+      <tr><td>réalisation</td><td><code>A &lt;|.. B</code></td><td><code>A &lt;|.. B</code></td><td>B implémente A</td></tr>
+      <tr><td>composition</td><td><code>A *-- B</code></td><td><code>A *-- B</code></td><td>A possède B</td></tr>
+      <tr><td>agrégation</td><td><code>A o-- B</code></td><td><code>A o-- B</code></td><td>A référence B</td></tr>
+      <tr><td>association</td><td><code>A --&gt; B</code></td><td><code>A --&gt; B</code></td><td>A connaît B</td></tr>
+      <tr><td>dépendance</td><td><code>A ..&gt; B</code></td><td><code>A ..&gt; B</code></td><td>A utilise B</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="uml-conseils" data-group="Rédiger de l'UML">Conseils de rédaction</h2>
+  <ul>
+    <li><strong>Un diagramme = une intention.</strong> « Vue d'ensemble du domaine », « le sous-système de paiement »… pas « toutes les classes ».</li>
+    <li><strong>Omettez le bruit</strong> : getters/setters triviaux, constructeurs, <code>ToString</code>, classes techniques (DTO, helpers).</li>
+    <li><strong>Nommez les extrémités</strong> quand ce n'est pas évident : rôle (<code>employeur</code>/<code>employé</code>) et multiplicité (<code>1</code>, <code>*</code>).</li>
+    <li><strong>Le sens des flèches compte</strong> : dessinez la navigation réelle (qui référence qui).</li>
+    <li><strong>Préférez la composition à l'héritage</strong> dans le modèle — et le diagramme le montrera.</li>
+    <li><strong>Gardez-le vivant</strong> : un diagramme faux est pire qu'aucun. Le texte (Mermaid/PlantUML) versionné avec le code vieillit mieux qu'une image.</li>
+  </ul>
+
+  <footer class="pg">
+    <span><a href="asynchrone.html">← Asynchrone</a></span>
+    <span><a href="index.html">Retour à l'accueil</a></span>
+  </footer>
+</main>
+</div>
+
+<script src="../assets/site.config.js"></script>
+<script src="../assets/highlighters/csharp.js"></script>
+<script src="../assets/main.js"></script>
+<script src="../assets/nav.js"></script>
+</body>
+</html>
