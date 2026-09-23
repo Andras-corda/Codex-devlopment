@@ -28,27 +28,21 @@
     var root = langId ? "../" : "";
     var lang = langId ? findLanguage(cfg, langId) : null;
 
+    // Le header ne montre que la nav de la page courante — pas de sélecteur de
+    // langage ici (celui-ci vit sur l'accueil, via le brand ci-dessous).
     var html = '<button class="menu-btn" aria-label="Menu">☰</button>' +
-      '<a class="brand" href="' + root + 'index.html">' + BRAND_SVG + esc(cfg.brand) + "</a><nav>";
+      '<a class="brand" href="' + root + 'index.html">' + BRAND_SVG + esc(cfg.brand) + "</a>";
 
     if (lang) {
+      html += '<span class="topbar-lang">' + esc(lang.label) + '</span>';
+      html += "<nav>";
       html += '<a href="' + lang.home + '"' + (!pageId ? ' class="active"' : "") + ">Accueil</a>";
       lang.pages.forEach(function (p) {
         html += '<a href="' + p.href + '"' + (pageId === p.id ? ' class="active"' : "") + ">" + esc(p.title) + "</a>";
       });
-      if (cfg.languages.length > 1) {
-        html += '<span class="nav-sep" aria-hidden="true"></span>';
-        cfg.languages.forEach(function (l) {
-          html += '<a href="' + root + l.id + "/" + l.home + '"' + (l.id === langId ? ' class="active"' : "") + ">" + esc(l.label) + "</a>";
-        });
-      }
-    } else {
-      cfg.languages.forEach(function (l) {
-        html += '<a href="' + l.id + "/" + l.home + '">' + esc(l.label) + "</a>";
-      });
+      html += "</nav>";
     }
 
-    html += "</nav>";
     el.innerHTML = html;
 
     var btn = el.querySelector(".menu-btn");

@@ -62,6 +62,113 @@
     <p>Tout ce qui vient de <code>$_GET</code>/<code>$_POST</code>/<code>$_SERVER</code> est écrit par l'utilisateur (ou un attaquant). On le <strong>valide</strong> avant de l'utiliser, on l'<strong>échappe</strong> avant de l'afficher (voir <a href="#securite">Sécurité</a>), et on ne l'insère <strong>jamais</strong> directement dans une requête SQL (voir <a href="#requetes-preparees">Requêtes préparées</a>).</p>
   </div>
 
+  <h2 id="formulaires">Formulaires</h2>
+  <p>Un formulaire HTML envoie ses champs dans <code>$_GET</code> (méthode <code>GET</code>, visible dans l'URL — pour filtrer/rechercher) ou <code>$_POST</code> (méthode <code>POST</code> — pour créer/modifier/supprimer).</p>
+  <pre class="code" data-lang="php"><script type="text/plain">
+<!-- GET : recherche, filtre — l'état tient dans l'URL, donc partageable/marque-page -->
+<form method="get" action="/articles">
+    <input type="text" name="recherche" value="<?= htmlspecialchars($_GET['recherche'] ?? '') ?>">
+    <button type="submit">Chercher</button>
+</form>
+
+<!-- POST : écriture — les données ne doivent pas rester dans l'URL -->
+<form method="post" action="/articles">
+    <input type="text" name="titre">
+    <textarea name="contenu"></textarea>
+    <button type="submit">Publier</button>
+</form>
+</script></pre>
+
+  <h3>Champs à valeurs multiples</h3>
+  <p>Des cases à cocher ou une liste à sélection multiple partageant le même <code>name[]</code> (avec des crochets) arrivent en PHP sous forme de <strong>tableau</strong>.</p>
+  <pre class="code" data-lang="php"><script type="text/plain">
+<input type="checkbox" name="tags[]" value="php"> PHP
+<input type="checkbox" name="tags[]" value="web"> Web
+</script></pre>
+  <pre class="code" data-lang="php"><script type="text/plain">
+$tags = $_POST['tags'] ?? [];      // ex. ["php", "web"] — ou [] si rien coché
+foreach ($tags as $tag) {
+    echo htmlspecialchars($tag);
+}
+</script></pre>
+
+  <h3>Valider et réafficher en cas d'erreur</h3>
+  <p>Le motif classique : collecter les erreurs dans un tableau ; si vide, traiter ; sinon, réafficher le formulaire avec les valeurs déjà saisies (pour ne pas tout faire retaper) et les messages d'erreur.</p>
+  <pre class="code" data-lang="php"><script type="text/plain">
+$erreurs = [];
+$titre   = trim($_POST['titre'] ?? '');
+$contenu = trim($_POST['contenu'] ?? '');
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if ($titre === '') {
+        $erreurs['titre'] = 'Le titre est requis.';
+    } elseif (mb_strlen($titre) > 200) {
+        $erreurs['titre'] = 'Le titre dépasse 200 caractères.';
+    }
+    if ($contenu === '') {
+        $erreurs['contenu'] = 'Le contenu est requis.';
+    }
+
+    if (empty($erreurs)) {
+        articles_creer($pdo, $titre, $contenu);
+        header('Location: /articles', true, 303);
+        exit;
+    }
+    // sinon : on retombe sur l'affichage du formulaire, $erreurs et les valeurs sont en portée
+}
+</script></pre>
+  <pre class="code" data-lang="php"><script type="text/plain">
+<!-- vues/articles/creer.php -->
+<form method="post">
+    <label>Titre</label>
+    <input type="text" name="titre" value="<?= htmlspecialchars($titre) ?>">
+    <?php if (isset($erreurs['titre'])): ?>
+        <p class="erreur"><?= htmlspecialchars($erreurs['titre']) ?></p>
+    <?php endif; ?>
+
+    <label>Contenu</label>
+    <textarea name="contenu"><?= htmlspecialchars($contenu) ?></textarea>
+    <?php if (isset($erreurs['contenu'])): ?>
+        <p class="erreur"><?= htmlspecialchars($erreurs['contenu']) ?></p>
+    <?php endif; ?>
+
+    <button type="submit">Publier</button>
+</form>
+</script></pre>
+
+  <h3>Envoi de fichiers</h3>
+  <p>Un formulaire qui envoie un fichier doit déclarer <code>enctype="multipart/form-data"</code> ; PHP le range dans <code>$_FILES</code>, jamais dans <code>$_POST</code>.</p>
+  <pre class="code" data-lang="php"><script type="text/plain">
+<form method="post" enctype="multipart/form-data">
+    <input type="file" name="illustration">
+    <button type="submit">Envoyer</button>
+</form>
+</script></pre>
+  <pre class="code" data-lang="php"><script type="text/plain">
+$fichier = $_FILES['illustration'] ?? null;
+
+if ($fichier !== null && $fichier['error'] === UPLOAD_ERR_OK) {
+    $tailleMax = 2 * 1024 * 1024;   // 2 Mo
+    $typesAutorises = ['image/jpeg', 'image/png', 'image/webp'];
+
+    $type = mime_content_type($fichier['tmp_name']);   // vérifie le CONTENU, pas juste l'extension
+
+    if ($fichier['size'] > $tailleMax) {
+        $erreurs['illustration'] = 'Fichier trop volumineux (2 Mo max).';
+    } elseif (!in_array($type, $typesAutorises, true)) {
+        $erreurs['illustration'] = 'Format non autorisé.';
+    } else {
+        $nomSur = bin2hex(random_bytes(16)) . '.jpg';   // jamais le nom d'origine tel quel
+        move_uploaded_file($fichier['tmp_name'], __DIR__ . '/../public/uploads/' . $nomSur);
+    }
+}
+</script></pre>
+  <div class="callout warn">
+    <span class="label">Ne jamais faire confiance à l'extension ni au type MIME envoyé par le navigateur</span>
+    <p><code>$fichier['type']</code> vient du navigateur et se falsifie facilement. Vérifier le contenu réel avec <code>mime_content_type()</code>, limiter la taille, et renommer le fichier à l'enregistrement plutôt que de garder le nom fourni par l'utilisateur.</p>
+  </div>
+  <p>Un formulaire qui modifie des données reste soumis à la même règle que partout ailleurs sur cette page : un jeton <a href="#securite">CSRF</a> vérifié à la réception.</p>
+
   <h2 id="routage">Routage minimal (front controller)</h2>
   <pre class="code" data-lang="php"><script type="text/plain">
 // public/index.php — point d'entrée UNIQUE de l'application
@@ -581,7 +688,7 @@ function deconnecter(): void
 
   <footer class="pg">
     <span><a href="types-collections-uml.html">← Types & UML</a></span>
-    <span><a href="index.html">Retour à l'accueil PHP</a></span>
+    <span><a href="composer-symfony.html">Suivant : Composer & Symfony →</a></span>
   </footer>
 </main>
 </div>

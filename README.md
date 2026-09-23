@@ -18,14 +18,16 @@ assets/
     csharp.js                     coloration syntaxique C#, enregistrée dans le registre de main.js
     php.js                        coloration syntaxique PHP (mêmes principes, $variables en plus)
 csharp/                           dossier du langage C#
-  index.html, procedural.html, oriente-objet.html, asynchrone.html, types-collections-uml.html
+  index.html, procedural.html, oriente-objet.html, asynchrone.html,
+  types-collections-uml.html, wpf.html (XAML, binding, MVVM)
 php/                               dossier du langage PHP (pur, sans framework)
   index.html, procedural.html, oriente-objet.html, concurrence.html,
-  types-collections-uml.html, backend.html (PDO, routage, pattern MVC, sécurité)
+  types-collections-uml.html, backend.html (PDO, formulaires, pattern MVC, sécurité),
+  composer-symfony.html (Composer, Faker, quand passer à Symfony)
 ```
 
 Rien n'est codé en dur deux fois :
-- la barre de navigation (page courante active, sélecteur de langage) est **générée** par `nav.js` à partir de `site.config.js` ;
+- la barre du haut affiche uniquement la nav **de la page courante** (pas de sélecteur de langage dedans) — **générée** par `nav.js` à partir de `site.config.js` ; pour changer de langage, le logo « Codex » ramène à l'accueil, qui liste tous les langages ;
 - le **sommaire latéral** de chaque page est **généré automatiquement** à partir des `<h2 id="...">` de son `<main>` — aucune liste à maintenir. Un `<h2 data-group="Nom du groupe">` crée un sous-titre dans le sommaire (voir `csharp/types-collections-uml.html`) ;
 - la **coloration syntaxique** passe par un registre (`window.CodeHighlighters`) : chaque langage enregistre sa propre fonction dans son fichier sous `assets/highlighters/`, sans toucher au moteur commun (`main.js`).
 

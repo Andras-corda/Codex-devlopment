@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Codex — C# · WPF</title>
+<meta name="description" content="WPF en C# : XAML, panneaux de disposition, contrôles, événements, data binding, MVVM, commandes, styles.">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-lang="csharp" data-page="wpf">
+
+<div class="topbar" id="topbar"></div>
+
+<div class="wrap">
+<aside class="side" id="side"></aside>
+
+<main>
+  <h1>5 · WPF</h1>
+  <p class="lead"><strong>Windows Presentation Foundation</strong> : le framework d'interface graphique de bureau de .NET. Interfaces décrites en <strong>XAML</strong>, logique en C#, et un pattern d'architecture qui revient partout : <strong>MVVM</strong>.</p>
+
+  <h2 id="idee">Qu'est-ce que WPF</h2>
+  <p>WPF sépare structurellement ce qu'on voit (le <strong>XAML</strong>, un langage à balises déclaratif) de ce qui se passe (le <strong>C#</strong>, dans un fichier « code-behind »). Windows uniquement, mais toujours d'actualité pour des applications de bureau riches (outils internes, logiciels métier).</p>
+  <figure>
+    <svg viewBox="0 0 600 170" role="img" aria-label="XAML et code-behind">
+      <rect class="svg-bg" x="0" y="0" width="600" height="170" rx="6"/>
+      <rect class="svg-box-a" x="30" y="30" width="220" height="60" rx="6"/>
+      <text class="svg-t" x="140" y="56" text-anchor="middle">MainWindow.xaml</text>
+      <text class="svg-tm" x="140" y="74" text-anchor="middle">structure visuelle, déclarative</text>
+      <rect class="svg-box-g" x="350" y="30" width="220" height="60" rx="6"/>
+      <text class="svg-t" x="460" y="56" text-anchor="middle">MainWindow.xaml.cs</text>
+      <text class="svg-tm" x="460" y="74" text-anchor="middle">logique, événements, C#</text>
+      <path class="svg-arrow" d="M252 60 H348"/>
+      <text class="svg-tm" x="300" y="52" text-anchor="middle">partial class</text>
+      <text class="svg-tm" x="60" y="130">Un bouton en XAML…</text>
+      <text class="svg-tm" x="360" y="130">…déclenche une méthode C# au clic.</text>
+    </svg>
+    <figcaption>Les deux fichiers forment une seule classe <code>partial</code> : le XAML décrit l'arbre visuel, le C# réagit aux événements.</figcaption>
+  </figure>
+
+  <h2 id="projet">Créer un projet</h2>
+  <pre class="code" data-lang="bash"><script type="text/plain">
+dotnet new wpf -o MonApp
+cd MonApp
+dotnet run
+</script></pre>
+  <table>
+    <thead><tr><th>Fichier</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>App.xaml</code> / <code>App.xaml.cs</code></td><td>point d'entrée de l'application, ressources globales</td></tr>
+      <tr><td><code>MainWindow.xaml</code></td><td>structure visuelle de la fenêtre principale</td></tr>
+      <tr><td><code>MainWindow.xaml.cs</code></td><td>code-behind : logique associée à cette fenêtre</td></tr>
+      <tr><td><code>*.csproj</code></td><td><code>&lt;UseWPF&gt;true&lt;/UseWPF&gt;</code> active la compilation XAML</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="xaml">Bases de XAML</h2>
+  <p>XAML est du XML : chaque balise est une classe .NET, chaque attribut une propriété. Un élément enfant devient une propriété de contenu ou de collection du parent.</p>
+  <pre class="code" data-lang="xaml"><script type="text/plain">
+<Window x:Class="MonApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Mon application" Height="450" Width="800">
+
+    <StackPanel Margin="20">
+        <TextBlock Text="Bonjour !" FontSize="24" FontWeight="Bold"/>
+        <Button Content="Cliquer" Width="120" Click="Bouton_Click"/>
+    </StackPanel>
+
+</Window>
+</script></pre>
+  <p>Équivalent en C# (ce que le compilateur génère en coulisses) — comprendre ça aide à démystifier le XAML :</p>
+  <pre class="code"><script type="text/plain">
+var fenetre = new Window { Title = "Mon application", Height = 450, Width = 800 };
+var pile = new StackPanel { Margin = new Thickness(20) };
+pile.Children.Add(new TextBlock { Text = "Bonjour !", FontSize = 24, FontWeight = FontWeights.Bold });
+var bouton = new Button { Content = "Cliquer", Width = 120 };
+bouton.Click += Bouton_Click;
+pile.Children.Add(bouton);
+fenetre.Content = pile;
+</script></pre>
+  <div class="callout info">
+    <span class="label"><code>x:Name</code> vs <code>Name</code></span>
+    <p><code>x:Name="MonBouton"</code> donne un nom à un élément pour y accéder depuis le code-behind (<code>MonBouton.Content = "..."</code>) — le compilateur génère un champ correspondant automatiquement.</p>
+  </div>
+
+  <h2 id="layout">Panneaux de disposition</h2>
+  <table>
+    <thead><tr><th>Panneau</th><th>Organise ses enfants…</th></tr></thead>
+    <tbody>
+      <tr><td><code>Grid</code></td><td>en lignes/colonnes — le panneau le plus utilisé, équivalent d'un tableau CSS</td></tr>
+      <tr><td><code>StackPanel</code></td><td>en pile, horizontale ou verticale</td></tr>
+      <tr><td><code>DockPanel</code></td><td>collés à un bord (haut/bas/gauche/droite), le dernier remplit l'espace restant</td></tr>
+      <tr><td><code>WrapPanel</code></td><td>en ligne, puis retour à la ligne quand la place manque</td></tr>
+      <tr><td><code>Canvas</code></td><td>à des coordonnées absolues (<code>X</code>, <code>Y</code>) — rarement le bon choix</td></tr>
+    </tbody>
+  </table>
+  <pre class="code" data-lang="xaml"><script type="text/plain">
+<Grid>
+    <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/>   <!-- s'ajuste au contenu -->
+        <RowDefinition Height="*"/>       <!-- prend le reste -->
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="200"/>
+        <ColumnDefinition Width="*"/>
+    </Grid.ColumnDefinitions>
+
+    <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="En-tête"/>
+    <ListBox    Grid.Row="1" Grid.Column="0"/>
+    <TextBlock  Grid.Row="1" Grid.Column="1" Text="Contenu"/>
+</Grid>
+</script></pre>
+
+  <h2 id="controles">Contrôles courants</h2>
+  <table>
+    <thead><tr><th>Contrôle</th><th>Pour</th></tr></thead>
+    <tbody>
+      <tr><td><code>TextBlock</code></td><td>afficher du texte (non éditable)</td></tr>
+      <tr><td><code>TextBox</code></td><td>saisir du texte</td></tr>
+      <tr><td><code>Button</code></td><td>déclencher une action</td></tr>
+      <tr><td><code>CheckBox</code> / <code>RadioButton</code></td><td>choix binaire / choix exclusif dans un groupe</td></tr>
+      <tr><td><code>ComboBox</code></td><td>liste déroulante</td></tr>
+      <tr><td><code>ListBox</code> / <code>ListView</code></td><td>liste d'éléments, sélectionnable</td></tr>
+      <tr><td><code>DataGrid</code></td><td>tableau de données éditable</td></tr>
+      <tr><td><code>Image</code></td><td>afficher une image</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="evenements">Événements</h2>
+  <p>En XAML, un attribut d'événement (<code>Click</code>, <code>TextChanged</code>…) référence une méthode du code-behind. Sous le capot, c'est exactement le mécanisme <a href="procedural.html#delegues">délégué / <code>event</code></a> vu en Procédural.</p>
+  <pre class="code" data-lang="xaml"><script type="text/plain">
+<Button Content="Valider" Click="Valider_Click"/>
+</script></pre>
+  <pre class="code"><script type="text/plain">
+// MainWindow.xaml.cs
+public partial class MainWindow : Window
+{
+    public MainWindow()
+    {
+        InitializeComponent();   // construit l'arbre visuel décrit en XAML
+    }
+
+    private void Valider_Click(object sender, RoutedEventArgs e)
+    {
+        MessageBox.Show("Validé !");
+    }
+}
+</script></pre>
+  <div class="callout warn">
+    <span class="label">Code-behind : à utiliser avec parcimonie</span>
+    <p>Gérer chaque bouton directement dans <code>MainWindow.xaml.cs</code> fonctionne pour un prototype, mais mélange vite affichage et logique métier. Le pattern <a href="#mvvm">MVVM</a> ci-dessous règle ce problème.</p>
+  </div>
+
+  <h2 id="binding">Liaison de données (data binding)</h2>
+  <p>Plutôt que de lire/écrire manuellement chaque contrôle, on <strong>lie</strong> une propriété XAML à une propriété C#. WPF synchronise automatiquement dans les deux sens.</p>
+  <pre class="code" data-lang="xaml"><script type="text/plain">
+<TextBox Text="{Binding NomUtilisateur, UpdateSourceTrigger=PropertyChanged}"/>
+<TextBlock Text="{Binding NomUtilisateur}"/>
+</script></pre>
+  <p>Pour que le second contrôle se mette à jour quand le premier change, la classe source doit prévenir WPF via <code>INotifyPropertyChanged</code> :</p>
+  <pre class="code"><script type="text/plain">
+public class PersonneViewModel : INotifyPropertyChanged
+{
+    private string _nomUtilisateur = "";
+
+    public string NomUtilisateur
+    {
+        get => _nomUtilisateur;
+        set
+        {
+            if (_nomUtilisateur == value) return;
+            _nomUtilisateur = value;
+            OnPropertyChanged(nameof(NomUtilisateur));   // prévient WPF
+        }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+    protected void OnPropertyChanged(string nom) =>
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nom));
+}
+</script></pre>
+  <pre class="code"><script type="text/plain">
+// MainWindow.xaml.cs
+public MainWindow()
+{
+    InitializeComponent();
+    DataContext = new PersonneViewModel();   // la SOURCE de tous les {Binding} de cette fenêtre
+}
+</script></pre>
+  <div class="callout info">
+    <span class="label">DataContext</span>
+    <p><code>DataContext</code> est l'objet contre lequel tous les <code>{Binding}</code> d'un élément (et de ses enfants, par héritage) se résolvent. Le fixer une fois sur la fenêtre suffit pour tous ses contrôles.</p>
+  </div>
+
+  <h2 id="mvvm">Le pattern MVVM</h2>
+  <p><strong>Model</strong>-<strong>View</strong>-<strong>ViewModel</strong> : la variante de <a href="../php/backend.html#mvc">MVC</a> pensée pour le data binding. La Vue ne connaît que des liaisons ; le ViewModel expose des propriétés observables ; le Modèle reste la donnée et les règles métier.</p>
+  <figure>
+    <svg viewBox="0 0 620 200" role="img" aria-label="Diagramme UML — MVVM">
+      <defs>
+        <marker id="mvvm-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+          <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker>
+      </defs>
+      <rect class="svg-bg" x="0" y="0" width="620" height="200" rx="6"/>
+      <rect class="uml-box" x="20" y="70" width="150" height="22"/>
+      <rect class="uml-box" x="20" y="92" width="150" height="24"/>
+      <text class="uml-name" x="95" y="86" text-anchor="middle">View (XAML)</text>
+      <text class="uml-m" x="28" y="109">MainWindow.xaml</text>
+
+      <rect class="uml-box-a" x="205" y="70" width="180" height="22"/>
+      <rect class="uml-box-a" x="205" y="92" width="180" height="46"/>
+      <text class="uml-name" x="295" y="86" text-anchor="middle">ViewModel</text>
+      <text class="uml-m" x="213" y="109">+ NomUtilisateur : string</text>
+      <text class="uml-m" x="213" y="127">+ Valider : ICommand</text>
+
+      <rect class="uml-box-g" x="420" y="70" width="120" height="22"/>
+      <rect class="uml-box-g" x="420" y="92" width="120" height="24"/>
+      <text class="uml-name" x="480" y="86" text-anchor="middle">Model</text>
+      <text class="uml-m" x="428" y="109">Utilisateur</text>
+
+      <path class="uml-rel" style="marker-start:url(#mvvm-arr);marker-end:url(#mvvm-arr)" d="M172 100 H203"/>
+      <text class="uml-legend" x="187" y="94" text-anchor="middle">‹‹binding››</text>
+      <path class="uml-rel" style="marker-end:url(#mvvm-arr)" d="M387 100 H418"/>
+
+      <text class="uml-legend" x="95" y="160" text-anchor="middle">connaît le ViewModel,</text>
+      <text class="uml-legend" x="95" y="176" text-anchor="middle">jamais le Model</text>
+      <text class="uml-legend" x="295" y="160" text-anchor="middle">expose propriétés & commandes,</text>
+      <text class="uml-legend" x="295" y="176" text-anchor="middle">ignore la View</text>
+    </svg>
+    <figcaption>La Vue et le ViewModel se synchronisent via le binding, sans code-behind ; le ViewModel manipule le Model, jamais l'inverse.</figcaption>
+  </figure>
+  <table>
+    <thead><tr><th>Couche</th><th>Responsabilité</th><th>Ne fait <strong>pas</strong></th></tr></thead>
+    <tbody>
+      <tr><td><strong>Model</strong></td><td>données, règles métier</td><td>ne sait rien de l'affichage</td></tr>
+      <tr><td><strong>ViewModel</strong></td><td>propriétés observables, commandes, logique de présentation</td><td>ne référence aucun contrôle XAML</td></tr>
+      <tr><td><strong>View</strong></td><td>XAML + bindings</td><td>idéalement zéro logique dans le code-behind</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="commands">Commandes (<code>ICommand</code>)</h2>
+  <p>L'équivalent MVVM d'un gestionnaire d'événement : un bouton se lie à une <strong>commande</strong> plutôt qu'à une méthode <code>Click</code>, ce qui garde toute la logique dans le ViewModel.</p>
+  <pre class="code" data-lang="xaml"><script type="text/plain">
+<Button Content="Valider" Command="{Binding Valider}"/>
+</script></pre>
+  <pre class="code"><script type="text/plain">
+// Implémentation minimale d'ICommand (les toolkits MVVM en fournissent une déjà prête)
+public class RelayCommand : ICommand
+{
+    private readonly Action _execute;
+    private readonly Func<bool>? _peutExecuter;
+
+    public RelayCommand(Action execute, Func<bool>? peutExecuter = null)
+    {
+        _execute = execute;
+        _peutExecuter = peutExecuter;
+    }
+
+    public bool CanExecute(object? parametre) => _peutExecuter?.Invoke() ?? true;
+    public void Execute(object? parametre) => _execute();
+
+    public event EventHandler? CanExecuteChanged
+    {
+        add => CommandManager.RequerySuggested += value;
+        remove => CommandManager.RequerySuggested -= value;
+    }
+}
+
+public class PersonneViewModel : INotifyPropertyChanged
+{
+    // ... NomUtilisateur comme avant ...
+
+    public ICommand Valider { get; }
+
+    public PersonneViewModel()
+    {
+        Valider = new RelayCommand(
+            execute: () => MessageBox.Show($"Bonjour {NomUtilisateur}"),
+            peutExecuter: () => !string.IsNullOrWhiteSpace(NomUtilisateur));
+    }
+}
+</script></pre>
+  <div class="callout tip">
+    <span class="label">CanExecute désactive le bouton automatiquement</span>
+    <p>Quand <code>CanExecute</code> renvoie <code>false</code>, WPF grise le contrôle lié — inutile de gérer <code>IsEnabled</code> à la main.</p>
+  </div>
+
+  <h2 id="styles">Styles & ressources</h2>
+  <p>Un <code>Style</code> regroupe des valeurs de propriétés réutilisables ; une <code>ResourceDictionary</code> les rend disponibles à toute une fenêtre (ou toute l'application, depuis <code>App.xaml</code>).</p>
+  <pre class="code" data-lang="xaml"><script type="text/plain">
+<Window.Resources>
+    <Style TargetType="Button">
+        <Setter Property="Padding" Value="12,6"/>
+        <Setter Property="Margin" Value="4"/>
+        <Setter Property="Background" Value="#2f81f7"/>
+        <Setter Property="Foreground" Value="White"/>
+    </Style>
+
+    <!-- Style nommé : appliqué seulement là où on le demande -->
+    <Style x:Key="BoutonDanger" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Background" Value="#f85149"/>
+    </Style>
+</Window.Resources>
+
+<Button Content="OK"/>                                  <!-- style par défaut -->
+<Button Content="Supprimer" Style="{StaticResource BoutonDanger}"/>
+</script></pre>
+
+  <h2 id="convertisseurs">Convertisseurs de valeur</h2>
+  <p>Un <code>IValueConverter</code> transforme la valeur liée entre le ViewModel et l'affichage (ex. <code>bool</code> → <code>Visibility</code>).</p>
+  <pre class="code"><script type="text/plain">
+public class BoolVersVisibilite : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        => (bool)value ? Visibility.Visible : Visibility.Collapsed;
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => throw new NotSupportedException();
+}
+</script></pre>
+  <pre class="code" data-lang="xaml"><script type="text/plain">
+<Window.Resources>
+    <local:BoolVersVisibilite x:Key="BoolVersVisibilite"/>
+</Window.Resources>
+
+<TextBlock Text="Erreur !" Visibility="{Binding AErreur, Converter={StaticResource BoolVersVisibilite}}"/>
+</script></pre>
+
+  <h2 id="navigation">Navigation entre fenêtres</h2>
+  <pre class="code"><script type="text/plain">
+// Ouvrir une fenêtre secondaire
+var fenetreDetail = new DetailWindow();
+fenetreDetail.Owner = this;          // reste rattachée à la fenêtre principale
+fenetreDetail.ShowDialog();          // modale : bloque la fenêtre principale
+// ou : fenetreDetail.Show();        // non modale
+
+// Fermer la fenêtre courante avec un résultat (utile après ShowDialog)
+this.DialogResult = true;
+this.Close();
+</script></pre>
+  <p>Pour une navigation « en place » dans une seule fenêtre (comme des onglets successifs), on utilise un <code>Frame</code> qui affiche des <code>Page</code> plutôt que des <code>Window</code> séparées.</p>
+
+  <h2 id="exemple">Exemple complet — compteur en MVVM</h2>
+  <pre class="code" data-lang="xaml"><script type="text/plain">
+<!-- MainWindow.xaml -->
+<Window x:Class="MonApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Compteur" Height="200" Width="300">
+    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+        <TextBlock Text="{Binding Valeur}" FontSize="48" HorizontalAlignment="Center"/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,12,0,0">
+            <Button Content="-" Width="40" Command="{Binding Decrementer}"/>
+            <Button Content="+" Width="40" Margin="8,0,0,0" Command="{Binding Incrementer}"/>
+        </StackPanel>
+    </StackPanel>
+</Window>
+</script></pre>
+  <pre class="code"><script type="text/plain">
+// CompteurViewModel.cs — aucune référence à un contrôle XAML
+public class CompteurViewModel : INotifyPropertyChanged
+{
+    private int _valeur;
+
+    public int Valeur
+    {
+        get => _valeur;
+        set { _valeur = value; OnPropertyChanged(nameof(Valeur)); }
+    }
+
+    public ICommand Incrementer { get; }
+    public ICommand Decrementer { get; }
+
+    public CompteurViewModel()
+    {
+        Incrementer = new RelayCommand(() => Valeur++);
+        Decrementer = new RelayCommand(() => Valeur--, () => Valeur > 0);
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+    protected void OnPropertyChanged(string nom) =>
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nom));
+}
+
+// MainWindow.xaml.cs
+public partial class MainWindow : Window
+{
+    public MainWindow()
+    {
+        InitializeComponent();
+        DataContext = new CompteurViewModel();
+    }
+}
+</script></pre>
+  <p>Zéro logique dans <code>MainWindow.xaml.cs</code> : tout passe par le binding et les commandes du ViewModel — testable indépendamment de toute fenêtre.</p>
+
+  <footer class="pg">
+    <span><a href="types-collections-uml.html">← Types & UML</a></span>
+    <span><a href="index.html">Retour à l'accueil C#</a></span>
+  </footer>
+</main>
+</div>
+
+<script src="../assets/site.config.js"></script>
+<script src="../assets/highlighters/csharp.js"></script>
+<script src="../assets/main.js"></script>
+<script src="../assets/nav.js"></script>
+</body>
+</html>

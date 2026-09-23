@@ -363,6 +363,71 @@ scores.Add(10);
 int premier = scores[0];          // aucune conversion, aucun risque
 </script></pre>
 
+  <h2 id="delegues">Délégués, Func/Action & lambdas</h2>
+  <p>Un <strong>délégué</strong> est un type qui représente une <em>signature de méthode</em> — une variable qui contient une fonction, pas une valeur ordinaire. Deux délégués génériques de la bibliothèque standard couvrent la grande majorité des cas : <code>Action</code> (ne retourne rien) et <code>Func</code> (retourne une valeur).</p>
+  <pre class="code"><script type="text/plain">
+Action direBonjour = () => Console.WriteLine("Bonjour !");    // aucun paramètre, aucun retour
+Action<int> afficher = n => Console.WriteLine(n);              // un paramètre
+Action<string, int> log = (msg, code) => Console.WriteLine($"{msg} ({code})");
+
+Func<int, int> carre = x => x * x;                  // un paramètre, retourne int
+Func<int, int, int> addition = (a, b) => a + b;      // deux paramètres, retourne int
+
+direBonjour();                 // Bonjour !
+afficher(42);                   // 42
+int resultat = carre(5);        // 25
+</script></pre>
+
+  <h3>Expressions lambda</h3>
+  <p>Une lambda est une fonction écrite en une seule expression : <code>(paramètres) =&gt; corps</code>. C'est la syntaxe déjà croisée partout avec LINQ (<code>Where(n =&gt; n &gt; 5)</code>) — <code>Where</code> attend justement un <code>Func&lt;T, bool&gt;</code>.</p>
+  <pre class="code"><script type="text/plain">
+// une seule expression -> pas d'accolades, pas de "return"
+Func<int, bool> estPair = n => n % 2 == 0;
+
+// plusieurs instructions -> accolades + "return" explicite
+Func<int, string> decrire = n =>
+{
+    if (n < 0) return "négatif";
+    if (n == 0) return "nul";
+    return "positif";
+};
+
+// capture de variables environnantes (closure) : "seuil" reste vivant dans la lambda
+int seuil = 10;
+Func<int, bool> depasseLeSeuil = n => n > seuil;
+</script></pre>
+
+  <h3>Multicast : <code>+=</code>, <code>-=</code>, <code>?.Invoke()</code></h3>
+  <p>Un délégué peut pointer vers <strong>plusieurs</strong> méthodes à la fois : <code>+=</code> abonne, <code>-=</code> désabonne. <code>?.Invoke()</code> appelle sans planter si personne n'est abonné (délégué <code>null</code>).</p>
+  <pre class="code"><script type="text/plain">
+Action<string> onMessage = null;
+onMessage += msg => Console.WriteLine($"[LOG] {msg}");
+onMessage += msg => Console.WriteLine($"[UI]  {msg}");
+
+onMessage?.Invoke("Chargement terminé");
+// exécute les DEUX abonnés, dans l'ordre d'abonnement
+</script></pre>
+
+  <h3><code>event</code> — un délégué protégé</h3>
+  <p><code>event</code> encapsule un délégué : la classe qui le déclare peut l'invoquer ; les autres peuvent seulement s'abonner (<code>+=</code>) ou se désabonner (<code>-=</code>), jamais l'appeler ni le remplacer directement — l'équivalent événementiel de l'encapsulation vue en <a href="oriente-objet.html#encapsulation">Orienté objet</a>.</p>
+  <pre class="code"><script type="text/plain">
+class Bouton
+{
+    public event Action Clique;               // le contrat : "rien en entrée, rien en sortie"
+
+    public void Presser() => Clique?.Invoke(); // seul Bouton peut déclencher l'événement
+}
+
+var bouton = new Bouton();
+bouton.Clique += () => Console.WriteLine("Cliqué !");   // un autre script s'abonne
+bouton.Presser();                                        // "Cliqué !"
+// bouton.Clique();   // interdit depuis l'extérieur — seul Invoke() interne le peut
+</script></pre>
+  <div class="callout tip">
+    <span class="label">Où ça sert le plus</span>
+    <p>Les prédicats LINQ (<code>Where</code>, <code>OrderBy</code>, <code>Select</code>) sont déjà des <code>Func</code> déguisés. Les interfaces graphiques reposent entièrement sur ce mécanisme : un clic de bouton <em>est</em> un événement auquel on s'abonne avec une lambda — voir <a href="wpf.html">5 · WPF</a>.</p>
+  </div>
+
   <h2 id="portee">Portée des variables</h2>
   <pre class="code"><script type="text/plain">
 int total = 0;                    // visible dans toute la méthode

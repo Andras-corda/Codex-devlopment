@@ -55,19 +55,29 @@ code{font-family:var(--mono);font-size:.88em}
   position:sticky;top:0;z-index:50;
   background:var(--bg-inset);
   border-bottom:1px solid var(--border);
-  display:flex;align-items:center;gap:16px;
-  padding:12px 20px;
+  display:flex;align-items:center;gap:14px;
+  padding:10px 20px;
+  flex-wrap:wrap;
+  row-gap:6px;
 }
-.topbar .brand{font-weight:600;color:var(--text);display:flex;align-items:center;gap:9px}
+.topbar .brand{
+  font-weight:700;font-size:15px;color:var(--text);display:flex;align-items:center;gap:9px;
+  letter-spacing:.2px;
+}
 .topbar .brand svg{fill:var(--text)}
 .topbar .brand:hover{text-decoration:none;color:var(--link)}
-.topbar nav{display:flex;gap:4px;flex-wrap:wrap}
+.topbar-lang{
+  color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;
+  border:1px solid var(--border);border-radius:999px;padding:3px 10px;
+  margin-right:2px;
+}
+.topbar nav{display:flex;gap:2px;flex-wrap:wrap;flex:1}
 .topbar nav a{
-  color:var(--muted);padding:6px 12px;border-radius:var(--radius);font-size:14px;
+  color:var(--muted);padding:7px 12px;border-radius:var(--radius);font-size:14px;
+  line-height:1.2;
 }
 .topbar nav a:hover{background:var(--panel);color:var(--text);text-decoration:none}
-.topbar nav a.active{color:var(--text);background:var(--panel);box-shadow:inset 0 -2px 0 var(--warn)}
-.topbar nav .nav-sep{width:1px;align-self:stretch;background:var(--border);margin:0 4px}
+.topbar nav a.active{color:var(--text);background:var(--panel);box-shadow:inset 0 -2px 0 var(--link)}
 
 /* ---- Structure ---- */
 .wrap{display:grid;grid-template-columns:240px 1fr;max-width:1200px;margin:0 auto;gap:0}
