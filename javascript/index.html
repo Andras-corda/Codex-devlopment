@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Codex — JavaScript · Accueil</title>
+<meta name="description" content="JavaScript pratique : Node.js, npm, modules, puis bots Discord, apps Electron, backend et animations.">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-lang="javascript">
+
+<div class="topbar" id="topbar"></div>
+
+<div class="wrap">
+<aside class="side" id="side"></aside>
+
+<main>
+  <h1>JavaScript</h1>
+  <p class="lead">Pas un cours complet du langage : ce qu'il faut pour construire un <strong>bot Discord</strong>, une <strong>appli de bureau</strong>, un <strong>backend</strong>, et donner vie à une interface avec des <strong>animations</strong>.</p>
+
+  <h2 id="idee">JavaScript, en bref</h2>
+  <p>JavaScript tourne dans deux mondes : le <strong>navigateur</strong> (interactivité d'une page, manipulation du DOM) et <strong>Node.js</strong> (serveur, scripts, outils en ligne de commande — le même langage, sans page web). Toutes les pages qui suivent utilisent Node.js.</p>
+  <figure>
+    <svg viewBox="0 0 600 160" role="img" aria-label="JavaScript : deux environnements">
+      <rect class="svg-bg" x="0" y="0" width="600" height="160" rx="6"/>
+      <rect class="svg-box-a" x="30" y="30" width="240" height="60" rx="6"/>
+      <text class="svg-t" x="150" y="56" text-anchor="middle">Navigateur</text>
+      <text class="svg-tm" x="150" y="74" text-anchor="middle">DOM, événements, fetch</text>
+      <rect class="svg-box-g" x="330" y="30" width="240" height="60" rx="6"/>
+      <text class="svg-t" x="450" y="56" text-anchor="middle">Node.js</text>
+      <text class="svg-tm" x="450" y="74" text-anchor="middle">serveur, CLI, fichiers, npm</text>
+      <text class="svg-tm" x="150" y="120" text-anchor="middle">→ Animations & style</text>
+      <text class="svg-tm" x="450" y="120" text-anchor="middle">→ Bot Discord, Electron, Backend</text>
+    </svg>
+    <figcaption>Même syntaxe, deux terrains de jeu — Electron combine même les deux à la fois (voir <a href="electron.html">2 · Apps Electron</a>).</figcaption>
+  </figure>
+
+  <h2 id="pages">Les pages couvertes</h2>
+  <table>
+    <thead><tr><th>Page</th><th>Sert à</th></tr></thead>
+    <tbody>
+      <tr><td><a href="discord-bot.html">1 · Bot Discord</a></td><td>créer et faire réagir un bot sur un serveur Discord (discord.js)</td></tr>
+      <tr><td><a href="electron.html">2 · Apps Electron</a></td><td>construire une application de bureau avec HTML/CSS/JS</td></tr>
+      <tr><td><a href="backend.html">3 · Backend de sites web</a></td><td>servir une API avec Node.js & Express, parler à une base de données</td></tr>
+      <tr><td><a href="animations.html">4 · Animations & style</a></td><td>transitions, animations CSS, et animer avec JavaScript</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="node">Installer Node.js & npm</h2>
+  <div class="callout info">
+    <span class="label">Prérequis</span>
+    <p>Installer <a href="https://nodejs.org" target="_blank" rel="noopener">Node.js</a> (version LTS) installe aussi <strong>npm</strong>, son gestionnaire de paquets.</p>
+  </div>
+  <pre class="code" data-lang="bash"><script type="text/plain">
+node --version
+npm --version
+
+node script.js        # exécuter un fichier
+node                  # console interactive (REPL)
+</script></pre>
+
+  <h2 id="npm">npm : dépendances & scripts</h2>
+  <pre class="code" data-lang="bash"><script type="text/plain">
+npm init -y                  # crée package.json avec des valeurs par défaut
+npm install discord.js       # ajoute une dépendance (production)
+npm install --save-dev electron   # ajoute une dépendance de développement
+npm install                   # installe tout ce que package.json décrit
+npm run <script>              # exécute un script défini dans package.json
+</script></pre>
+  <pre class="code" data-lang="json"><script type="text/plain">
+{
+  "name": "mon-projet",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.14.1"
+  }
+}
+</script></pre>
+  <div class="callout warn">
+    <span class="label"><code>node_modules/</code> ne se versionne pas</span>
+    <p>Ce dossier se régénère avec <code>npm install</code> à partir de <code>package.json</code> et <code>package-lock.json</code> (celui-ci, à commiter — il fige les versions exactes, comme <code>composer.lock</code> côté PHP).</p>
+  </div>
+
+  <h2 id="modules">Modules : import/export vs require</h2>
+  <p>Deux systèmes de modules coexistent. <code>"type": "module"</code> dans <code>package.json</code> active la syntaxe moderne (<code>import</code>/<code>export</code>) ; sans lui, Node utilise l'ancienne (<code>require</code>/<code>module.exports</code>). Les deux font la même chose.</p>
+  <pre class="code" data-lang="javascript"><script type="text/plain">
+// ESM (moderne) — package.json a "type": "module"
+import { Client } from 'discord.js';
+export function saluer(nom) { return `Bonjour ${nom}`; }
+export default class Bot { /* ... */ }
+
+// CommonJS (historique) — toujours très répandu
+const { Client } = require('discord.js');
+function saluer(nom) { return `Bonjour ${nom}`; }
+module.exports = { saluer };
+</script></pre>
+  <div class="callout tip">
+    <span class="label">Lequel choisir</span>
+    <p>ESM pour un projet neuf (c'est la direction de l'écosystème). Les exemples de ce guide utilisent ESM ; la plupart des tutoriels/librairies plus anciens montrent encore du CommonJS — les deux s'utilisent en pratique.</p>
+  </div>
+
+  <h2 id="cli">Aide-mémoire</h2>
+  <table>
+    <thead><tr><th>Commande</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>node fichier.js</code></td><td>exécute un script</td></tr>
+      <tr><td><code>node --watch fichier.js</code></td><td>relance automatiquement au moindre changement</td></tr>
+      <tr><td><code>npx &lt;outil&gt;</code></td><td>exécute un paquet sans l'installer globalement</td></tr>
+      <tr><td><code>npm ls</code></td><td>liste les dépendances installées</td></tr>
+      <tr><td><code>npm outdated</code></td><td>versions plus récentes disponibles</td></tr>
+    </tbody>
+  </table>
+
+  <footer class="pg">
+    <span>Site statique · 100 % HTML/CSS/JS · prêt pour GitHub Pages</span>
+    <span><a href="discord-bot.html">Suivant : Bot Discord →</a></span>
+  </footer>
+</main>
+</div>
+
+<script src="../assets/site.config.js"></script>
+<script src="../assets/highlighters/javascript.js"></script>
+<script src="../assets/main.js"></script>
+<script src="../assets/nav.js"></script>
+</body>
+</html>

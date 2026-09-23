@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Codex — JavaScript · Bot Discord</title>
+<meta name="description" content="Créer un bot Discord avec discord.js : token, intents, messages, commandes slash, embeds, boutons, structure, hébergement.">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-lang="javascript" data-page="discord">
+
+<div class="topbar" id="topbar"></div>
+
+<div class="wrap">
+<aside class="side" id="side"></aside>
+
+<main>
+  <h1>1 · Bot Discord</h1>
+  <p class="lead">Un bot Discord est un simple script Node.js qui reste connecté au serveur de Discord et réagit à des événements (message reçu, commande tapée…). La bibliothèque de référence : <strong>discord.js</strong>.</p>
+
+  <h2 id="idee">Comment ça marche</h2>
+  <figure>
+    <svg viewBox="0 0 640 180" role="img" aria-label="Cycle de vie d'un bot Discord">
+      <defs><marker id="db-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+        <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
+      <rect class="svg-bg" x="0" y="0" width="640" height="180" rx="6"/>
+      <rect class="svg-box" x="20" y="40" width="140" height="56" rx="6"/>
+      <text class="svg-t" x="90" y="64" text-anchor="middle">Ton script</text>
+      <text class="svg-tm" x="90" y="82" text-anchor="middle">Node.js + discord.js</text>
+      <rect class="svg-box-a" x="250" y="40" width="140" height="56" rx="6"/>
+      <text class="svg-t" x="320" y="64" text-anchor="middle">Discord</text>
+      <text class="svg-tm" x="320" y="82" text-anchor="middle">Gateway (WebSocket)</text>
+      <rect class="svg-box-g" x="480" y="40" width="140" height="56" rx="6"/>
+      <text class="svg-t" x="550" y="64" text-anchor="middle">Serveur (guild)</text>
+      <text class="svg-tm" x="550" y="82" text-anchor="middle">membres, salons</text>
+      <path class="svg-arrow" d="M160 60 H248" style="marker-end:url(#db-arr)"/>
+      <text class="svg-tm" x="205" y="52" text-anchor="middle">login(token)</text>
+      <path class="svg-arrow" d="M480 76 H392" style="marker-end:url(#db-arr)"/>
+      <text class="svg-tm" x="435" y="130" text-anchor="middle">événement</text>
+      <path class="svg-arrow" d="M250 76 H162" style="marker-end:url(#db-arr)"/>
+      <text class="svg-tm" x="205" y="130" text-anchor="middle">messageCreate,</text>
+      <text class="svg-tm" x="205" y="146" text-anchor="middle">interactionCreate…</text>
+    </svg>
+    <figcaption>Le bot ouvre une connexion persistante à Discord et reçoit des <em>événements</em> auxquels il s'abonne (voir <a href="../csharp/procedural.html#delegues">délégués & événements</a> pour l'idée générale).</figcaption>
+  </figure>
+
+  <h2 id="portail">Créer l'application Discord</h2>
+  <ol class="steps">
+    <li><strong>Créer l'application</strong> sur le <a href="https://discord.com/developers/applications" target="_blank" rel="noopener">portail développeur Discord</a> → « New Application ».</li>
+    <li><strong>Onglet Bot</strong> → « Reset Token » pour obtenir le <strong>token</strong> — la clé secrète qui authentifie ton script. Ne jamais le partager ni le committer.</li>
+    <li><strong>Activer les intents</strong> nécessaires dans ce même onglet (ex. <em>Message Content Intent</em> pour lire le texte des messages).</li>
+    <li><strong>Inviter le bot</strong> : onglet OAuth2 → URL Generator → cocher <code>bot</code> (+ <code>applications.commands</code> pour les commandes slash) et les permissions requises → ouvrir l'URL générée.</li>
+  </ol>
+
+  <h2 id="installer">Installer discord.js</h2>
+  <pre class="code" data-lang="bash"><script type="text/plain">
+mkdir mon-bot && cd mon-bot
+npm init -y
+npm install discord.js dotenv
+</script></pre>
+  <pre class="code" data-lang="javascript"><script type="text/plain">
+// .env — jamais committé (voir #env)
+DISCORD_TOKEN=le-token-copié-depuis-le-portail
+</script></pre>
+
+  <h2 id="client">Le client</h2>
+  <p>Le <code>Client</code> représente ton bot. Les <strong>intents</strong> déclarent à l'avance quels événements il veut recevoir (moins d'intents = moins de trafic, plus rapide).</p>
+  <pre class="code" data-lang="javascript"><script type="text/plain">
+// index.js
+import 'dotenv/config';
+import { Client, GatewayIntentBits } from 'discord.js';
+
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
+    ],
+});
+
+client.once('ready', () => {
+    console.log(`Connecté en tant que ${client.user.tag}`);
+});
+
+client.login(process.env.DISCORD_TOKEN);
+</script></pre>
+
+  <h2 id="messages">Réagir aux messages</h2>
+  <pre class="code" data-lang="javascript"><script type="text/plain">
+client.on('messageCreate', (message) => {
+    if (message.author.bot) return;   // ignorer les autres bots (dont soi-même)
+
+    if (message.content === '!ping') {
+        message.reply('Pong !');
+    }
+});
+</script></pre>
+  <div class="callout warn">
+    <span class="label">Commandes textuelles vs slash</span>
+    <p>Les commandes tapées (<code>!ping</code>) exigent l'intent <em>Message Content</em>, limité par Discord pour les gros bots. Les <strong>commandes slash</strong> ci-dessous sont la méthode moderne recommandée — elles n'ont pas cette limite et s'affichent avec autocomplétion dans Discord.</p>
+  </div>
+
+  <h2 id="slash">Commandes slash</h2>
+  <p>Une commande slash se déclare (son nom, sa description, ses options), s'<strong>enregistre</strong> une fois auprès de Discord, puis se traite via l'événement <code>interactionCreate</code>.</p>
+  <pre class="code" data-lang="javascript"><script type="text/plain">
+// deploy-commands.js — à exécuter une fois (ou à chaque changement de commande)
+import 'dotenv/config';
+import { REST, Routes, SlashCommandBuilder } from 'discord.js';
+
+const commandes = [
+    new SlashCommandBuilder()
+        .setName('ping')
+        .setDescription('Répond pong'),
+    new SlashCommandBuilder()
+        .setName('salut')
+        .setDescription('Salue quelqu\'un')
+        .addUserOption(option =>
+            option.setName('utilisateur').setDescription('Qui saluer').setRequired(true)),
+].map(c => c.toJSON());
+
+const rest = new REST().setToken(process.env.DISCORD_TOKEN);
+
+await rest.put(
+    Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
+    { body: commandes }
+);
+console.log('Commandes enregistrées.');
+</script></pre>
+  <pre class="code" data-lang="javascript"><script type="text/plain">
+// dans index.js
+client.on('interactionCreate', async (interaction) => {
+    if (!interaction.isChatInputCommand()) return;
+
+    if (interaction.commandName === 'ping') {
+        await interaction.reply('Pong !');
+    }
+
+    if (interaction.commandName === 'salut') {
+        const utilisateur = interaction.options.getUser('utilisateur');
+        await interaction.reply(`Salut ${utilisateur} !`);
+    }
+});
+</script></pre>
+
+  <h2 id="embeds">Messages enrichis (embeds)</h2>
+  <pre class="code" data-lang="javascript"><script type="text/plain">
+import { EmbedBuilder } from 'discord.js';
+
+const embed = new EmbedBuilder()
+    .setTitle('Profil')
+    .setDescription('Informations du membre')
+    .addFields(
+        { name: 'Rejoint le', value: '12/03/2024', inline: true },
+        { name: 'Rôles', value: 'Membre, Modérateur', inline: true },
+    )
+    .setColor(0x2f81f7);
+
+await interaction.reply({ embeds: [embed] });
+</script></pre>
+
+  <h2 id="boutons">Composants interactifs</h2>
+  <pre class="code" data-lang="javascript"><script type="text/plain">
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
+
+const bouton = new ButtonBuilder()
+    .setCustomId('confirmer')
+    .setLabel('Confirmer')
+    .setStyle(ButtonStyle.Success);
+
+const ligne = new ActionRowBuilder().addComponents(bouton);
+await interaction.reply({ content: 'Continuer ?', components: [ligne] });
+
+// ailleurs : écouter le clic sur CE bouton précis
+client.on('interactionCreate', async (interaction) => {
+    if (interaction.isButton() && interaction.customId === 'confirmer') {
+        await interaction.update({ content: 'Confirmé !', components: [] });
+    }
+});
+</script></pre>
+
+  <h2 id="structure">Organiser les commandes</h2>
+  <p>Passé quelques commandes, tout entasser dans <code>interactionCreate</code> devient illisible. Motif courant : un fichier par commande, exportant son nom et sa fonction d'exécution, chargés dans une <code>Collection</code>.</p>
+  <pre class="code" data-lang="javascript"><script type="text/plain">
+// commandes/ping.js
+export default {
+    data: { name: 'ping', description: 'Répond pong' },
+    async execute(interaction) {
+        await interaction.reply('Pong !');
+    },
+};
+</script></pre>
+  <pre class="code" data-lang="javascript"><script type="text/plain">
+// index.js — chargement dynamique
+import { Collection } from 'discord.js';
+import ping from './commandes/ping.js';
+
+client.commandes = new Collection();
+for (const commande of [ping /* , autres... */]) {
+    client.commandes.set(commande.data.name, commande);
+}
+
+client.on('interactionCreate', async (interaction) => {
+    if (!interaction.isChatInputCommand()) return;
+    const commande = client.commandes.get(interaction.commandName);
+    await commande?.execute(interaction);
+});
+</script></pre>
+
+  <h2 id="env">Variables d'environnement</h2>
+  <div class="callout danger">
+    <span class="label">Le token, c'est un mot de passe</span>
+    <p>Quiconque a le token contrôle entièrement le bot. Il vit dans <code>.env</code> (jamais commité — l'ajouter au <code>.gitignore</code>), lu via <code>process.env.DISCORD_TOKEN</code>, jamais écrit en dur dans le code.</p>
+  </div>
+
+  <h2 id="hebergement">Héberger le bot</h2>
+  <p>Le script doit rester en cours d'exécution en permanence — une machine personnelle éteinte coupe le bot. Options courantes : un petit VPS avec <code>pm2</code> (relance automatique si le script plante), ou une plateforme comme Railway/Render.</p>
+  <pre class="code" data-lang="bash"><script type="text/plain">
+npm install -g pm2
+pm2 start index.js --name mon-bot
+pm2 logs mon-bot
+pm2 save && pm2 startup   # redémarre avec le serveur
+</script></pre>
+
+  <h2 id="exemple">Exemple complet</h2>
+  <pre class="code" data-lang="javascript"><script type="text/plain">
+import 'dotenv/config';
+import { Client, GatewayIntentBits, EmbedBuilder } from 'discord.js';
+
+const client = new Client({
+    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
+});
+
+client.once('ready', () => console.log(`Connecté : ${client.user.tag}`));
+
+client.on('interactionCreate', async (interaction) => {
+    if (!interaction.isChatInputCommand()) return;
+
+    if (interaction.commandName === 'ping') {
+        const debut = Date.now();
+        await interaction.reply('Calcul...');
+        const embed = new EmbedBuilder()
+            .setTitle('Pong !')
+            .setDescription(`Latence : ${Date.now() - debut} ms`)
+            .setColor(0x3fb950);
+        await interaction.editReply({ content: null, embeds: [embed] });
+    }
+});
+
+client.login(process.env.DISCORD_TOKEN);
+</script></pre>
+
+  <footer class="pg">
+    <span><a href="index.html">← Accueil JavaScript</a></span>
+    <span><a href="electron.html">Suivant : Apps Electron →</a></span>
+  </footer>
+</main>
+</div>
+
+<script src="../assets/site.config.js"></script>
+<script src="../assets/highlighters/javascript.js"></script>
+<script src="../assets/main.js"></script>
+<script src="../assets/nav.js"></script>
+</body>
+</html>

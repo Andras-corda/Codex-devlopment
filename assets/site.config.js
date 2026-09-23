@@ -42,6 +42,18 @@ window.SITE_CONFIG = {
         { id: "backend",     title: "5 · Backend & MVC",  href: "backend.html" },
         { id: "composer",    title: "6 · Composer & Symfony", href: "composer-symfony.html" }
       ]
+    },
+    {
+      id: "javascript",
+      label: "JavaScript",
+      tagline: "Bots Discord, apps Electron, backend Node.js — animations et style de pages.",
+      home: "index.html",
+      pages: [
+        { id: "discord",   title: "1 · Bot Discord",         href: "discord-bot.html" },
+        { id: "electron",  title: "2 · Apps Electron",         href: "electron.html" },
+        { id: "backend",   title: "3 · Backend de sites web",  href: "backend.html" },
+        { id: "animations", title: "4 · Animations & style",   href: "animations.html" }
+      ]
     }
     // { id: "python", label: "Python", home: "index.html", pages: [ ... ] }
   ],
@@ -49,7 +61,6 @@ window.SITE_CONFIG = {
   // pas de dossier ni de page. Basculer l'entrée dans "languages" ci-dessus quand
   // les pages existent — rien d'autre à changer ici.
   planned: [
-    { id: "javascript", label: "JavaScript" },
     { id: "lua", label: "Lua" },
     { id: "python", label: "Python" },
     { id: "java", label: "Java" },
