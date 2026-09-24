@@ -1,70 +1,119 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Codex — PHP · Backend & MVC</title>
-<meta name="description" content="PHP côté serveur sans framework : superglobales, routage, PDO, requêtes préparées, pattern MVC, sécurité, sessions.">
-<link rel="stylesheet" href="../assets/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Codex — PHP · Backend & MVC</title>
+  <meta name="description"
+    content="PHP côté serveur sans framework : superglobales, routage, PDO, requêtes préparées, pattern MVC, sécurité, sessions.">
+  <link rel="stylesheet" href="../assets/style.css">
 </head>
+
 <body data-lang="php" data-page="backend">
 
-<div class="topbar" id="topbar"></div>
+  <div class="topbar" id="topbar"></div>
 
-<div class="wrap">
-<aside class="side" id="side"></aside>
+  <div class="wrap">
+    <aside class="side" id="side"></aside>
 
-<main>
-  <h1>5 · Backend & MVC</h1>
-  <p class="lead">PHP utilisé pour ce qu'il fait depuis toujours : répondre à des requêtes HTTP, parler à une base de données, rendre du HTML. Le tout <strong>sans framework</strong> — juste PDO et une organisation MVC construite à la main.</p>
+    <main>
+      <h1>5 · Backend & MVC</h1>
+      <p class="lead">PHP utilisé pour ce qu'il fait depuis toujours : répondre à des requêtes HTTP, parler à une base
+        de données, rendre du HTML. Le tout <strong>sans framework</strong> — juste PDO et une organisation MVC
+        construite à la main.</p>
 
-  <h2 id="cycle">Cycle requête → réponse</h2>
-  <p>Plutôt qu'un fichier <code>.php</code> par URL, on fait passer <strong>toutes</strong> les requêtes par un point d'entrée unique (<em>front controller</em>) qui décide quoi faire selon l'URL demandée.</p>
-  <figure>
-    <svg viewBox="0 0 700 260" role="img" aria-label="Cycle requête-réponse en MVC">
-      <defs><marker id="be-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
-        <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
-      <rect class="svg-bg" x="0" y="0" width="700" height="260" rx="6"/>
-      <rect class="svg-box" x="16" y="30" width="110" height="46" rx="6"/><text class="svg-t" x="71" y="58" text-anchor="middle">Navigateur</text>
-      <rect class="svg-box-a" x="176" y="30" width="110" height="46" rx="6"/><text class="svg-t" x="231" y="52" text-anchor="middle">index.php</text><text class="svg-tm" x="231" y="72" text-anchor="middle">front controller</text>
-      <rect class="svg-box-a" x="336" y="30" width="110" height="46" rx="6"/><text class="svg-t" x="391" y="52" text-anchor="middle">Routeur</text><text class="svg-tm" x="391" y="72" text-anchor="middle">URL → action</text>
-      <rect class="svg-box-a" x="496" y="30" width="150" height="46" rx="6"/><text class="svg-t" x="571" y="58" text-anchor="middle">Contrôleur</text>
-      <path class="svg-arrow" d="M128 53 H174"/><path class="svg-arrow" d="M288 53 H334"/><path class="svg-arrow" d="M448 53 H494"/>
+      <h2 id="cycle">Cycle requête → réponse</h2>
+      <p>Plutôt qu'un fichier <code>.php</code> par URL, on fait passer <strong>toutes</strong> les requêtes par un
+        point d'entrée unique (<em>front controller</em>) qui décide quoi faire selon l'URL demandée.</p>
+      <figure>
+        <svg viewBox="0 0 700 260" role="img" aria-label="Cycle requête-réponse en MVC">
+          <defs>
+            <marker id="be-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+              <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5" />
+            </marker>
+          </defs>
+          <rect class="svg-bg" x="0" y="0" width="700" height="260" rx="6" />
+          <rect class="svg-box" x="16" y="30" width="110" height="46" rx="6" /><text class="svg-t" x="71" y="58"
+            text-anchor="middle">Navigateur</text>
+          <rect class="svg-box-a" x="176" y="30" width="110" height="46" rx="6" /><text class="svg-t" x="231" y="52"
+            text-anchor="middle">index.php</text><text class="svg-tm" x="231" y="72" text-anchor="middle">front
+            controller</text>
+          <rect class="svg-box-a" x="336" y="30" width="110" height="46" rx="6" /><text class="svg-t" x="391" y="52"
+            text-anchor="middle">Routeur</text><text class="svg-tm" x="391" y="72" text-anchor="middle">URL →
+            action</text>
+          <rect class="svg-box-a" x="496" y="30" width="150" height="46" rx="6" /><text class="svg-t" x="571" y="58"
+            text-anchor="middle">Contrôleur</text>
+          <path class="svg-arrow" d="M128 53 H174" />
+          <path class="svg-arrow" d="M288 53 H334" />
+          <path class="svg-arrow" d="M448 53 H494" />
 
-      <rect class="uml-box-g" x="380" y="150" width="150" height="46" rx="6"/><text class="svg-t" x="455" y="172" text-anchor="middle">Modèle</text><text class="svg-tm" x="455" y="192" text-anchor="middle">via PDO</text>
-      <rect class="svg-box" x="560" y="150" width="120" height="46" rx="6"/><text class="svg-t" x="620" y="178" text-anchor="middle">Base de données</text>
-      <rect class="uml-box-g" x="180" y="150" width="150" height="46" rx="6"/><text class="svg-t" x="255" y="172" text-anchor="middle">Vue</text><text class="svg-tm" x="255" y="192" text-anchor="middle">gabarit PHP</text>
+          <rect class="uml-box-g" x="380" y="150" width="150" height="46" rx="6" /><text class="svg-t" x="455" y="172"
+            text-anchor="middle">Modèle</text><text class="svg-tm" x="455" y="192" text-anchor="middle">via PDO</text>
+          <rect class="svg-box" x="560" y="150" width="120" height="46" rx="6" /><text class="svg-t" x="620" y="178"
+            text-anchor="middle">Base de données</text>
+          <rect class="uml-box-g" x="180" y="150" width="150" height="46" rx="6" /><text class="svg-t" x="255" y="172"
+            text-anchor="middle">Vue</text><text class="svg-tm" x="255" y="192" text-anchor="middle">gabarit PHP</text>
 
-      <path class="svg-arrow" d="M610 76 L490 148"/><text class="svg-tm" x="560" y="108">données</text>
-      <path class="svg-arrow" d="M530 173 H558"/>
-      <path class="svg-arrow" d="M520 76 L300 148"/><text class="svg-tm" x="390" y="108">rendu</text>
-      <path class="svg-arrow" d="M180 173 H86 V78" style="marker-end:url(#be-arr)"/>
-      <text class="svg-tm" x="90" y="130">réponse HTML</text>
-    </svg>
-    <figcaption>Contrôleur → Modèle (lit/écrit en base via PDO) → Contrôleur → Vue (assemble le HTML) → réponse au navigateur.</figcaption>
-  </figure>
+          <path class="svg-arrow" d="M610 76 L490 148" /><text class="svg-tm" x="560" y="108">données</text>
+          <path class="svg-arrow" d="M530 173 H558" />
+          <path class="svg-arrow" d="M520 76 L300 148" /><text class="svg-tm" x="390" y="108">rendu</text>
+          <path class="svg-arrow" d="M180 173 H86 V78" style="marker-end:url(#be-arr)" />
+          <text class="svg-tm" x="90" y="130">réponse HTML</text>
+        </svg>
+        <figcaption>Contrôleur → Modèle (lit/écrit en base via PDO) → Contrôleur → Vue (assemble le HTML) → réponse au
+          navigateur.</figcaption>
+      </figure>
 
-  <h2 id="superglobales">Superglobales</h2>
-  <p>PHP expose la requête courante via des tableaux toujours accessibles, quelle que soit la portée (les seules variables qui échappent à la règle de <a href="procedural.html#portee">portée par fonction</a>).</p>
-  <table>
-    <thead><tr><th>Superglobale</th><th>Contient</th></tr></thead>
-    <tbody>
-      <tr><td><code>$_GET</code></td><td>paramètres de l'URL (<code>?id=3</code>)</td></tr>
-      <tr><td><code>$_POST</code></td><td>champs d'un formulaire envoyé en <code>POST</code></td></tr>
-      <tr><td><code>$_SERVER</code></td><td>infos sur la requête : <code>REQUEST_URI</code>, <code>REQUEST_METHOD</code>, en-têtes…</td></tr>
-      <tr><td><code>$_SESSION</code></td><td>données persistées entre requêtes pour un même visiteur (après <code>session_start()</code>)</td></tr>
-      <tr><td><code>$_COOKIE</code></td><td>cookies envoyés par le navigateur</td></tr>
-      <tr><td><code>$_FILES</code></td><td>fichiers envoyés via un formulaire <code>multipart/form-data</code></td></tr>
-    </tbody>
-  </table>
-  <div class="callout danger">
-    <span class="label">Jamais de confiance aveugle</span>
-    <p>Tout ce qui vient de <code>$_GET</code>/<code>$_POST</code>/<code>$_SERVER</code> est écrit par l'utilisateur (ou un attaquant). On le <strong>valide</strong> avant de l'utiliser, on l'<strong>échappe</strong> avant de l'afficher (voir <a href="#securite">Sécurité</a>), et on ne l'insère <strong>jamais</strong> directement dans une requête SQL (voir <a href="#requetes-preparees">Requêtes préparées</a>).</p>
-  </div>
+      <h2 id="superglobales">Superglobales</h2>
+      <p>PHP expose la requête courante via des tableaux toujours accessibles, quelle que soit la portée (les seules
+        variables qui échappent à la règle de <a href="procedural.html#portee">portée par fonction</a>).</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Superglobale</th>
+            <th>Contient</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>$_GET</code></td>
+            <td>paramètres de l'URL (<code>?id=3</code>)</td>
+          </tr>
+          <tr>
+            <td><code>$_POST</code></td>
+            <td>champs d'un formulaire envoyé en <code>POST</code></td>
+          </tr>
+          <tr>
+            <td><code>$_SERVER</code></td>
+            <td>infos sur la requête : <code>REQUEST_URI</code>, <code>REQUEST_METHOD</code>, en-têtes…</td>
+          </tr>
+          <tr>
+            <td><code>$_SESSION</code></td>
+            <td>données persistées entre requêtes pour un même visiteur (après <code>session_start()</code>)</td>
+          </tr>
+          <tr>
+            <td><code>$_COOKIE</code></td>
+            <td>cookies envoyés par le navigateur</td>
+          </tr>
+          <tr>
+            <td><code>$_FILES</code></td>
+            <td>fichiers envoyés via un formulaire <code>multipart/form-data</code></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout danger">
+        <span class="label">Jamais de confiance aveugle</span>
+        <p>Tout ce qui vient de <code>$_GET</code>/<code>$_POST</code>/<code>$_SERVER</code> est écrit par l'utilisateur
+          (ou un attaquant). On le <strong>valide</strong> avant de l'utiliser, on l'<strong>échappe</strong> avant de
+          l'afficher (voir <a href="#securite">Sécurité</a>), et on ne l'insère <strong>jamais</strong> directement dans
+          une requête SQL (voir <a href="#requetes-preparees">Requêtes préparées</a>).</p>
+      </div>
 
-  <h2 id="formulaires">Formulaires</h2>
-  <p>Un formulaire HTML envoie ses champs dans <code>$_GET</code> (méthode <code>GET</code>, visible dans l'URL — pour filtrer/rechercher) ou <code>$_POST</code> (méthode <code>POST</code> — pour créer/modifier/supprimer).</p>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <h2 id="formulaires">Formulaires</h2>
+      <p>Un formulaire HTML envoie ses champs dans <code>$_GET</code> (méthode <code>GET</code>, visible dans l'URL —
+        pour filtrer/rechercher) ou <code>$_POST</code> (méthode <code>POST</code> — pour créer/modifier/supprimer).</p>
+      <pre class="code" data-lang="php"><script type="text/plain">
 <!-- GET : recherche, filtre — l'état tient dans l'URL, donc partageable/marque-page -->
 <form method="get" action="/articles">
     <input type="text" name="recherche" value="<?= htmlspecialchars($_GET['recherche'] ?? '') ?>">
@@ -79,22 +128,24 @@
 </form>
 </script></pre>
 
-  <h3>Champs à valeurs multiples</h3>
-  <p>Des cases à cocher ou une liste à sélection multiple partageant le même <code>name[]</code> (avec des crochets) arrivent en PHP sous forme de <strong>tableau</strong>.</p>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <h3>Champs à valeurs multiples</h3>
+      <p>Des cases à cocher ou une liste à sélection multiple partageant le même <code>name[]</code> (avec des crochets)
+        arrivent en PHP sous forme de <strong>tableau</strong>.</p>
+      <pre class="code" data-lang="php"><script type="text/plain">
 <input type="checkbox" name="tags[]" value="php"> PHP
 <input type="checkbox" name="tags[]" value="web"> Web
 </script></pre>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <pre class="code" data-lang="php"><script type="text/plain">
 $tags = $_POST['tags'] ?? [];      // ex. ["php", "web"] — ou [] si rien coché
 foreach ($tags as $tag) {
     echo htmlspecialchars($tag);
 }
 </script></pre>
 
-  <h3>Valider et réafficher en cas d'erreur</h3>
-  <p>Le motif classique : collecter les erreurs dans un tableau ; si vide, traiter ; sinon, réafficher le formulaire avec les valeurs déjà saisies (pour ne pas tout faire retaper) et les messages d'erreur.</p>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <h3>Valider et réafficher en cas d'erreur</h3>
+      <p>Le motif classique : collecter les erreurs dans un tableau ; si vide, traiter ; sinon, réafficher le formulaire
+        avec les valeurs déjà saisies (pour ne pas tout faire retaper) et les messages d'erreur.</p>
+      <pre class="code" data-lang="php"><script type="text/plain">
 $erreurs = [];
 $titre   = trim($_POST['titre'] ?? '');
 $contenu = trim($_POST['contenu'] ?? '');
@@ -117,7 +168,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // sinon : on retombe sur l'affichage du formulaire, $erreurs et les valeurs sont en portée
 }
 </script></pre>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <pre class="code" data-lang="php"><script type="text/plain">
 <!-- vues/articles/creer.php -->
 <form method="post">
     <label>Titre</label>
@@ -136,15 +187,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </form>
 </script></pre>
 
-  <h3>Envoi de fichiers</h3>
-  <p>Un formulaire qui envoie un fichier doit déclarer <code>enctype="multipart/form-data"</code> ; PHP le range dans <code>$_FILES</code>, jamais dans <code>$_POST</code>.</p>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <h3>Envoi de fichiers</h3>
+      <p>Un formulaire qui envoie un fichier doit déclarer <code>enctype="multipart/form-data"</code> ; PHP le range
+        dans <code>$_FILES</code>, jamais dans <code>$_POST</code>.</p>
+      <pre class="code" data-lang="php"><script type="text/plain">
 <form method="post" enctype="multipart/form-data">
     <input type="file" name="illustration">
     <button type="submit">Envoyer</button>
 </form>
 </script></pre>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <pre class="code" data-lang="php"><script type="text/plain">
 $fichier = $_FILES['illustration'] ?? null;
 
 if ($fichier !== null && $fichier['error'] === UPLOAD_ERR_OK) {
@@ -163,14 +215,17 @@ if ($fichier !== null && $fichier['error'] === UPLOAD_ERR_OK) {
     }
 }
 </script></pre>
-  <div class="callout warn">
-    <span class="label">Ne jamais faire confiance à l'extension ni au type MIME envoyé par le navigateur</span>
-    <p><code>$fichier['type']</code> vient du navigateur et se falsifie facilement. Vérifier le contenu réel avec <code>mime_content_type()</code>, limiter la taille, et renommer le fichier à l'enregistrement plutôt que de garder le nom fourni par l'utilisateur.</p>
-  </div>
-  <p>Un formulaire qui modifie des données reste soumis à la même règle que partout ailleurs sur cette page : un jeton <a href="#securite">CSRF</a> vérifié à la réception.</p>
+      <div class="callout warn">
+        <span class="label">Ne jamais faire confiance à l'extension ni au type MIME envoyé par le navigateur</span>
+        <p><code>$fichier['type']</code> vient du navigateur et se falsifie facilement. Vérifier le contenu réel avec
+          <code>mime_content_type()</code>, limiter la taille, et renommer le fichier à l'enregistrement plutôt que de
+          garder le nom fourni par l'utilisateur.</p>
+      </div>
+      <p>Un formulaire qui modifie des données reste soumis à la même règle que partout ailleurs sur cette page : un
+        jeton <a href="#securite">CSRF</a> vérifié à la réception.</p>
 
-  <h2 id="routage">Routage minimal (front controller)</h2>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <h2 id="routage">Routage minimal (front controller)</h2>
+      <pre class="code" data-lang="php"><script type="text/plain">
 // public/index.php — point d'entrée UNIQUE de l'application
 declare(strict_types=1);
 
@@ -199,14 +254,17 @@ foreach ($routes[$methode] ?? [] as $motif => [$classe, $action]) {
 http_response_code(404);
 echo "Page introuvable";
 </script></pre>
-  <div class="callout tip">
-    <span class="label">Tester en local</span>
-    <p>Le serveur intégré (<code>php -S localhost:8000</code>) ne réécrit pas les URL par défaut. Lui donner un script routeur : <code>php -S localhost:8000 public/index.php</code> fait passer chaque requête par le front controller, comme le ferait Apache/Nginx en production.</p>
-  </div>
+      <div class="callout tip">
+        <span class="label">Tester en local</span>
+        <p>Le serveur intégré (<code>php -S localhost:8000</code>) ne réécrit pas les URL par défaut. Lui donner un
+          script routeur : <code>php -S localhost:8000 public/index.php</code> fait passer chaque requête par le front
+          controller, comme le ferait Apache/Nginx en production.</p>
+      </div>
 
-  <h2 id="pdo">Se connecter à une base avec PDO</h2>
-  <p><strong>PDO</strong> (<em>PHP Data Objects</em>) est l'API native, orientée objet, pour parler à une base SQL — indépendante du moteur (MySQL, PostgreSQL, SQLite…).</p>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <h2 id="pdo">Se connecter à une base avec PDO</h2>
+      <p><strong>PDO</strong> (<em>PHP Data Objects</em>) est l'API native, orientée objet, pour parler à une base SQL —
+        indépendante du moteur (MySQL, PostgreSQL, SQLite…).</p>
+      <pre class="code" data-lang="php"><script type="text/plain">
 function connecter(): PDO
 {
     $dsn = 'mysql:host=localhost;dbname=blog;charset=utf8mb4';
@@ -224,13 +282,14 @@ function connecter(): PDO
     }
 }
 </script></pre>
-  <div class="callout warn">
-    <span class="label">Identifiants</span>
-    <p>Le mot de passe vient d'une variable d'environnement (<code>getenv()</code>), jamais codé en dur dans un fichier versionné.</p>
-  </div>
+      <div class="callout warn">
+        <span class="label">Identifiants</span>
+        <p>Le mot de passe vient d'une variable d'environnement (<code>getenv()</code>), jamais codé en dur dans un
+          fichier versionné.</p>
+      </div>
 
-  <h2 id="requetes-preparees">Requêtes préparées — se protéger de l'injection SQL</h2>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <h2 id="requetes-preparees">Requêtes préparées — se protéger de l'injection SQL</h2>
+      <pre class="code" data-lang="php"><script type="text/plain">
 // ❌ DANGER : concaténer une valeur utilisateur dans le SQL — injection SQL possible
 $titre = $_GET['titre'];
 $pdo->query("SELECT * FROM articles WHERE titre = '{$titre}'");
@@ -246,13 +305,14 @@ $stmt = $pdo->prepare('SELECT * FROM articles WHERE id = ? AND publie = ?');
 $stmt->execute([$id, true]);
 $article = $stmt->fetch();          // une seule ligne, ou false
 </script></pre>
-  <div class="callout danger">
-    <span class="label">Règle absolue</span>
-    <p>Une valeur venant de l'utilisateur n'est <strong>jamais</strong> concaténée dans une chaîne SQL. Toujours <code>prepare()</code> + <code>execute([...])</code> — quel que soit le moteur ou la taille du projet.</p>
-  </div>
+      <div class="callout danger">
+        <span class="label">Règle absolue</span>
+        <p>Une valeur venant de l'utilisateur n'est <strong>jamais</strong> concaténée dans une chaîne SQL. Toujours
+          <code>prepare()</code> + <code>execute([...])</code> — quel que soit le moteur ou la taille du projet.</p>
+      </div>
 
-  <h2 id="crud">CRUD complet</h2>
-  <pre class="code" data-lang="sql"><script type="text/plain">
+      <h2 id="crud">CRUD complet</h2>
+      <pre class="code" data-lang="sql"><script type="text/plain">
 CREATE TABLE articles (
     id      INT AUTO_INCREMENT PRIMARY KEY,
     titre   VARCHAR(200) NOT NULL,
@@ -261,7 +321,7 @@ CREATE TABLE articles (
     cree_le DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 </script></pre>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <pre class="code" data-lang="php"><script type="text/plain">
 // CREATE
 $stmt = $pdo->prepare('INSERT INTO articles (titre, contenu, publie) VALUES (:titre, :contenu, :publie)');
 $stmt->execute(['titre' => 'Bonjour', 'contenu' => '...', 'publie' => true]);
@@ -285,9 +345,10 @@ $stmt = $pdo->prepare('DELETE FROM articles WHERE id = :id');
 $stmt->execute(['id' => $nouvelId]);
 </script></pre>
 
-  <h2 id="transactions">Transactions</h2>
-  <p>Pour garantir que plusieurs écritures réussissent <strong>toutes ensemble ou pas du tout</strong> (ex. transférer un solde entre deux comptes).</p>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <h2 id="transactions">Transactions</h2>
+      <p>Pour garantir que plusieurs écritures réussissent <strong>toutes ensemble ou pas du tout</strong> (ex.
+        transférer un solde entre deux comptes).</p>
+      <pre class="code" data-lang="php"><script type="text/plain">
 function transferer(PDO $pdo, int $depuis, int $vers, float $montant): void
 {
     $pdo->beginTransaction();
@@ -310,59 +371,118 @@ function transferer(PDO $pdo, int $depuis, int $vers, float $montant): void
 }
 </script></pre>
 
-  <h2 id="mvc">Le pattern MVC</h2>
-  <p><strong>Modèle</strong>-<strong>Vue</strong>-<strong>Contrôleur</strong> sépare trois responsabilités qui, mélangées dans un seul script, deviennent vite illisibles.</p>
-  <figure>
-    <svg viewBox="0 0 560 220" role="img" aria-label="Diagramme UML — MVC">
-      <defs><marker id="mvc-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
-        <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
-      <rect class="svg-bg" x="0" y="0" width="560" height="220" rx="6"/>
-      <rect class="uml-box-a" x="200" y="16" width="160" height="22"/>
-      <rect class="uml-box-a" x="200" y="38" width="160" height="46"/>
-      <text class="uml-name" x="280" y="32" text-anchor="middle">ArticleController</text>
-      <text class="uml-m" x="208" y="55">+ liste() : void</text>
-      <text class="uml-m" x="208" y="73">+ afficher(id) : void</text>
-      <rect class="uml-box-g" x="30" y="150" width="180" height="22"/>
-      <rect class="uml-box-g" x="30" y="172" width="180" height="40"/>
-      <text class="uml-name" x="120" y="166" text-anchor="middle">ArticleModel</text>
-      <text class="uml-m" x="38" y="189">+ tous() : array</text>
-      <text class="uml-m" x="38" y="206">+ trouver(id) : array</text>
-      <rect class="uml-box" x="350" y="150" width="180" height="22"/>
-      <rect class="uml-box" x="350" y="172" width="180" height="24"/>
-      <text class="uml-name" x="440" y="166" text-anchor="middle">Vue</text>
-      <text class="uml-m" x="358" y="189">+ rendre(gabarit, donnees)</text>
-      <path class="uml-rel" style="marker-end:url(#mvc-arr)" d="M240 84 L145 148"/>
-      <path class="uml-rel" style="marker-end:url(#mvc-arr)" d="M320 84 L420 148"/>
-    </svg>
-    <figcaption>Le contrôleur <em>connaît</em> le modèle et la vue (associations). Ni le modèle ni la vue ne connaissent le contrôleur.</figcaption>
-  </figure>
-  <table>
-    <thead><tr><th>Couche</th><th>Responsabilité</th><th>Ne fait <strong>pas</strong></th></tr></thead>
-    <tbody>
-      <tr><td><strong>Modèle</strong></td><td>données, règles métier, accès PDO</td><td>ne génère pas de HTML</td></tr>
-      <tr><td><strong>Vue</strong></td><td>affichage : transformer des données en HTML</td><td>ne fait pas de requête SQL, ne décide rien</td></tr>
-      <tr><td><strong>Contrôleur</strong></td><td>reçoit la requête, appelle le modèle, choisit la vue</td><td>ne contient pas de SQL, ni de HTML</td></tr>
-    </tbody>
-  </table>
+      <h2 id="mvc">Le pattern MVC</h2>
+      <p><strong>Modèle</strong>-<strong>Vue</strong>-<strong>Contrôleur</strong> sépare trois responsabilités qui,
+        mélangées dans un seul script, deviennent vite illisibles.</p>
+      <figure>
+        <svg viewBox="0 0 560 220" role="img" aria-label="Diagramme UML — MVC">
+          <defs>
+            <marker id="mvc-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+              <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5" />
+            </marker>
+          </defs>
+          <rect class="svg-bg" x="0" y="0" width="560" height="220" rx="6" />
+          <rect class="uml-box-a" x="200" y="16" width="160" height="22" />
+          <rect class="uml-box-a" x="200" y="38" width="160" height="46" />
+          <text class="uml-name" x="280" y="32" text-anchor="middle">ArticleController</text>
+          <text class="uml-m" x="208" y="55">+ liste() : void</text>
+          <text class="uml-m" x="208" y="73">+ afficher(id) : void</text>
+          <rect class="uml-box-g" x="30" y="150" width="180" height="22" />
+          <rect class="uml-box-g" x="30" y="172" width="180" height="40" />
+          <text class="uml-name" x="120" y="166" text-anchor="middle">ArticleModel</text>
+          <text class="uml-m" x="38" y="189">+ tous() : array</text>
+          <text class="uml-m" x="38" y="206">+ trouver(id) : array</text>
+          <rect class="uml-box" x="350" y="150" width="180" height="22" />
+          <rect class="uml-box" x="350" y="172" width="180" height="24" />
+          <text class="uml-name" x="440" y="166" text-anchor="middle">Vue</text>
+          <text class="uml-m" x="358" y="189">+ rendre(gabarit, donnees)</text>
+          <path class="uml-rel" style="marker-end:url(#mvc-arr)" d="M240 84 L145 148" />
+          <path class="uml-rel" style="marker-end:url(#mvc-arr)" d="M320 84 L420 148" />
+        </svg>
+        <figcaption>Le contrôleur <em>connaît</em> le modèle et la vue (associations). Ni le modèle ni la vue ne
+          connaissent le contrôleur.</figcaption>
+      </figure>
+      <table>
+        <thead>
+          <tr>
+            <th>Couche</th>
+            <th>Responsabilité</th>
+            <th>Ne fait <strong>pas</strong></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Modèle</strong></td>
+            <td>données, règles métier, accès PDO</td>
+            <td>ne génère pas de HTML</td>
+          </tr>
+          <tr>
+            <td><strong>Vue</strong></td>
+            <td>affichage : transformer des données en HTML</td>
+            <td>ne fait pas de requête SQL, ne décide rien</td>
+          </tr>
+          <tr>
+            <td><strong>Contrôleur</strong></td>
+            <td>reçoit la requête, appelle le modèle, choisit la vue</td>
+            <td>ne contient pas de SQL, ni de HTML</td>
+          </tr>
+        </tbody>
+      </table>
 
-  <h2 id="mvc-styles">Deux façons de l'implémenter : objet ou procédural</h2>
-  <p>MVC est une idée de séparation des responsabilités, pas une syntaxe imposée. On peut l'appliquer avec des classes (la version détaillée plus bas) ou avec de simples fonctions et fichiers inclus — la version qu'on trouve dans beaucoup de petits sites PHP, souvent plus rapide à lire d'un bout à l'autre pour un projet modeste.</p>
+      <h2 id="mvc-styles">Deux façons de l'implémenter : objet ou procédural</h2>
+      <p>MVC est une idée de séparation des responsabilités, pas une syntaxe imposée. On peut l'appliquer avec des
+        classes (la version détaillée plus bas) ou avec de simples fonctions et fichiers inclus — la version qu'on
+        trouve dans beaucoup de petits sites PHP, souvent plus rapide à lire d'un bout à l'autre pour un projet modeste.
+      </p>
 
-  <table>
-    <thead><tr><th></th><th>Procédural (fonctions + fichiers)</th><th>Orienté objet (classes)</th></tr></thead>
-    <tbody>
-      <tr><td>Où vit la logique</td><td>des fonctions groupées par fichier (<code>modele_articles.php</code>)</td><td>des méthodes sur des classes dédiées</td></tr>
-      <tr><td>Passer les données à la vue</td><td>variables locales, visibles telles quelles dans le fichier inclus</td><td>tableau passé à une méthode <code>rendre()</code></td></tr>
-      <tr><td>Faire varier le comportement</td><td>dupliquer/adapter une fonction</td><td>hériter, ou injecter une autre implémentation</td></tr>
-      <tr><td>Tester une couche isolément</td><td>plus difficile (dépend de <code>$pdo</code> en portée)</td><td>facile (on injecte un faux <code>PDO</code> au constructeur)</td></tr>
-      <tr><td>Erreur base de données</td><td>attrapée dans la fonction, loggée, valeur de repli renvoyée</td><td>remonte au contrôleur (ou plus haut) via une exception</td></tr>
-      <tr><td>Bon pour</td><td>petit site, script unique, prototype</td><td>projet qui grossit, plusieurs contributeurs</td></tr>
-    </tbody>
-  </table>
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>Procédural (fonctions + fichiers)</th>
+            <th>Orienté objet (classes)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Où vit la logique</td>
+            <td>des fonctions groupées par fichier (<code>modele_articles.php</code>)</td>
+            <td>des méthodes sur des classes dédiées</td>
+          </tr>
+          <tr>
+            <td>Passer les données à la vue</td>
+            <td>variables locales, visibles telles quelles dans le fichier inclus</td>
+            <td>tableau passé à une méthode <code>rendre()</code></td>
+          </tr>
+          <tr>
+            <td>Faire varier le comportement</td>
+            <td>dupliquer/adapter une fonction</td>
+            <td>hériter, ou injecter une autre implémentation</td>
+          </tr>
+          <tr>
+            <td>Tester une couche isolément</td>
+            <td>plus difficile (dépend de <code>$pdo</code> en portée)</td>
+            <td>facile (on injecte un faux <code>PDO</code> au constructeur)</td>
+          </tr>
+          <tr>
+            <td>Erreur base de données</td>
+            <td>attrapée dans la fonction, loggée, valeur de repli renvoyée</td>
+            <td>remonte au contrôleur (ou plus haut) via une exception</td>
+          </tr>
+          <tr>
+            <td>Bon pour</td>
+            <td>petit site, script unique, prototype</td>
+            <td>projet qui grossit, plusieurs contributeurs</td>
+          </tr>
+        </tbody>
+      </table>
 
-  <h3>Version procédurale (sans classes)</h3>
-  <p>Le routage se fait sur l'URL elle-même (pas un paramètre <code>?page=</code>), avec des fonctions de contrôleur groupées par domaine — proche de ce que fait <a href="https://github.com/Andras-corda/blenderHeajWeb" target="_blank" rel="noopener">un projet réel sans framework</a> : un <code>index.php</code> minimal, un contrôleur central qui route et délègue, des modèles qui n'exposent que des fonctions.</p>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <h3>Version procédurale (sans classes)</h3>
+      <p>Le routage se fait sur l'URL elle-même (pas un paramètre <code>?page=</code>), avec des fonctions de contrôleur
+        groupées par domaine — proche de ce que fait <a href="https://github.com/Andras-corda/blenderHeajWeb"
+          target="_blank" rel="noopener">un projet réel sans framework</a> : un <code>index.php</code> minimal, un
+        contrôleur central qui route et délègue, des modèles qui n'exposent que des fonctions.</p>
+      <pre class="code" data-lang="php"><script type="text/plain">
 // public/index.php — le SEUL point d'entrée, volontairement minimal
 declare(strict_types=1);
 
@@ -375,7 +495,7 @@ session_start([
 require __DIR__ . '/../src/pdo.php';              // fournit $pdo
 require __DIR__ . '/../src/mainController.php';    // route ET dispatche
 </script></pre>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <pre class="code" data-lang="php"><script type="text/plain">
 // src/mainController.php — routage par URL + fonctions "contrôleur"
 require_once __DIR__ . '/articlesController.php';
 
@@ -424,7 +544,7 @@ function page404(): void
     require __DIR__ . '/../vues/base.php';
 }
 </script></pre>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <pre class="code" data-lang="php"><script type="text/plain">
 // modeles/articlesModel.php — des fonctions, rien de plus ; on encaisse l'erreur ici
 function articles_tous(PDO $pdo): array
 {
@@ -448,7 +568,7 @@ function articles_trouver(PDO $pdo, int $id): ?array
     }
 }
 </script></pre>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <pre class="code" data-lang="php"><script type="text/plain">
 <!-- vues/base.php — le gabarit commun, avec un "trou" rempli par $template -->
 <!DOCTYPE html>
 <html lang="fr">
@@ -468,7 +588,7 @@ function articles_trouver(PDO $pdo, int $id): ?array
 </body>
 </html>
 </script></pre>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <pre class="code" data-lang="php"><script type="text/plain">
 <!-- vues/articles/liste.php — $articles et $titre sont déjà en portée -->
 <h1>Articles</h1>
 <ul>
@@ -481,24 +601,36 @@ function articles_trouver(PDO $pdo, int $id): ?array
 <?php endforeach; ?>
 </ul>
 </script></pre>
-  <div class="callout info">
-    <span class="label">Le gabarit à trou : la vraie astuce de ce style</span>
-    <p><code>require</code> partage la portée locale du fichier appelant. Le contrôleur pose <code>$template</code> (un chemin de fichier) puis <code>require</code> <code>vues/base.php</code> ; celui-ci fait à son tour <code>require $template;</code> exactement là où il veut insérer le contenu. Résultat : un layout unique (en-tête, pied de page, CSS) partagé par toutes les pages, sans classe ni moteur de template — juste deux <code>require</code> imbriqués.</p>
-  </div>
-  <div class="callout warn">
-    <span class="label">Le choix « try/catch + valeur de repli » a un coût</span>
-    <p>Chaque fonction modèle avale l'exception et journalise avec <code>error_log()</code> : la page ne plante jamais sur un souci de base de données, mais l'appelant ne sait pas qu'une erreur a eu lieu — seuls les logs le disent. C'est un compromis délibéré pour un site public ; la version objet ci-dessous laisse l'exception remonter, à charge pour un point unique de l'attraper.</p>
-  </div>
-  <div class="callout tip">
-    <span class="label">Laquelle choisir ?</span>
-    <p>Les deux sont légitimes. Commencer en procédural pour un script ou un petit site ; basculer vers l'objet quand les routes, les modèles ou les variantes de vue se multiplient et que la duplication devient pénible à maintenir.</p>
-  </div>
+      <div class="callout info">
+        <span class="label">Le gabarit à trou : la vraie astuce de ce style</span>
+        <p><code>require</code> partage la portée locale du fichier appelant. Le contrôleur pose <code>$template</code>
+          (un chemin de fichier) puis <code>require</code> <code>vues/base.php</code> ; celui-ci fait à son tour
+          <code>require $template;</code> exactement là où il veut insérer le contenu. Résultat : un layout unique
+          (en-tête, pied de page, CSS) partagé par toutes les pages, sans classe ni moteur de template — juste deux
+          <code>require</code> imbriqués.</p>
+      </div>
+      <div class="callout warn">
+        <span class="label">Le choix « try/catch + valeur de repli » a un coût</span>
+        <p>Chaque fonction modèle avale l'exception et journalise avec <code>error_log()</code> : la page ne plante
+          jamais sur un souci de base de données, mais l'appelant ne sait pas qu'une erreur a eu lieu — seuls les logs
+          le disent. C'est un compromis délibéré pour un site public ; la version objet ci-dessous laisse l'exception
+          remonter, à charge pour un point unique de l'attraper.</p>
+      </div>
+      <div class="callout tip">
+        <span class="label">Laquelle choisir ?</span>
+        <p>Les deux sont légitimes. Commencer en procédural pour un script ou un petit site ; basculer vers l'objet
+          quand les routes, les modèles ou les variantes de vue se multiplient et que la duplication devient pénible à
+          maintenir.</p>
+      </div>
 
-  <h3>Version orientée objet</h3>
-  <p>C'est celle détaillée dans les trois sections qui suivent (<a href="#modele">Le Modèle</a>, <a href="#vue">La Vue</a>, <a href="#controleur">Le Contrôleur</a>) : mêmes responsabilités que ci-dessus, mais chaque couche est une classe qu'on peut étendre, remplacer par injection, ou tester isolément avec un faux <code>PDO</code>.</p>
+      <h3>Version orientée objet</h3>
+      <p>C'est celle détaillée dans les trois sections qui suivent (<a href="#modele">Le Modèle</a>, <a href="#vue">La
+          Vue</a>, <a href="#controleur">Le Contrôleur</a>) : mêmes responsabilités que ci-dessus, mais chaque couche
+        est une classe qu'on peut étendre, remplacer par injection, ou tester isolément avec un faux <code>PDO</code>.
+      </p>
 
-  <h2 id="modele">Le Modèle</h2>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <h2 id="modele">Le Modèle</h2>
+      <pre class="code" data-lang="php"><script type="text/plain">
 final class ArticleModel
 {
     public function __construct(private readonly PDO $pdo) {}
@@ -524,9 +656,10 @@ final class ArticleModel
 }
 </script></pre>
 
-  <h2 id="vue">La Vue</h2>
-  <p>Un gabarit PHP simple : du HTML avec quelques échappatoires <code>&lt;?= ?&gt;</code> pour insérer des données — <strong>toujours échappées</strong>.</p>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <h2 id="vue">La Vue</h2>
+      <p>Un gabarit PHP simple : du HTML avec quelques échappatoires <code>&lt;?= ?&gt;</code> pour insérer des données
+        — <strong>toujours échappées</strong>.</p>
+      <pre class="code" data-lang="php"><script type="text/plain">
 // src/Vue.php
 final class Vue
 {
@@ -539,7 +672,7 @@ final class Vue
     }
 }
 </script></pre>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <pre class="code" data-lang="php"><script type="text/plain">
 <!-- vues/articles/liste.php -->
 <h1>Articles</h1>
 <ul>
@@ -552,13 +685,15 @@ final class Vue
 <?php endforeach; ?>
 </ul>
 </script></pre>
-  <div class="callout danger">
-    <span class="label">XSS</span>
-    <p>Toute donnée affichée dans une vue passe par <code>htmlspecialchars($valeur, ENT_QUOTES)</code> (ou une fonction d'échappement équivalente) — sinon un titre d'article contenant <code>&lt;script&gt;</code> s'exécute dans le navigateur des autres visiteurs.</p>
-  </div>
+      <div class="callout danger">
+        <span class="label">XSS</span>
+        <p>Toute donnée affichée dans une vue passe par <code>htmlspecialchars($valeur, ENT_QUOTES)</code> (ou une
+          fonction d'échappement équivalente) — sinon un titre d'article contenant <code>&lt;script&gt;</code> s'exécute
+          dans le navigateur des autres visiteurs.</p>
+      </div>
 
-  <h2 id="controleur">Le Contrôleur</h2>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <h2 id="controleur">Le Contrôleur</h2>
+      <pre class="code" data-lang="php"><script type="text/plain">
 final class ArticleController
 {
     private ArticleModel $articles;
@@ -605,8 +740,8 @@ final class ArticleController
 }
 </script></pre>
 
-  <h2 id="exemple">Exemple complet — arborescence du mini-projet</h2>
-  <pre class="code" data-lang="text"><script type="text/plain">
+      <h2 id="exemple">Exemple complet — arborescence du mini-projet</h2>
+      <pre class="code" data-lang="text"><script type="text/plain">
 mon-appli/
 ├── public/
 │   └── index.php          # front controller — SEUL fichier exposé au web
@@ -623,13 +758,15 @@ mon-appli/
         ├── 404.php
         └── 422.php
 </script></pre>
-  <div class="callout tip">
-    <span class="label">Un seul point d'entrée public</span>
-    <p>Seul le dossier <code>public/</code> est accessible depuis le web (racine du serveur). <code>src/</code> et <code>vues/</code> restent en dehors — même en cas de mauvaise configuration serveur, leur code PHP ne peut pas être téléchargé en clair.</p>
-  </div>
+      <div class="callout tip">
+        <span class="label">Un seul point d'entrée public</span>
+        <p>Seul le dossier <code>public/</code> est accessible depuis le web (racine du serveur). <code>src/</code> et
+          <code>vues/</code> restent en dehors — même en cas de mauvaise configuration serveur, leur code PHP ne peut
+          pas être téléchargé en clair.</p>
+      </div>
 
-  <h2 id="securite">Sécurité de base</h2>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <h2 id="securite">Sécurité de base</h2>
+      <pre class="code" data-lang="php"><script type="text/plain">
 // Mots de passe : jamais en clair, jamais un simple md5()/sha1()
 $hash = password_hash($motDePasse, PASSWORD_DEFAULT);     // à l'inscription
 password_verify($motDePasseSaisi, $hash);                    // à la connexion
@@ -644,19 +781,39 @@ if (!hash_equals($_SESSION['csrf'], $_POST['csrf'] ?? '')) {
     exit('Requête invalide');
 }
 </script></pre>
-  <table>
-    <thead><tr><th>Risque</th><th>Parade</th></tr></thead>
-    <tbody>
-      <tr><td>Injection SQL</td><td>requêtes préparées PDO — jamais de concaténation</td></tr>
-      <tr><td>XSS</td><td><code>htmlspecialchars()</code> systématique dans les vues</td></tr>
-      <tr><td>Mots de passe en clair</td><td><code>password_hash()</code> / <code>password_verify()</code></td></tr>
-      <tr><td>CSRF</td><td>jeton de session vérifié sur les formulaires qui modifient des données</td></tr>
-      <tr><td>Fichiers source exposés</td><td>un seul dossier <code>public/</code> servi par le serveur web</td></tr>
-    </tbody>
-  </table>
+      <table>
+        <thead>
+          <tr>
+            <th>Risque</th>
+            <th>Parade</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Injection SQL</td>
+            <td>requêtes préparées PDO — jamais de concaténation</td>
+          </tr>
+          <tr>
+            <td>XSS</td>
+            <td><code>htmlspecialchars()</code> systématique dans les vues</td>
+          </tr>
+          <tr>
+            <td>Mots de passe en clair</td>
+            <td><code>password_hash()</code> / <code>password_verify()</code></td>
+          </tr>
+          <tr>
+            <td>CSRF</td>
+            <td>jeton de session vérifié sur les formulaires qui modifient des données</td>
+          </tr>
+          <tr>
+            <td>Fichiers source exposés</td>
+            <td>un seul dossier <code>public/</code> servi par le serveur web</td>
+          </tr>
+        </tbody>
+      </table>
 
-  <h2 id="sessions">Sessions & authentification</h2>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <h2 id="sessions">Sessions & authentification</h2>
+      <pre class="code" data-lang="php"><script type="text/plain">
 session_start();
 
 function connecterUtilisateur(PDO $pdo, string $email, string $motDePasse): bool
@@ -686,16 +843,17 @@ function deconnecter(): void
 }
 </script></pre>
 
-  <footer class="pg">
-    <span><a href="types-collections-uml.html">← Types & UML</a></span>
-    <span><a href="composer-symfony.html">Suivant : Composer & Symfony →</a></span>
-  </footer>
-</main>
-</div>
+      <footer class="pg">
+        <span><a href="types-collections-uml.html">← Types & UML</a></span>
+        <span><a href="composer-symfony.html">Suivant : Composer & Symfony →</a></span>
+      </footer>
+    </main>
+  </div>
 
-<script src="../assets/site.config.js"></script>
-<script src="../assets/highlighters/php.js"></script>
-<script src="../assets/main.js"></script>
-<script src="../assets/nav.js"></script>
+  <script src="../assets/site.config.js"></script>
+  <script src="../assets/highlighters/php.js"></script>
+  <script src="../assets/main.js"></script>
+  <script src="../assets/nav.js"></script>
 </body>
+
 </html>

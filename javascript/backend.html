@@ -1,26 +1,31 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Codex — JavaScript · Backend de sites web</title>
-<meta name="description" content="Backend Node.js avec Express : routage, middleware, requêtes paramétrées, CRUD, structure en couches, sécurité.">
-<link rel="stylesheet" href="../assets/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Codex — JavaScript · Backend de sites web</title>
+  <meta name="description"
+    content="Backend Node.js avec Express : routage, middleware, requêtes paramétrées, CRUD, structure en couches, sécurité.">
+  <link rel="stylesheet" href="../assets/style.css">
 </head>
+
 <body data-lang="javascript" data-page="backend">
 
-<div class="topbar" id="topbar"></div>
+  <div class="topbar" id="topbar"></div>
 
-<div class="wrap">
-<aside class="side" id="side"></aside>
+  <div class="wrap">
+    <aside class="side" id="side"></aside>
 
-<main>
-  <h1>3 · Backend de sites web</h1>
-  <p class="lead">Node.js comme serveur : répondre à des requêtes HTTP, parler à une base de données, exposer une API. Avec <strong>Express</strong>, le framework minimal qui domine l'écosystème.</p>
+    <main>
+      <h1>3 · Backend de sites web</h1>
+      <p class="lead">Node.js comme serveur : répondre à des requêtes HTTP, parler à une base de données, exposer une
+        API. Avec <strong>Express</strong>, le framework minimal qui domine l'écosystème.</p>
 
-  <h2 id="idee">Node.js comme serveur</h2>
-  <p>Node fournit un module <code>http</code> natif — capable de servir des requêtes sans aucune dépendance — mais tout le monde (ou presque) passe par Express, qui ajoute routage et middleware par-dessus.</p>
-  <pre class="code" data-lang="javascript"><script type="text/plain">
+      <h2 id="idee">Node.js comme serveur</h2>
+      <p>Node fournit un module <code>http</code> natif — capable de servir des requêtes sans aucune dépendance — mais
+        tout le monde (ou presque) passe par Express, qui ajoute routage et middleware par-dessus.</p>
+      <pre class="code" data-lang="javascript"><script type="text/plain">
 // Serveur minimal SANS Express — pour comprendre ce qu'Express fait pour toi
 import http from 'node:http';
 
@@ -32,11 +37,11 @@ const serveur = http.createServer((req, res) => {
 serveur.listen(3000, () => console.log('Écoute sur le port 3000'));
 </script></pre>
 
-  <h2 id="installer">Installer Express</h2>
-  <pre class="code" data-lang="bash"><script type="text/plain">
+      <h2 id="installer">Installer Express</h2>
+      <pre class="code" data-lang="bash"><script type="text/plain">
 npm install express
 </script></pre>
-  <pre class="code" data-lang="javascript"><script type="text/plain">
+      <pre class="code" data-lang="javascript"><script type="text/plain">
 import express from 'express';
 const app = express();
 
@@ -45,8 +50,8 @@ app.get('/', (req, res) => res.send('Bonjour !'));
 app.listen(3000, () => console.log('Écoute sur le port 3000'));
 </script></pre>
 
-  <h2 id="routage">Routage</h2>
-  <pre class="code" data-lang="javascript"><script type="text/plain">
+      <h2 id="routage">Routage</h2>
+      <pre class="code" data-lang="javascript"><script type="text/plain">
 app.get('/articles', (req, res) => { /* lister */ });
 app.get('/articles/:id', (req, res) => { /* un seul, req.params.id */ });
 app.post('/articles', (req, res) => { /* créer, req.body */ });
@@ -60,9 +65,10 @@ routeurArticles.get('/:id', afficherArticle);
 app.use('/articles', routeurArticles);
 </script></pre>
 
-  <h2 id="middleware">Middleware</h2>
-  <p>Une fonction <code>(req, res, next)</code> qui s'exécute avant la route — pour parser le corps de la requête, journaliser, authentifier… <code>next()</code> passe la main au middleware ou à la route suivante.</p>
-  <pre class="code" data-lang="javascript"><script type="text/plain">
+      <h2 id="middleware">Middleware</h2>
+      <p>Une fonction <code>(req, res, next)</code> qui s'exécute avant la route — pour parser le corps de la requête,
+        journaliser, authentifier… <code>next()</code> passe la main au middleware ou à la route suivante.</p>
+      <pre class="code" data-lang="javascript"><script type="text/plain">
 app.use(express.json());          // remplit req.body à partir d'un JSON envoyé
 
 app.use((req, res, next) => {      // middleware maison : journalise chaque requête
@@ -79,8 +85,8 @@ function exigerAuth(req, res, next) {
 app.delete('/articles/:id', exigerAuth, supprimerArticle);   // middleware sur UNE route
 </script></pre>
 
-  <h2 id="requetes">Requête & réponse</h2>
-  <pre class="code" data-lang="javascript"><script type="text/plain">
+      <h2 id="requetes">Requête & réponse</h2>
+      <pre class="code" data-lang="javascript"><script type="text/plain">
 app.get('/articles/:id', (req, res) => {
     const id = Number(req.params.id);           // paramètre d'URL : /articles/42
     // req.query.tri                              // ?tri=date  → query string
@@ -94,28 +100,46 @@ app.get('/articles/:id', (req, res) => {
     res.status(200).json({ id, titre: 'Exemple' });
 });
 </script></pre>
-  <table>
-    <thead><tr><th>Méthode</th><th>Rôle</th></tr></thead>
-    <tbody>
-      <tr><td><code>res.json(donnees)</code></td><td>répond en JSON (content-type automatique)</td></tr>
-      <tr><td><code>res.status(code)</code></td><td>fixe le code HTTP (chaînable : <code>.status(404).json(...)</code>)</td></tr>
-      <tr><td><code>res.send(texte)</code></td><td>répond en texte/HTML brut</td></tr>
-      <tr><td><code>res.redirect(url)</code></td><td>redirection HTTP</td></tr>
-    </tbody>
-  </table>
+      <table>
+        <thead>
+          <tr>
+            <th>Méthode</th>
+            <th>Rôle</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>res.json(donnees)</code></td>
+            <td>répond en JSON (content-type automatique)</td>
+          </tr>
+          <tr>
+            <td><code>res.status(code)</code></td>
+            <td>fixe le code HTTP (chaînable : <code>.status(404).json(...)</code>)</td>
+          </tr>
+          <tr>
+            <td><code>res.send(texte)</code></td>
+            <td>répond en texte/HTML brut</td>
+          </tr>
+          <tr>
+            <td><code>res.redirect(url)</code></td>
+            <td>redirection HTTP</td>
+          </tr>
+        </tbody>
+      </table>
 
-  <h2 id="statique">Fichiers statiques</h2>
-  <pre class="code" data-lang="javascript"><script type="text/plain">
+      <h2 id="statique">Fichiers statiques</h2>
+      <pre class="code" data-lang="javascript"><script type="text/plain">
 app.use(express.static('public'));   // tout ce qui est dans public/ devient accessible tel quel
 // public/style.css → https://.../style.css
 </script></pre>
 
-  <h2 id="bdd">Connexion à une base de données</h2>
-  <p>Comme pour PDO côté <a href="../php/backend.html#pdo">PHP</a> : une connexion, et des requêtes <strong>paramétrées</strong> — jamais de concaténation d'une valeur utilisateur dans le SQL.</p>
-  <pre class="code" data-lang="bash"><script type="text/plain">
+      <h2 id="bdd">Connexion à une base de données</h2>
+      <p>Comme pour PDO côté <a href="../php/backend.html#pdo">PHP</a> : une connexion, et des requêtes
+        <strong>paramétrées</strong> — jamais de concaténation d'une valeur utilisateur dans le SQL.</p>
+      <pre class="code" data-lang="bash"><script type="text/plain">
 npm install pg
 </script></pre>
-  <pre class="code" data-lang="javascript"><script type="text/plain">
+      <pre class="code" data-lang="javascript"><script type="text/plain">
 import pg from 'pg';
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
@@ -128,8 +152,8 @@ await pool.query(`SELECT * FROM articles WHERE titre = '${titre}'`);
 const { rows } = await pool.query('SELECT * FROM articles WHERE titre = $1', [titre]);
 </script></pre>
 
-  <h2 id="crud">CRUD complet</h2>
-  <pre class="code" data-lang="sql"><script type="text/plain">
+      <h2 id="crud">CRUD complet</h2>
+      <pre class="code" data-lang="sql"><script type="text/plain">
 CREATE TABLE articles (
     id      SERIAL PRIMARY KEY,
     titre   VARCHAR(200) NOT NULL,
@@ -137,7 +161,7 @@ CREATE TABLE articles (
     cree_le TIMESTAMP NOT NULL DEFAULT NOW()
 );
 </script></pre>
-  <pre class="code" data-lang="javascript"><script type="text/plain">
+      <pre class="code" data-lang="javascript"><script type="text/plain">
 // modeles/articles.js
 export async function tous(pool) {
     const { rows } = await pool.query('SELECT * FROM articles ORDER BY cree_le DESC');
@@ -162,9 +186,11 @@ export async function supprimer(pool, id) {
 }
 </script></pre>
 
-  <h2 id="structure">Organiser en couches</h2>
-  <p>Express n'impose aucune structure — le motif le plus courant reprend les mêmes rôles que le <a href="../php/backend.html#mvc">MVC</a> vu côté PHP : routes (contrôleur), fonctions d'accès aux données (modèle), réponses JSON (pas de « vue » HTML pour une API).</p>
-  <pre class="code" data-lang="text"><script type="text/plain">
+      <h2 id="structure">Organiser en couches</h2>
+      <p>Express n'impose aucune structure — le motif le plus courant reprend les mêmes rôles que le <a
+          href="../php/backend.html#mvc">MVC</a> vu côté PHP : routes (contrôleur), fonctions d'accès aux données
+        (modèle), réponses JSON (pas de « vue » HTML pour une API).</p>
+      <pre class="code" data-lang="text"><script type="text/plain">
 mon-api/
 ├── index.js               # crée l'app, branche les middlewares et les routes
 ├── db.js                   # exporte le Pool pg configuré
@@ -175,7 +201,7 @@ mon-api/
 └── modeles/
     └── articles.js            # requêtes SQL paramétrées, rien d'autre
 </script></pre>
-  <pre class="code" data-lang="javascript"><script type="text/plain">
+      <pre class="code" data-lang="javascript"><script type="text/plain">
 // controleurs/articlesControleur.js
 import * as ArticlesModel from '../modeles/articles.js';
 
@@ -191,9 +217,10 @@ export async function afficher(req, res) {
 }
 </script></pre>
 
-  <h2 id="erreurs">Gestion des erreurs</h2>
-  <p>Un middleware à <strong>4 paramètres</strong> (avec <code>err</code> en premier) capte les erreurs — à déclarer en dernier, après toutes les routes.</p>
-  <pre class="code" data-lang="javascript"><script type="text/plain">
+      <h2 id="erreurs">Gestion des erreurs</h2>
+      <p>Un middleware à <strong>4 paramètres</strong> (avec <code>err</code> en premier) capte les erreurs — à déclarer
+        en dernier, après toutes les routes.</p>
+      <pre class="code" data-lang="javascript"><script type="text/plain">
 app.get('/articles/:id', async (req, res, next) => {
     try {
         const article = await ArticlesModel.trouver(pool, Number(req.params.id));
@@ -211,11 +238,11 @@ app.use((err, req, res, next) => {
 });
 </script></pre>
 
-  <h2 id="securite">Sécurité de base</h2>
-  <pre class="code" data-lang="bash"><script type="text/plain">
+      <h2 id="securite">Sécurité de base</h2>
+      <pre class="code" data-lang="bash"><script type="text/plain">
 npm install helmet cors dotenv
 </script></pre>
-  <pre class="code" data-lang="javascript"><script type="text/plain">
+      <pre class="code" data-lang="javascript"><script type="text/plain">
 import 'dotenv/config';          // charge .env dans process.env — jamais de secret en dur
 import helmet from 'helmet';      // en-têtes HTTP de sécurité par défaut
 import cors from 'cors';           // autorise (ou pas) les requêtes cross-origin
@@ -223,19 +250,39 @@ import cors from 'cors';           // autorise (ou pas) les requêtes cross-orig
 app.use(helmet());
 app.use(cors({ origin: 'https://mon-site.com' }));
 </script></pre>
-  <table>
-    <thead><tr><th>Risque</th><th>Parade</th></tr></thead>
-    <tbody>
-      <tr><td>Injection SQL</td><td>requêtes paramétrées — jamais de template string dans une requête</td></tr>
-      <tr><td>Secrets exposés</td><td><code>.env</code> + <code>dotenv</code>, jamais commité</td></tr>
-      <tr><td>En-têtes manquants</td><td><code>helmet()</code> (CSP, X-Frame-Options…)</td></tr>
-      <tr><td>Requêtes cross-origin non désirées</td><td><code>cors()</code> avec une liste d'origines explicite</td></tr>
-      <tr><td>Trop de requêtes (abus)</td><td><code>express-rate-limit</code> sur les routes sensibles</td></tr>
-    </tbody>
-  </table>
+      <table>
+        <thead>
+          <tr>
+            <th>Risque</th>
+            <th>Parade</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Injection SQL</td>
+            <td>requêtes paramétrées — jamais de template string dans une requête</td>
+          </tr>
+          <tr>
+            <td>Secrets exposés</td>
+            <td><code>.env</code> + <code>dotenv</code>, jamais commité</td>
+          </tr>
+          <tr>
+            <td>En-têtes manquants</td>
+            <td><code>helmet()</code> (CSP, X-Frame-Options…)</td>
+          </tr>
+          <tr>
+            <td>Requêtes cross-origin non désirées</td>
+            <td><code>cors()</code> avec une liste d'origines explicite</td>
+          </tr>
+          <tr>
+            <td>Trop de requêtes (abus)</td>
+            <td><code>express-rate-limit</code> sur les routes sensibles</td>
+          </tr>
+        </tbody>
+      </table>
 
-  <h2 id="exemple">Exemple complet — API articles</h2>
-  <pre class="code" data-lang="javascript"><script type="text/plain">
+      <h2 id="exemple">Exemple complet — API articles</h2>
+      <pre class="code" data-lang="javascript"><script type="text/plain">
 // index.js
 import 'dotenv/config';
 import express from 'express';
@@ -272,16 +319,17 @@ app.use((err, req, res, next) => {
 app.listen(3000, () => console.log('API sur http://localhost:3000'));
 </script></pre>
 
-  <footer class="pg">
-    <span><a href="electron.html">← Apps Electron</a></span>
-    <span><a href="animations.html">Suivant : Animations & style →</a></span>
-  </footer>
-</main>
-</div>
+      <footer class="pg">
+        <span><a href="electron.html">← Apps Electron</a></span>
+        <span><a href="animations.html">Suivant : Animations & style →</a></span>
+      </footer>
+    </main>
+  </div>
 
-<script src="../assets/site.config.js"></script>
-<script src="../assets/highlighters/javascript.js"></script>
-<script src="../assets/main.js"></script>
-<script src="../assets/nav.js"></script>
+  <script src="../assets/site.config.js"></script>
+  <script src="../assets/highlighters/javascript.js"></script>
+  <script src="../assets/main.js"></script>
+  <script src="../assets/nav.js"></script>
 </body>
+
 </html>

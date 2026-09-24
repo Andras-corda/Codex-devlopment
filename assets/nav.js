@@ -1,10 +1,3 @@
-/*
- * Chrome du site : barre du haut, sommaire latéral, menu mobile, sommaire actif au scroll.
- * Lit uniquement window.SITE_CONFIG (assets/site.config.js) et deux attributs sur <body> :
- *   data-lang="csharp"        — langage de la page courante (absent sur la page d'accueil du site)
- *   data-page="procedural"    — identifiant de page courante (absent sur l'accueil d'un langage)
- * Aucune connaissance du contenu : ajouter une page ou un langage ne touche jamais ce fichier.
- */
 (function () {
   "use strict";
 
@@ -28,8 +21,7 @@
     var root = langId ? "../" : "";
     var lang = langId ? findLanguage(cfg, langId) : null;
 
-    // Le header ne montre que la nav de la page courante — pas de sélecteur de
-    // langage ici (celui-ci vit sur l'accueil, via le brand ci-dessous).
+    // Le header ne montre que la nav de la page courante 
     var html = '<button class="menu-btn" aria-label="Menu">☰</button>' +
       '<a class="brand" href="' + root + 'index.html">' + BRAND_SVG + esc(cfg.brand) + "</a>";
 
@@ -57,8 +49,7 @@
     }
   }
 
-  // Sommaire latéral généré depuis les <h2 id="..."> de <main> : pas de liste à
-  // maintenir à la main. Un h2 avec data-group="Libellé" ouvre un groupe (<h4>).
+  // Sidebar latéral généré depuis les <h2 id="..."> de <main>
   function renderSidebar() {
     var side = document.getElementById("side");
     if (!side) return;
@@ -89,8 +80,7 @@
     heads.forEach(function (h) { obs.observe(h); });
   }
 
-  // Page d'accueil du site : une carte par langage, générée depuis SITE_CONFIG.
-  // N'ajoute ou ne retire rien tant que la liste des langages ne change pas.
+  // Page d'accueil du site
   function renderLangGrid(cfg) {
     var grid = document.getElementById("lang-grid");
     if (!grid) return;

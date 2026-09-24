@@ -50,7 +50,7 @@ code{font-family:var(--mono);font-size:.88em}
   color:var(--text);
 }
 
-/* ---- En-tête ---- */
+/* Head */
 .topbar{
   position:sticky;top:0;z-index:50;
   background:var(--bg-inset);
@@ -79,7 +79,7 @@ code{font-family:var(--mono);font-size:.88em}
 .topbar nav a:hover{background:var(--panel);color:var(--text);text-decoration:none}
 .topbar nav a.active{color:var(--text);background:var(--panel);box-shadow:inset 0 -2px 0 var(--link)}
 
-/* ---- Structure ---- */
+/* Structure */
 .wrap{display:grid;grid-template-columns:240px 1fr;max-width:1200px;margin:0 auto;gap:0}
 .side{
   border-right:1px solid var(--border);
@@ -106,7 +106,7 @@ main p,main li{color:#c9d1d9}
 main ul,main ol{padding-left:22px}
 main li{margin:4px 0}
 
-/* ---- Blocs de code ---- */
+/* Blocs de code */
 pre.code{
   background:var(--bg-inset);
   border:1px solid var(--border);
@@ -135,7 +135,7 @@ pre.code code{
 .tok-fn{color:var(--tok-fn)}
 .tok-var{color:var(--tok-var)}
 
-/* ---- Encadrés ---- */
+/* Encadrés explicatifs */
 .callout{border:1px solid var(--border);border-left-width:3px;border-radius:var(--radius);padding:12px 16px;margin:16px 0;background:var(--panel)}
 .callout p:first-child{margin-top:0}
 .callout p:last-child{margin-bottom:0}
@@ -149,7 +149,7 @@ pre.code code{
 .callout.warn .label{color:var(--warn)}
 .callout.danger .label{color:var(--danger)}
 
-/* ---- Étapes numérotées ---- */
+/* Étapes numérotées */
 .steps{counter-reset:step;list-style:none;padding:0;margin:18px 0}
 .steps>li{
   counter-increment:step;position:relative;padding:2px 0 18px 44px;margin:0;
@@ -163,14 +163,14 @@ pre.code code{
 }
 .steps>li>strong{display:block;margin-bottom:4px;color:var(--text)}
 
-/* ---- Tableaux ---- */
+/* Tableaux */
 table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14px}
 th,td{border:1px solid var(--border);padding:8px 12px;text-align:left;vertical-align:top}
 th{background:var(--panel);color:var(--text)}
 td{color:#c9d1d9}
 tr:nth-child(even) td{background:rgba(255,255,255,.02)}
 
-/* ---- Illustrations SVG ---- */
+/* SVG  */
 figure{margin:20px 0;border:1px solid var(--border);border-radius:var(--radius);background:var(--panel);padding:18px}
 figure svg{display:block;width:100%;height:auto;max-width:640px;margin:0 auto}
 figure figcaption{color:var(--muted);font-size:13px;text-align:center;margin-top:10px}
@@ -186,7 +186,7 @@ figure figcaption{color:var(--muted);font-size:13px;text-align:center;margin-top
 .svg-arrow{stroke:var(--muted);stroke-width:1.5;fill:none;marker-end:url(#ah)}
 .svg-arrow-g{stroke:var(--green);stroke-width:2;fill:none;marker-end:url(#ahg)}
 
-/* ---- Diagrammes UML (classe) ---- */
+/* Diagrammes UML */
 .uml-box{fill:var(--panel);stroke:var(--border);stroke-width:1.5}
 .uml-box-a{fill:var(--accent-soft);stroke:var(--link);stroke-width:1.5}
 .uml-box-g{fill:var(--green-soft);stroke:var(--green);stroke-width:1.5}
@@ -201,7 +201,7 @@ figure figcaption{color:var(--muted);font-size:13px;text-align:center;margin-top
 
 footer.pg{border-top:1px solid var(--border);margin-top:64px;padding-top:20px;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
 
-/* ---- Page d'accueil du site (sélecteur de langage) ---- */
+/* Page d'accueil */
 main.hub{max-width:760px;margin:0 auto;padding:64px 24px 100px}
 main.hub h1{font-size:36px}
 main.hub .lead{font-size:18px;max-width:60ch}
@@ -223,7 +223,7 @@ main.hub .lead{font-size:18px;max-width:60ch}
   color:var(--muted);border:1px solid var(--border);border-radius:999px;padding:2px 8px;
 }
 
-/* ---- Responsive ---- */
+/* Responsive Simple */
 .menu-btn{display:none;background:transparent;border:1px solid var(--border);color:var(--text);border-radius:var(--radius);padding:6px 10px;cursor:pointer}
 @media (max-width:1000px){
   .wrap{grid-template-columns:1fr}

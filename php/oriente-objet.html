@@ -1,25 +1,29 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Codex — PHP · Orienté objet</title>
-<meta name="description" content="POO en PHP : classes, propriétés, constructeurs, visibilité, héritage, interfaces, traits, enums, composition, SOLID.">
-<link rel="stylesheet" href="../assets/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Codex — PHP · Orienté objet</title>
+    <meta name="description"
+        content="POO en PHP : classes, propriétés, constructeurs, visibilité, héritage, interfaces, traits, enums, composition, SOLID.">
+    <link rel="stylesheet" href="../assets/style.css">
 </head>
+
 <body data-lang="php" data-page="oo">
 
-<div class="topbar" id="topbar"></div>
+    <div class="topbar" id="topbar"></div>
 
-<div class="wrap">
-<aside class="side" id="side"></aside>
+    <div class="wrap">
+        <aside class="side" id="side"></aside>
 
-<main>
-  <h1>2 · Programmation orientée objet</h1>
-  <p class="lead">Le PHP moderne (7+/8+) est massivement orienté objet. Classes, interfaces, <strong>traits</strong> et <strong>enums</strong> forment la boîte à outils.</p>
+        <main>
+            <h1>2 · Programmation orientée objet</h1>
+            <p class="lead">Le PHP moderne (7+/8+) est massivement orienté objet. Classes, interfaces,
+                <strong>traits</strong> et <strong>enums</strong> forment la boîte à outils.</p>
 
-  <h2 id="idee">Classe & objet</h2>
-  <pre class="code" data-lang="php"><script type="text/plain">
+            <h2 id="idee">Classe & objet</h2>
+            <pre class="code" data-lang="php"><script type="text/plain">
 class Voiture
 {
     public string $couleur;
@@ -41,11 +45,14 @@ echo $a->vitesse;   // 30
 echo $b->vitesse;   // 0 — objets indépendants
 </script></pre>
 
-  <h2 id="uml">Lire un diagramme UML</h2>
-  <p>Un diagramme de classes montre les types et leurs relations : boîte à trois compartiments (nom, attributs, opérations), <code>+</code>/<code>-</code>/<code>#</code> pour la visibilité, italique pour l'abstrait, souligné pour le statique. La notation complète, avec sa traduction en PHP et un exemple travaillé, est sur la page <a href="types-collections-uml.html#uml-classe">Types &amp; UML</a>.</p>
+            <h2 id="uml">Lire un diagramme UML</h2>
+            <p>Un diagramme de classes montre les types et leurs relations : boîte à trois compartiments (nom,
+                attributs, opérations), <code>+</code>/<code>-</code>/<code>#</code> pour la visibilité, italique pour
+                l'abstrait, souligné pour le statique. La notation complète, avec sa traduction en PHP et un exemple
+                travaillé, est sur la page <a href="types-collections-uml.html#uml-classe">Types &amp; UML</a>.</p>
 
-  <h2 id="membres">Propriétés & visibilité</h2>
-  <pre class="code" data-lang="php"><script type="text/plain">
+            <h2 id="membres">Propriétés & visibilité</h2>
+            <pre class="code" data-lang="php"><script type="text/plain">
 class Personne
 {
     public string $nom = "";                 // accessible de partout
@@ -66,8 +73,8 @@ echo $p->nom;          // OK
 // $p->id = "x";         // erreur : readonly
 </script></pre>
 
-  <h2 id="constructeurs">Constructeurs & promotion</h2>
-  <pre class="code" data-lang="php"><script type="text/plain">
+            <h2 id="constructeurs">Constructeurs & promotion</h2>
+            <pre class="code" data-lang="php"><script type="text/plain">
 // Version explicite
 class CompteBancaire
 {
@@ -110,13 +117,15 @@ $c = new CompteBancaire("Ada", 100.0);
 $c->deposer(50.0);
 echo $c->solde();   // 150
 </script></pre>
-  <div class="callout tip">
-    <span class="label">Constructor property promotion</span>
-    <p>Déclarer la visibilité d'un paramètre de <code>__construct</code> (<code>public readonly float $x</code>) crée <strong>et</strong> assigne la propriété automatiquement — plus besoin d'écrire <code>$this-&gt;x = $x;</code>.</p>
-  </div>
+            <div class="callout tip">
+                <span class="label">Constructor property promotion</span>
+                <p>Déclarer la visibilité d'un paramètre de <code>__construct</code>
+                    (<code>public readonly float $x</code>) crée <strong>et</strong> assigne la propriété
+                    automatiquement — plus besoin d'écrire <code>$this-&gt;x = $x;</code>.</p>
+            </div>
 
-  <h2 id="const-classe">Constantes de classe</h2>
-  <pre class="code" data-lang="php"><script type="text/plain">
+            <h2 id="const-classe">Constantes de classe</h2>
+            <pre class="code" data-lang="php"><script type="text/plain">
 class Cercle
 {
     public const PI = 3.14159;                 // partagée, immuable
@@ -133,19 +142,36 @@ class Cercle
 echo Cercle::PI;          // accès via le nom de la classe, pas une instance
 </script></pre>
 
-  <h2 id="encapsulation">Encapsulation & visibilité</h2>
-  <table>
-    <thead><tr><th>Modificateur</th><th>Visible depuis…</th></tr></thead>
-    <tbody>
-      <tr><td><code>public</code></td><td>partout (défaut pour les méthodes)</td></tr>
-      <tr><td><code>protected</code></td><td>la classe et ses sous-classes</td></tr>
-      <tr><td><code>private</code></td><td>la classe elle-même uniquement</td></tr>
-      <tr><td><code>readonly</code></td><td>pas une visibilité : interdit toute écriture après l'initialisation (PHP 8.1)</td></tr>
-    </tbody>
-  </table>
+            <h2 id="encapsulation">Encapsulation & visibilité</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Modificateur</th>
+                        <th>Visible depuis…</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>public</code></td>
+                        <td>partout (défaut pour les méthodes)</td>
+                    </tr>
+                    <tr>
+                        <td><code>protected</code></td>
+                        <td>la classe et ses sous-classes</td>
+                    </tr>
+                    <tr>
+                        <td><code>private</code></td>
+                        <td>la classe elle-même uniquement</td>
+                    </tr>
+                    <tr>
+                        <td><code>readonly</code></td>
+                        <td>pas une visibilité : interdit toute écriture après l'initialisation (PHP 8.1)</td>
+                    </tr>
+                </tbody>
+            </table>
 
-  <h2 id="statique">Membres statiques</h2>
-  <pre class="code" data-lang="php"><script type="text/plain">
+            <h2 id="statique">Membres statiques</h2>
+            <pre class="code" data-lang="php"><script type="text/plain">
 class Compteur
 {
     public static int $total = 0;      // UNE valeur partagée par toutes les instances
@@ -177,28 +203,32 @@ final class Geo
 echo Geo::circonference(Geo::RAYON_TERRE);
 </script></pre>
 
-  <h2 id="heritage">Héritage</h2>
-  <p>Une classe dérivée <em>est un</em> cas particulier de sa classe de base (mot-clé <code>extends</code>, une seule base possible).</p>
-  <figure>
-    <svg viewBox="0 0 560 230" role="img" aria-label="Diagramme UML — héritage">
-      <defs><marker id="ph-tri" markerWidth="18" markerHeight="16" refX="16" refY="8" orient="auto">
-        <path d="M2 2 L16 8 L2 14 Z" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
-      <rect class="svg-bg" x="0" y="0" width="560" height="230" rx="6"/>
-      <rect class="uml-box-a" x="190" y="16" width="180" height="22"/>
-      <rect class="uml-box-a" x="190" y="38" width="180" height="40"/>
-      <text class="uml-name" x="280" y="32" text-anchor="middle">Employe</text>
-      <text class="uml-m" x="198" y="55">+ nom : string</text>
-      <text class="uml-m" x="198" y="72">+ salaireMensuel() : float</text>
-      <rect class="uml-box" x="40" y="150" width="200" height="22"/>
-      <rect class="uml-box" x="40" y="172" width="200" height="40"/>
-      <text class="uml-name" x="140" y="166" text-anchor="middle">Commercial</text>
-      <text class="uml-m" x="48" y="189">+ commission : float</text>
-      <text class="uml-m" x="48" y="206">+ salaireMensuel() : float</text>
-      <path class="uml-rel" style="marker-end:url(#ph-tri)" d="M140 150 L260 78"/>
-    </svg>
-    <figcaption>Le triangle creux pointe vers la base et se lit « est un ».</figcaption>
-  </figure>
-  <pre class="code" data-lang="php"><script type="text/plain">
+            <h2 id="heritage">Héritage</h2>
+            <p>Une classe dérivée <em>est un</em> cas particulier de sa classe de base (mot-clé <code>extends</code>,
+                une seule base possible).</p>
+            <figure>
+                <svg viewBox="0 0 560 230" role="img" aria-label="Diagramme UML — héritage">
+                    <defs>
+                        <marker id="ph-tri" markerWidth="18" markerHeight="16" refX="16" refY="8" orient="auto">
+                            <path d="M2 2 L16 8 L2 14 Z" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5" />
+                        </marker>
+                    </defs>
+                    <rect class="svg-bg" x="0" y="0" width="560" height="230" rx="6" />
+                    <rect class="uml-box-a" x="190" y="16" width="180" height="22" />
+                    <rect class="uml-box-a" x="190" y="38" width="180" height="40" />
+                    <text class="uml-name" x="280" y="32" text-anchor="middle">Employe</text>
+                    <text class="uml-m" x="198" y="55">+ nom : string</text>
+                    <text class="uml-m" x="198" y="72">+ salaireMensuel() : float</text>
+                    <rect class="uml-box" x="40" y="150" width="200" height="22" />
+                    <rect class="uml-box" x="40" y="172" width="200" height="40" />
+                    <text class="uml-name" x="140" y="166" text-anchor="middle">Commercial</text>
+                    <text class="uml-m" x="48" y="189">+ commission : float</text>
+                    <text class="uml-m" x="48" y="206">+ salaireMensuel() : float</text>
+                    <path class="uml-rel" style="marker-end:url(#ph-tri)" d="M140 150 L260 78" />
+                </svg>
+                <figcaption>Le triangle creux pointe vers la base et se lit « est un ».</figcaption>
+            </figure>
+            <pre class="code" data-lang="php"><script type="text/plain">
 class Employe
 {
     public function __construct(
@@ -237,13 +267,15 @@ $e = new Commercial("Ada", 3000, 800);
 echo $e->salaireMensuel();   // 3800
 $e->pointer();                // méthode héritée
 </script></pre>
-  <div class="callout warn">
-    <span class="label">Règles</span>
-    <p>Une seule classe de base (<code>extends</code>), mais autant d'interfaces que voulu (<code>implements</code>). <code>final class</code> interdit l'héritage ; <code>final</code> sur une méthode interdit sa redéfinition.</p>
-  </div>
+            <div class="callout warn">
+                <span class="label">Règles</span>
+                <p>Une seule classe de base (<code>extends</code>), mais autant d'interfaces que voulu
+                    (<code>implements</code>). <code>final class</code> interdit l'héritage ; <code>final</code> sur une
+                    méthode interdit sa redéfinition.</p>
+            </div>
 
-  <h2 id="polymorphisme">Polymorphisme</h2>
-  <pre class="code" data-lang="php"><script type="text/plain">
+            <h2 id="polymorphisme">Polymorphisme</h2>
+            <pre class="code" data-lang="php"><script type="text/plain">
 $equipe = [
     new Employe("Bob", 2500),
     new Commercial("Ada", 3000, 800),
@@ -261,38 +293,63 @@ foreach ($equipe as $emp) {
 }
 </script></pre>
 
-  <h2 id="abstrait-interface">Classe abstraite vs interface</h2>
-  <table>
-    <thead><tr><th></th><th>Classe abstraite</th><th>Interface</th></tr></thead>
-    <tbody>
-      <tr><td>Mot-clé</td><td><code>abstract class</code></td><td><code>interface</code></td></tr>
-      <tr><td>Peut contenir du code</td><td>oui (méthodes concrètes, propriétés)</td><td>non — que des signatures</td></tr>
-      <tr><td>Héritage / implémentation multiple</td><td>non (une seule base)</td><td>oui (<code>implements A, B</code>)</td></tr>
-      <tr><td>Instanciable</td><td>non</td><td>non</td></tr>
-    </tbody>
-  </table>
-  <figure>
-    <svg viewBox="0 0 580 250" role="img" aria-label="Diagramme UML — abstrait et interfaces">
-      <defs><marker id="pi-tri" markerWidth="18" markerHeight="16" refX="16" refY="8" orient="auto">
-        <path d="M2 2 L16 8 L2 14 Z" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
-      <rect class="svg-bg" x="0" y="0" width="580" height="250" rx="6"/>
-      <rect class="uml-box-a" x="24" y="20" width="180" height="44"/>
-      <rect class="uml-box-a" x="24" y="64" width="180" height="24"/>
-      <text class="uml-stereo" x="114" y="38" text-anchor="middle">« interface »</text>
-      <text class="uml-name" x="114" y="58" text-anchor="middle">Exportable</text>
-      <text class="uml-m" x="32" y="81">+ enCsv() : string</text>
-      <rect class="uml-box" x="340" y="80" width="210" height="22"/>
-      <rect class="uml-box" x="340" y="102" width="210" height="40"/>
-      <rect class="uml-box" x="340" y="142" width="210" height="24"/>
-      <text class="uml-name" x="445" y="96" text-anchor="middle">Facture</text>
-      <text class="uml-m" x="348" y="119">+ montant : float</text>
-      <text class="uml-m" x="348" y="136">+ date : DateTimeImmutable</text>
-      <text class="uml-m" x="348" y="159">+ enCsv() : string</text>
-      <path class="uml-rel-d" style="marker-end:url(#pi-tri)" d="M340 105 L206 68"/>
-    </svg>
-    <figcaption>Trait pointillé + triangle creux = « implémente l'interface ».</figcaption>
-  </figure>
-  <pre class="code" data-lang="php"><script type="text/plain">
+            <h2 id="abstrait-interface">Classe abstraite vs interface</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Classe abstraite</th>
+                        <th>Interface</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Mot-clé</td>
+                        <td><code>abstract class</code></td>
+                        <td><code>interface</code></td>
+                    </tr>
+                    <tr>
+                        <td>Peut contenir du code</td>
+                        <td>oui (méthodes concrètes, propriétés)</td>
+                        <td>non — que des signatures</td>
+                    </tr>
+                    <tr>
+                        <td>Héritage / implémentation multiple</td>
+                        <td>non (une seule base)</td>
+                        <td>oui (<code>implements A, B</code>)</td>
+                    </tr>
+                    <tr>
+                        <td>Instanciable</td>
+                        <td>non</td>
+                        <td>non</td>
+                    </tr>
+                </tbody>
+            </table>
+            <figure>
+                <svg viewBox="0 0 580 250" role="img" aria-label="Diagramme UML — abstrait et interfaces">
+                    <defs>
+                        <marker id="pi-tri" markerWidth="18" markerHeight="16" refX="16" refY="8" orient="auto">
+                            <path d="M2 2 L16 8 L2 14 Z" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5" />
+                        </marker>
+                    </defs>
+                    <rect class="svg-bg" x="0" y="0" width="580" height="250" rx="6" />
+                    <rect class="uml-box-a" x="24" y="20" width="180" height="44" />
+                    <rect class="uml-box-a" x="24" y="64" width="180" height="24" />
+                    <text class="uml-stereo" x="114" y="38" text-anchor="middle">« interface »</text>
+                    <text class="uml-name" x="114" y="58" text-anchor="middle">Exportable</text>
+                    <text class="uml-m" x="32" y="81">+ enCsv() : string</text>
+                    <rect class="uml-box" x="340" y="80" width="210" height="22" />
+                    <rect class="uml-box" x="340" y="102" width="210" height="40" />
+                    <rect class="uml-box" x="340" y="142" width="210" height="24" />
+                    <text class="uml-name" x="445" y="96" text-anchor="middle">Facture</text>
+                    <text class="uml-m" x="348" y="119">+ montant : float</text>
+                    <text class="uml-m" x="348" y="136">+ date : DateTimeImmutable</text>
+                    <text class="uml-m" x="348" y="159">+ enCsv() : string</text>
+                    <path class="uml-rel-d" style="marker-end:url(#pi-tri)" d="M340 105 L206 68" />
+                </svg>
+                <figcaption>Trait pointillé + triangle creux = « implémente l'interface ».</figcaption>
+            </figure>
+            <pre class="code" data-lang="php"><script type="text/plain">
 abstract class Forme
 {
     abstract public function aire(): float;         // à implémenter obligatoirement
@@ -334,8 +391,8 @@ function exporter(Exportable $doc): string   // on programme contre l'interface
 echo exporter(new Facture(42.0));
 </script></pre>
 
-  <h2 id="interfaces">Interfaces en détail</h2>
-  <pre class="code" data-lang="php"><script type="text/plain">
+            <h2 id="interfaces">Interfaces en détail</h2>
+            <pre class="code" data-lang="php"><script type="text/plain">
 interface Comparable
 {
     public function compareA(self $autre): int;   // 'self' = le type courant
@@ -358,9 +415,11 @@ $versions = [new Semver(2, 0), new Semver(1, 5)];
 usort($versions, fn(Semver $a, Semver $b) => $a->compareA($b));
 </script></pre>
 
-  <h2 id="traits">Traits — réutiliser du code sans héritage</h2>
-  <p>PHP n'autorise qu'une seule classe de base. Un <strong>trait</strong> comble ce manque : un bloc de méthodes/propriétés qu'on <em>insère</em> dans plusieurs classes indépendantes, avec <code>use</code>.</p>
-  <pre class="code" data-lang="php"><script type="text/plain">
+            <h2 id="traits">Traits — réutiliser du code sans héritage</h2>
+            <p>PHP n'autorise qu'une seule classe de base. Un <strong>trait</strong> comble ce manque : un bloc de
+                méthodes/propriétés qu'on <em>insère</em> dans plusieurs classes indépendantes, avec <code>use</code>.
+            </p>
+            <pre class="code" data-lang="php"><script type="text/plain">
 trait Horodatable
 {
     private ?DateTimeImmutable $creeLe = null;
@@ -404,13 +463,15 @@ class C
     }
 }
 </script></pre>
-  <div class="callout info">
-    <span class="label">Trait, interface, ou héritage ?</span>
-    <p>Interface = <em>contrat</em> (« quoi »), sans code. Héritage = « est un », relation forte, une seule base. Trait = code partagé horizontalement entre classes sans lien de parenté (« sait faire », avec l'implémentation).</p>
-  </div>
+            <div class="callout info">
+                <span class="label">Trait, interface, ou héritage ?</span>
+                <p>Interface = <em>contrat</em> (« quoi »), sans code. Héritage = « est un », relation forte, une seule
+                    base. Trait = code partagé horizontalement entre classes sans lien de parenté (« sait faire », avec
+                    l'implémentation).</p>
+            </div>
 
-  <h2 id="enums">Enums (PHP 8.1)</h2>
-  <pre class="code" data-lang="php"><script type="text/plain">
+            <h2 id="enums">Enums (PHP 8.1)</h2>
+            <pre class="code" data-lang="php"><script type="text/plain">
 enum Statut
 {
     case Brouillon;
@@ -443,39 +504,44 @@ echo Devise::Euro->value;          // "EUR"
 echo Devise::from("USD")->symbole();   // "$"
 </script></pre>
 
-  <h2 id="composition">Composition plutôt qu'héritage</h2>
-  <figure>
-    <svg viewBox="0 0 580 220" role="img" aria-label="Diagramme UML — composition">
-      <defs>
-        <marker id="pc-tri" markerWidth="18" markerHeight="16" refX="16" refY="8" orient="auto">
-          <path d="M2 2 L16 8 L2 14 Z" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5"/></marker>
-        <marker id="pc-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
-          <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker>
-        <marker id="pc-fd" markerWidth="24" markerHeight="14" refX="3" refY="7" orient="auto">
-          <path d="M3 7 L11 2 L19 7 L11 12 Z" fill="var(--muted)"/></marker>
-      </defs>
-      <rect class="svg-bg" x="0" y="0" width="580" height="220" rx="6"/>
-      <rect class="uml-box" x="24" y="70" width="180" height="22"/>
-      <rect class="uml-box" x="24" y="92" width="180" height="24"/>
-      <rect class="uml-box" x="24" y="116" width="180" height="24"/>
-      <text class="uml-name" x="114" y="86" text-anchor="middle">Voiture</text>
-      <text class="uml-m" x="32" y="109">- moteur : Moteur</text>
-      <text class="uml-m" x="32" y="133">+ rouler() : void</text>
-      <rect class="uml-box-a" x="360" y="20" width="200" height="44"/>
-      <rect class="uml-box-a" x="360" y="64" width="200" height="24"/>
-      <text class="uml-stereo" x="460" y="38" text-anchor="middle">« interface »</text>
-      <text class="uml-name" x="460" y="58" text-anchor="middle">Moteur</text>
-      <text class="uml-m" x="368" y="81">+ demarrer() : void</text>
-      <rect class="uml-box" x="360" y="150" width="200" height="22"/>
-      <rect class="uml-box" x="360" y="172" width="200" height="24"/>
-      <text class="uml-name" x="460" y="166" text-anchor="middle">MoteurElectrique</text>
-      <text class="uml-m" x="368" y="189">+ demarrer() : void</text>
-      <path class="uml-rel" style="marker-start:url(#pc-fd);marker-end:url(#pc-arr)" d="M204 100 L360 64"/>
-      <path class="uml-rel-d" style="marker-end:url(#pc-tri)" d="M460 150 L460 88"/>
-    </svg>
-    <figcaption>Losange plein côté <code>Voiture</code> : elle dépend de l'interface <code>Moteur</code>, pas d'une implémentation précise.</figcaption>
-  </figure>
-  <pre class="code" data-lang="php"><script type="text/plain">
+            <h2 id="composition">Composition plutôt qu'héritage</h2>
+            <figure>
+                <svg viewBox="0 0 580 220" role="img" aria-label="Diagramme UML — composition">
+                    <defs>
+                        <marker id="pc-tri" markerWidth="18" markerHeight="16" refX="16" refY="8" orient="auto">
+                            <path d="M2 2 L16 8 L2 14 Z" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5" />
+                        </marker>
+                        <marker id="pc-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+                            <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5" />
+                        </marker>
+                        <marker id="pc-fd" markerWidth="24" markerHeight="14" refX="3" refY="7" orient="auto">
+                            <path d="M3 7 L11 2 L19 7 L11 12 Z" fill="var(--muted)" />
+                        </marker>
+                    </defs>
+                    <rect class="svg-bg" x="0" y="0" width="580" height="220" rx="6" />
+                    <rect class="uml-box" x="24" y="70" width="180" height="22" />
+                    <rect class="uml-box" x="24" y="92" width="180" height="24" />
+                    <rect class="uml-box" x="24" y="116" width="180" height="24" />
+                    <text class="uml-name" x="114" y="86" text-anchor="middle">Voiture</text>
+                    <text class="uml-m" x="32" y="109">- moteur : Moteur</text>
+                    <text class="uml-m" x="32" y="133">+ rouler() : void</text>
+                    <rect class="uml-box-a" x="360" y="20" width="200" height="44" />
+                    <rect class="uml-box-a" x="360" y="64" width="200" height="24" />
+                    <text class="uml-stereo" x="460" y="38" text-anchor="middle">« interface »</text>
+                    <text class="uml-name" x="460" y="58" text-anchor="middle">Moteur</text>
+                    <text class="uml-m" x="368" y="81">+ demarrer() : void</text>
+                    <rect class="uml-box" x="360" y="150" width="200" height="22" />
+                    <rect class="uml-box" x="360" y="172" width="200" height="24" />
+                    <text class="uml-name" x="460" y="166" text-anchor="middle">MoteurElectrique</text>
+                    <text class="uml-m" x="368" y="189">+ demarrer() : void</text>
+                    <path class="uml-rel" style="marker-start:url(#pc-fd);marker-end:url(#pc-arr)"
+                        d="M204 100 L360 64" />
+                    <path class="uml-rel-d" style="marker-end:url(#pc-tri)" d="M460 150 L460 88" />
+                </svg>
+                <figcaption>Losange plein côté <code>Voiture</code> : elle dépend de l'interface <code>Moteur</code>,
+                    pas d'une implémentation précise.</figcaption>
+            </figure>
+            <pre class="code" data-lang="php"><script type="text/plain">
 interface Moteur
 {
     public function demarrer(): void;
@@ -500,8 +566,8 @@ final class Voiture
 (new Voiture(new MoteurElectrique()))->rouler();
 </script></pre>
 
-  <h2 id="exemple">Exemple complet — formes & rendu</h2>
-  <pre class="code" data-lang="php"><script type="text/plain">
+            <h2 id="exemple">Exemple complet — formes & rendu</h2>
+            <pre class="code" data-lang="php"><script type="text/plain">
 abstract class Forme
 {
     abstract public function aire(): float;
@@ -552,27 +618,43 @@ $toile->ajouter(new Cercle(2));
 $toile->rapport();
 </script></pre>
 
-  <h2 id="solid">SOLID en une phrase chacun</h2>
-  <table>
-    <tbody>
-      <tr><td><strong>S</strong>ingle responsibility</td><td>une classe, une raison de changer</td></tr>
-      <tr><td><strong>O</strong>pen/closed</td><td>ouverte à l'extension, fermée à la modification</td></tr>
-      <tr><td><strong>L</strong>iskov</td><td>une sous-classe doit pouvoir remplacer sa base sans surprise</td></tr>
-      <tr><td><strong>I</strong>nterface segregation</td><td>plusieurs petites interfaces valent mieux qu'une géante</td></tr>
-      <tr><td><strong>D</strong>ependency inversion</td><td>dépendre d'interfaces, pas d'implémentations concrètes</td></tr>
-    </tbody>
-  </table>
+            <h2 id="solid">SOLID en une phrase chacun</h2>
+            <table>
+                <tbody>
+                    <tr>
+                        <td><strong>S</strong>ingle responsibility</td>
+                        <td>une classe, une raison de changer</td>
+                    </tr>
+                    <tr>
+                        <td><strong>O</strong>pen/closed</td>
+                        <td>ouverte à l'extension, fermée à la modification</td>
+                    </tr>
+                    <tr>
+                        <td><strong>L</strong>iskov</td>
+                        <td>une sous-classe doit pouvoir remplacer sa base sans surprise</td>
+                    </tr>
+                    <tr>
+                        <td><strong>I</strong>nterface segregation</td>
+                        <td>plusieurs petites interfaces valent mieux qu'une géante</td>
+                    </tr>
+                    <tr>
+                        <td><strong>D</strong>ependency inversion</td>
+                        <td>dépendre d'interfaces, pas d'implémentations concrètes</td>
+                    </tr>
+                </tbody>
+            </table>
 
-  <footer class="pg">
-    <span><a href="procedural.html">← Procédural</a></span>
-    <span><a href="concurrence.html">Suivant : Concurrence →</a></span>
-  </footer>
-</main>
-</div>
+            <footer class="pg">
+                <span><a href="procedural.html">← Procédural</a></span>
+                <span><a href="concurrence.html">Suivant : Concurrence →</a></span>
+            </footer>
+        </main>
+    </div>
 
-<script src="../assets/site.config.js"></script>
-<script src="../assets/highlighters/php.js"></script>
-<script src="../assets/main.js"></script>
-<script src="../assets/nav.js"></script>
+    <script src="../assets/site.config.js"></script>
+    <script src="../assets/highlighters/php.js"></script>
+    <script src="../assets/main.js"></script>
+    <script src="../assets/nav.js"></script>
 </body>
+
 </html>

@@ -1,4 +1,3 @@
-/* Coloration syntaxique JavaScript. Même registre que csharp.js / php.js (voir assets/main.js). */
 (function () {
   "use strict";
 
@@ -10,7 +9,7 @@
     return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
-  // Même principe que les autres highlighters : un seul passage, jamais de re-lecture du HTML injecté.
+  // Même principe que les autres highlighters
   function highlightPlain(s) {
     var re = /([A-Za-z_$][A-Za-z0-9_$]*)|(0[xXbBoO][0-9a-fA-F]+|\d[\d_]*\.?\d*(?:[eE][+-]?\d+)?n?)|(\s+)|([^A-Za-z0-9_$\s]+)/g;
     var out = "", m;

@@ -1,28 +1,36 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Codex — PHP · Composer & Symfony</title>
-<meta name="description" content="Composer : installation, autoload, dépendances, Faker pour générer des données de test. Puis Symfony : installation, structure, équivalences avec le PHP pur.">
-<link rel="stylesheet" href="../assets/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Codex — PHP · Composer & Symfony</title>
+  <meta name="description"
+    content="Composer : installation, autoload, dépendances, Faker pour générer des données de test. Puis Symfony : installation, structure, équivalences avec le PHP pur.">
+  <link rel="stylesheet" href="../assets/style.css">
 </head>
+
 <body data-lang="php" data-page="composer">
 
-<div class="topbar" id="topbar"></div>
+  <div class="topbar" id="topbar"></div>
 
-<div class="wrap">
-<aside class="side" id="side"></aside>
+  <div class="wrap">
+    <aside class="side" id="side"></aside>
 
-<main>
-  <h1>6 · Composer & Symfony</h1>
-  <p class="lead">Le reste de ce guide PHP reste volontairement <strong>sans framework</strong>. Mais à un moment, on veut une bibliothèque que quelqu'un d'autre a déjà écrite — et là, on a besoin de <strong>Composer</strong>. Cette page couvre Composer seul, puis Symfony, le framework qui s'appuie dessus.</p>
+    <main>
+      <h1>6 · Composer & Symfony</h1>
+      <p class="lead">Le reste de ce guide PHP reste volontairement <strong>sans framework</strong>. Mais à un moment,
+        on veut une bibliothèque que quelqu'un d'autre a déjà écrite — et là, on a besoin de <strong>Composer</strong>.
+        Cette page couvre Composer seul, puis Symfony, le framework qui s'appuie dessus.</p>
 
-  <h2 id="idee">Composer, en bref</h2>
-  <p>Composer est le gestionnaire de paquets de PHP (l'équivalent de npm pour JavaScript) : il installe des bibliothèques, gère leurs versions et leurs dépendances entre elles, et génère un <strong>autoloader</strong> qui charge automatiquement les classes sans <code>require</code> manuel. Rien de tout ça n'exige un framework.</p>
+      <h2 id="idee">Composer, en bref</h2>
+      <p>Composer est le gestionnaire de paquets de PHP (l'équivalent de npm pour JavaScript) : il installe des
+        bibliothèques, gère leurs versions et leurs dépendances entre elles, et génère un <strong>autoloader</strong>
+        qui charge automatiquement les classes sans <code>require</code> manuel. Rien de tout ça n'exige un framework.
+      </p>
 
-  <h2 id="installer">Installer Composer</h2>
-  <pre class="code" data-lang="bash"><script type="text/plain">
+      <h2 id="installer">Installer Composer</h2>
+      <pre class="code" data-lang="bash"><script type="text/plain">
 # macOS / Linux
 curl -sS https://getcomposer.org/installer | php
 sudo mv composer.phar /usr/local/bin/composer
@@ -32,9 +40,10 @@ sudo mv composer.phar /usr/local/bin/composer
 composer --version
 </script></pre>
 
-  <h2 id="composer-json">composer.json & autoload</h2>
-  <p>Un fichier <code>composer.json</code> décrit le projet : version de PHP requise, dépendances, et comment trouver ses propres classes (<em>autoload</em>).</p>
-  <pre class="code" data-lang="json"><script type="text/plain">
+      <h2 id="composer-json">composer.json & autoload</h2>
+      <p>Un fichier <code>composer.json</code> décrit le projet : version de PHP requise, dépendances, et comment
+        trouver ses propres classes (<em>autoload</em>).</p>
+      <pre class="code" data-lang="json"><script type="text/plain">
 {
     "name": "moi/mon-projet",
     "require": {
@@ -45,37 +54,42 @@ composer --version
     }
 }
 </script></pre>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <pre class="code" data-lang="php"><script type="text/plain">
 require __DIR__ . '/vendor/autoload.php';   // le SEUL require dont on a besoin
 
 use App\ArticleModel;   // trouvée automatiquement dans src/ArticleModel.php — norme PSR-4
 
 $modele = new ArticleModel($pdo);
 </script></pre>
-  <div class="callout info">
-    <span class="label">PSR-4</span>
-    <p>Convention : le namespace <code>App\</code> correspond au dossier <code>src/</code>, donc <code>App\Articles\ArticleModel</code> se trouve dans <code>src/Articles/ArticleModel.php</code>. Plus besoin d'écrire un <code>require</code> par fichier comme dans le reste de ce guide.</p>
-  </div>
+      <div class="callout info">
+        <span class="label">PSR-4</span>
+        <p>Convention : le namespace <code>App\</code> correspond au dossier <code>src/</code>, donc
+          <code>App\Articles\ArticleModel</code> se trouve dans <code>src/Articles/ArticleModel.php</code>. Plus besoin
+          d'écrire un <code>require</code> par fichier comme dans le reste de ce guide.</p>
+      </div>
 
-  <h2 id="requerir">Installer une bibliothèque</h2>
-  <pre class="code" data-lang="bash"><script type="text/plain">
+      <h2 id="requerir">Installer une bibliothèque</h2>
+      <pre class="code" data-lang="bash"><script type="text/plain">
 composer require monolog/monolog          # dépendance de production
 composer require --dev phpunit/phpunit    # dépendance de développement UNIQUEMENT (tests, outils)
 
 composer install    # installe EXACTEMENT les versions verrouillées dans composer.lock
 composer update      # recalcule et met à jour les versions selon composer.json
 </script></pre>
-  <div class="callout warn">
-    <span class="label">composer.lock se versionne, <code>vendor/</code> non</span>
-    <p><code>composer.lock</code> fige les versions exactes installées — à commiter, pour que toute l'équipe (et le serveur de prod) installe identique. <code>vendor/</code> se régénère avec <code>composer install</code> et n'a pas sa place dans le dépôt : à lister dans <code>.gitignore</code>.</p>
-  </div>
+      <div class="callout warn">
+        <span class="label">composer.lock se versionne, <code>vendor/</code> non</span>
+        <p><code>composer.lock</code> fige les versions exactes installées — à commiter, pour que toute l'équipe (et le
+          serveur de prod) installe identique. <code>vendor/</code> se régénère avec <code>composer install</code> et
+          n'a pas sa place dans le dépôt : à lister dans <code>.gitignore</code>.</p>
+      </div>
 
-  <h2 id="faker">Exemple : générer de fausses données avec Faker</h2>
-  <p><a href="https://fakerphp.github.io/" target="_blank" rel="noopener">Faker</a> génère des données réalistes (noms, emails, textes, dates…) — utile pour peupler une base de test sans tout saisir à la main.</p>
-  <pre class="code" data-lang="bash"><script type="text/plain">
+      <h2 id="faker">Exemple : générer de fausses données avec Faker</h2>
+      <p><a href="https://fakerphp.github.io/" target="_blank" rel="noopener">Faker</a> génère des données réalistes
+        (noms, emails, textes, dates…) — utile pour peupler une base de test sans tout saisir à la main.</p>
+      <pre class="code" data-lang="bash"><script type="text/plain">
 composer require --dev fakerphp/faker
 </script></pre>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <pre class="code" data-lang="php"><script type="text/plain">
 require __DIR__ . '/vendor/autoload.php';
 
 $faker = Faker\Factory::create('fr_FR');
@@ -85,8 +99,9 @@ echo $faker->email();      // "camille.lefebvre@example.org"
 echo $faker->sentence();   // une phrase aléatoire
 echo $faker->dateTimeBetween('-1 year')->format('Y-m-d');
 </script></pre>
-  <p>Appliqué au modèle <code>articles</code> du <a href="backend.html">chapitre précédent</a> — un script de seed qui peuple la table pour développer sans donnée réelle :</p>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <p>Appliqué au modèle <code>articles</code> du <a href="backend.html">chapitre précédent</a> — un script de seed
+        qui peuple la table pour développer sans donnée réelle :</p>
+      <pre class="code" data-lang="php"><script type="text/plain">
 // bin/seed.php
 require __DIR__ . '/../vendor/autoload.php';
 require __DIR__ . '/../src/pdo.php';   // fournit $pdo
@@ -103,14 +118,19 @@ for ($i = 0; $i < 50; $i++) {
 
 echo "50 articles générés.\n";
 </script></pre>
-  <div class="callout tip">
-    <span class="label">Toujours en <code>--dev</code></span>
-    <p>Faker sert aux fixtures et aux tests, jamais à la production — d'où <code>--dev</code> : il n'est pas installé quand on déploie avec <code>composer install --no-dev</code>.</p>
-  </div>
+      <div class="callout tip">
+        <span class="label">Toujours en <code>--dev</code></span>
+        <p>Faker sert aux fixtures et aux tests, jamais à la production — d'où <code>--dev</code> : il n'est pas
+          installé quand on déploie avec <code>composer install --no-dev</code>.</p>
+      </div>
 
-  <h2 id="symfony">Passer à Symfony</h2>
-  <p>Composer seul suffit pour ajouter des bibliothèques ponctuelles. Quand le projet a besoin de <strong>routage</strong>, d'un <strong>ORM</strong>, de <strong>formulaires</strong>, d'<strong>authentification</strong> et de tout faire cohabiter proprement, réécrire chaque brique à la main (comme dans <a href="backend.html">Backend & MVC</a>) devient répétitif. <strong>Symfony</strong> est un framework — installé lui aussi via Composer — qui fournit ces briques toutes faites.</p>
-  <pre class="code" data-lang="bash"><script type="text/plain">
+      <h2 id="symfony">Passer à Symfony</h2>
+      <p>Composer seul suffit pour ajouter des bibliothèques ponctuelles. Quand le projet a besoin de
+        <strong>routage</strong>, d'un <strong>ORM</strong>, de <strong>formulaires</strong>,
+        d'<strong>authentification</strong> et de tout faire cohabiter proprement, réécrire chaque brique à la main
+        (comme dans <a href="backend.html">Backend & MVC</a>) devient répétitif. <strong>Symfony</strong> est un
+        framework — installé lui aussi via Composer — qui fournit ces briques toutes faites.</p>
+      <pre class="code" data-lang="bash"><script type="text/plain">
 # Via la CLI Symfony (recommandé — https://symfony.com/download)
 symfony new mon-projet --webapp
 cd mon-projet
@@ -122,8 +142,8 @@ cd mon-projet
 composer require webapp   # ajoute Twig, formulaires, sécurité, validation...
 </script></pre>
 
-  <h2 id="structure">Anatomie d'un projet Symfony</h2>
-  <pre class="code" data-lang="text"><script type="text/plain">
+      <h2 id="structure">Anatomie d'un projet Symfony</h2>
+      <pre class="code" data-lang="text"><script type="text/plain">
 mon-projet/
 ├── bin/console              # outil en ligne de commande (génère du code, lance les migrations...)
 ├── config/                   # routes, services, configuration des paquets
@@ -136,7 +156,7 @@ mon-projet/
 ├── vendor/                     # dépendances Composer
 └── composer.json
 </script></pre>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <pre class="code" data-lang="php"><script type="text/plain">
 namespace App\Controller;
 
 use App\Repository\ArticleRepository;
@@ -156,36 +176,66 @@ class ArticleController extends AbstractController
 }
 </script></pre>
 
-  <h2 id="equivalences">Ce que Symfony automatise</h2>
-  <p>Même idée que le <a href="backend.html#mvc-styles">MVC procédural vs objet</a> vu au chapitre précédent : Symfony ne change pas les concepts, il fournit une version outillée et conventionnelle de ce qu'on a construit à la main.</p>
-  <table>
-    <thead><tr><th>Dans ce guide (PHP pur)</th><th>Équivalent Symfony</th></tr></thead>
-    <tbody>
-      <tr><td>routage par <code>if</code>/<code>str_starts_with</code> sur l'URI</td><td>attribut <code>#[Route(...)]</code> sur chaque méthode de contrôleur</td></tr>
-      <tr><td>PDO + requêtes préparées écrites à la main</td><td>Doctrine ORM (entités, repositories, migrations générées)</td></tr>
-      <tr><td>vues <code>.php</code> + <code>htmlspecialchars()</code> partout</td><td>moteur de gabarits Twig (échappement automatique par défaut)</td></tr>
-      <tr><td><code>vues/base.php</code> + <code>require $template</code></td><td><code>$this-&gt;render(...)</code>, hérité de <code>AbstractController</code></td></tr>
-      <tr><td><code>session_start()</code> + vérifications manuelles</td><td>composant Security (pare-feu, rôles, votants d'autorisation)</td></tr>
-      <tr><td>jeton CSRF fait main</td><td>protection CSRF intégrée aux formulaires Symfony</td></tr>
-    </tbody>
-  </table>
+      <h2 id="equivalences">Ce que Symfony automatise</h2>
+      <p>Même idée que le <a href="backend.html#mvc-styles">MVC procédural vs objet</a> vu au chapitre précédent :
+        Symfony ne change pas les concepts, il fournit une version outillée et conventionnelle de ce qu'on a construit à
+        la main.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Dans ce guide (PHP pur)</th>
+            <th>Équivalent Symfony</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>routage par <code>if</code>/<code>str_starts_with</code> sur l'URI</td>
+            <td>attribut <code>#[Route(...)]</code> sur chaque méthode de contrôleur</td>
+          </tr>
+          <tr>
+            <td>PDO + requêtes préparées écrites à la main</td>
+            <td>Doctrine ORM (entités, repositories, migrations générées)</td>
+          </tr>
+          <tr>
+            <td>vues <code>.php</code> + <code>htmlspecialchars()</code> partout</td>
+            <td>moteur de gabarits Twig (échappement automatique par défaut)</td>
+          </tr>
+          <tr>
+            <td><code>vues/base.php</code> + <code>require $template</code></td>
+            <td><code>$this-&gt;render(...)</code>, hérité de <code>AbstractController</code></td>
+          </tr>
+          <tr>
+            <td><code>session_start()</code> + vérifications manuelles</td>
+            <td>composant Security (pare-feu, rôles, votants d'autorisation)</td>
+          </tr>
+          <tr>
+            <td>jeton CSRF fait main</td>
+            <td>protection CSRF intégrée aux formulaires Symfony</td>
+          </tr>
+        </tbody>
+      </table>
 
-  <h2 id="quand">Quand basculer</h2>
-  <div class="callout tip">
-    <span class="label">Pas un jugement de valeur</span>
-    <p>Pour un script, une API minuscule ou pour <strong>comprendre</strong> ce qui se passe sous un framework, le PHP pur du reste de ce guide reste le plus simple à lire de bout en bout — c'est pour ça qu'il est enseigné ainsi ici. Symfony gagne sa complexité quand le projet a plusieurs contributeurs, plusieurs dizaines de routes/entités, ou un vrai besoin d'authentification et de formulaires validés — la même logique que « procédural d'abord, objet quand ça grossit » vue précédemment.</p>
+      <h2 id="quand">Quand basculer</h2>
+      <div class="callout tip">
+        <span class="label">Pas un jugement de valeur</span>
+        <p>Pour un script, une API minuscule ou pour <strong>comprendre</strong> ce qui se passe sous un framework, le
+          PHP pur du reste de ce guide reste le plus simple à lire de bout en bout — c'est pour ça qu'il est enseigné
+          ainsi ici. Symfony gagne sa complexité quand le projet a plusieurs contributeurs, plusieurs dizaines de
+          routes/entités, ou un vrai besoin d'authentification et de formulaires validés — la même logique que «
+          procédural d'abord, objet quand ça grossit » vue précédemment.</p>
+      </div>
+
+      <footer class="pg">
+        <span><a href="backend.html">← Backend & MVC</a></span>
+        <span><a href="index.html">Retour à l'accueil PHP</a></span>
+      </footer>
+    </main>
   </div>
 
-  <footer class="pg">
-    <span><a href="backend.html">← Backend & MVC</a></span>
-    <span><a href="index.html">Retour à l'accueil PHP</a></span>
-  </footer>
-</main>
-</div>
-
-<script src="../assets/site.config.js"></script>
-<script src="../assets/highlighters/php.js"></script>
-<script src="../assets/main.js"></script>
-<script src="../assets/nav.js"></script>
+  <script src="../assets/site.config.js"></script>
+  <script src="../assets/highlighters/php.js"></script>
+  <script src="../assets/main.js"></script>
+  <script src="../assets/nav.js"></script>
 </body>
+
 </html>

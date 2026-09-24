@@ -1,66 +1,99 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Codex — C# · Asynchrone</title>
-<meta name="description" content="Asynchrone en C# : Task, async/await, parallélisme, annulation, pièges classiques.">
-<link rel="stylesheet" href="../assets/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Codex — C# · Asynchrone</title>
+  <meta name="description" content="Asynchrone en C# : Task, async/await, parallélisme, annulation, pièges classiques.">
+  <link rel="stylesheet" href="../assets/style.css">
 </head>
+
 <body data-lang="csharp" data-page="async">
 
-<div class="topbar" id="topbar"></div>
+  <div class="topbar" id="topbar"></div>
 
-<div class="wrap">
-<aside class="side" id="side"></aside>
+  <div class="wrap">
+    <aside class="side" id="side"></aside>
 
-<main>
-  <h1>3 · Programmation asynchrone</h1>
-  <p class="lead">Gérer les opérations qui <em>attendent</em> — réseau, disque, base de données — sans bloquer le thread ni figer l'application.</p>
+    <main>
+      <h1>3 · Programmation asynchrone</h1>
+      <p class="lead">Gérer les opérations qui <em>attendent</em> — réseau, disque, base de données — sans bloquer le
+        thread ni figer l'application.</p>
 
-  <h2 id="probleme">Le problème</h2>
-  <p>Un appel réseau prend 200&nbsp;ms. En synchrone, le thread reste immobilisé pendant ce temps : il ne peut ni traiter une autre requête, ni redessiner l'interface. L'asynchrone <strong>rend le thread</strong> pendant l'attente et le reprend quand la réponse arrive.</p>
-  <figure>
-    <svg viewBox="0 0 560 200" role="img" aria-label="Synchrone vs asynchrone">
-      <rect class="svg-bg" x="0" y="0" width="560" height="200" rx="6"/>
-      <text class="svg-tm" x="16" y="28">SYNCHRONE — le thread est bloqué</text>
-      <rect class="svg-box-a" x="16" y="38" width="70" height="22"/><text class="svg-mono" x="24" y="54">calcul</text>
-      <rect class="svg-box-w" x="86" y="38" width="330" height="22"/><text class="svg-mono" x="200" y="54">attente réseau (thread gelé)</text>
-      <rect class="svg-box-a" x="416" y="38" width="70" height="22"/><text class="svg-mono" x="424" y="54">suite</text>
+      <h2 id="probleme">Le problème</h2>
+      <p>Un appel réseau prend 200&nbsp;ms. En synchrone, le thread reste immobilisé pendant ce temps : il ne peut ni
+        traiter une autre requête, ni redessiner l'interface. L'asynchrone <strong>rend le thread</strong> pendant
+        l'attente et le reprend quand la réponse arrive.</p>
+      <figure>
+        <svg viewBox="0 0 560 200" role="img" aria-label="Synchrone vs asynchrone">
+          <rect class="svg-bg" x="0" y="0" width="560" height="200" rx="6" />
+          <text class="svg-tm" x="16" y="28">SYNCHRONE — le thread est bloqué</text>
+          <rect class="svg-box-a" x="16" y="38" width="70" height="22" /><text class="svg-mono" x="24"
+            y="54">calcul</text>
+          <rect class="svg-box-w" x="86" y="38" width="330" height="22" /><text class="svg-mono" x="200" y="54">attente
+            réseau (thread gelé)</text>
+          <rect class="svg-box-a" x="416" y="38" width="70" height="22" /><text class="svg-mono" x="424"
+            y="54">suite</text>
 
-      <text class="svg-tm" x="16" y="108">ASYNCHRONE — le thread est libéré</text>
-      <rect class="svg-box-a" x="16" y="118" width="70" height="22"/><text class="svg-mono" x="24" y="134">calcul</text>
-      <rect class="svg-box" x="86" y="118" width="330" height="22" style="stroke-dasharray:4 3"/><text class="svg-mono" x="150" y="134">await — thread rendu au pool</text>
-      <rect class="svg-box-g" x="416" y="118" width="70" height="22"/><text class="svg-mono" x="424" y="134">suite</text>
-      <text class="svg-tm" x="86" y="164">↑ pendant ce temps, d'autres tâches tournent sur ce thread</text>
-    </svg>
-    <figcaption>Même durée totale, mais le thread n'est pas gaspillé pendant l'attente.</figcaption>
-  </figure>
-  <pre class="code"><script type="text/plain">
+          <text class="svg-tm" x="16" y="108">ASYNCHRONE — le thread est libéré</text>
+          <rect class="svg-box-a" x="16" y="118" width="70" height="22" /><text class="svg-mono" x="24"
+            y="134">calcul</text>
+          <rect class="svg-box" x="86" y="118" width="330" height="22" style="stroke-dasharray:4 3" /><text
+            class="svg-mono" x="150" y="134">await — thread rendu au pool</text>
+          <rect class="svg-box-g" x="416" y="118" width="70" height="22" /><text class="svg-mono" x="424"
+            y="134">suite</text>
+          <text class="svg-tm" x="86" y="164">↑ pendant ce temps, d'autres tâches tournent sur ce thread</text>
+        </svg>
+        <figcaption>Même durée totale, mais le thread n'est pas gaspillé pendant l'attente.</figcaption>
+      </figure>
+      <pre class="code"><script type="text/plain">
 // Synchrone : bloque 2 s, rien d'autre ne peut se passer
 Thread.Sleep(2000);
 Console.WriteLine("fini");
 </script></pre>
 
-  <h2 id="task">Task & Task&lt;T&gt;</h2>
-  <p>Une <code>Task</code> représente une opération <em>en cours ou à venir</em>. <code>Task</code> = « ça finira » ; <code>Task&lt;T&gt;</code> = « ça produira un <code>T</code> ». C'est l'équivalent de la <em>Promise</em> d'autres langages.</p>
-  <table>
-    <thead><tr><th>État d'une Task</th><th>Sens</th></tr></thead>
-    <tbody>
-      <tr><td>Running / WaitingForActivation</td><td>en cours</td></tr>
-      <tr><td>RanToCompletion</td><td>terminée avec succès (résultat disponible)</td></tr>
-      <tr><td>Faulted</td><td>terminée sur exception</td></tr>
-      <tr><td>Canceled</td><td>annulée via un CancellationToken</td></tr>
-    </tbody>
-  </table>
+      <h2 id="task">Task & Task&lt;T&gt;</h2>
+      <p>Une <code>Task</code> représente une opération <em>en cours ou à venir</em>. <code>Task</code> = « ça finira »
+        ; <code>Task&lt;T&gt;</code> = « ça produira un <code>T</code> ». C'est l'équivalent de la <em>Promise</em>
+        d'autres langages.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>État d'une Task</th>
+            <th>Sens</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Running / WaitingForActivation</td>
+            <td>en cours</td>
+          </tr>
+          <tr>
+            <td>RanToCompletion</td>
+            <td>terminée avec succès (résultat disponible)</td>
+          </tr>
+          <tr>
+            <td>Faulted</td>
+            <td>terminée sur exception</td>
+          </tr>
+          <tr>
+            <td>Canceled</td>
+            <td>annulée via un CancellationToken</td>
+          </tr>
+        </tbody>
+      </table>
 
-  <h2 id="asyncawait">async / await</h2>
-  <ol class="steps">
-    <li><strong><code>async</code></strong> sur une méthode = « elle contient des <code>await</code> ». Elle renvoie <code>Task</code>, <code>Task&lt;T&gt;</code> (ou <code>ValueTask</code>).</li>
-    <li><strong><code>await</code></strong> devant une Task = « suspends-toi ici jusqu'au résultat, sans bloquer le thread ; reprends ensuite à la ligne suivante ».</li>
-    <li>Le compilateur transforme la méthode en machine à états : tout ce qui suit un <code>await</code> devient une <em>continuation</em> exécutée au retour.</li>
-  </ol>
-  <pre class="code"><script type="text/plain">
+      <h2 id="asyncawait">async / await</h2>
+      <ol class="steps">
+        <li><strong><code>async</code></strong> sur une méthode = « elle contient des <code>await</code> ». Elle renvoie
+          <code>Task</code>, <code>Task&lt;T&gt;</code> (ou <code>ValueTask</code>).</li>
+        <li><strong><code>await</code></strong> devant une Task = « suspends-toi ici jusqu'au résultat, sans bloquer le
+          thread ; reprends ensuite à la ligne suivante ».</li>
+        <li>Le compilateur transforme la méthode en machine à états : tout ce qui suit un <code>await</code> devient une
+          <em>continuation</em> exécutée au retour.</li>
+      </ol>
+      <pre class="code"><script type="text/plain">
 async Task<int> ChargerAsync()
 {
     Console.WriteLine("début");
@@ -72,21 +105,40 @@ async Task<int> ChargerAsync()
 int n = await ChargerAsync();       // await "déballe" le Task<int> → int
 Console.WriteLine(n);               // 42
 </script></pre>
-  <div class="callout info">
-    <span class="label">Top-level await</span>
-    <p>Depuis .NET 6, <code>Program.cs</code> accepte <code>await</code> directement. Ailleurs, seule une méthode <code>async</code> peut l'utiliser. Convention : suffixe <code>Async</code> pour ces méthodes.</p>
-  </div>
+      <div class="callout info">
+        <span class="label">Top-level await</span>
+        <p>Depuis .NET 6, <code>Program.cs</code> accepte <code>await</code> directement. Ailleurs, seule une méthode
+          <code>async</code> peut l'utiliser. Convention : suffixe <code>Async</code> pour ces méthodes.</p>
+      </div>
 
-  <h2 id="cpu-io">CPU-bound vs I/O-bound</h2>
-  <table>
-    <thead><tr><th></th><th>I/O-bound (attente externe)</th><th>CPU-bound (calcul lourd)</th></tr></thead>
-    <tbody>
-      <tr><td>Exemples</td><td>HTTP, fichier, base de données</td><td>hachage, compression, image</td></tr>
-      <tr><td>Bonne approche</td><td>API <code>...Async</code> native + <code>await</code></td><td><code>await Task.Run(() =&gt; …)</code> pour sortir du thread courant</td></tr>
-      <tr><td>Gagne du temps ?</td><td>libère le thread pendant l'attente</td><td>oui si plusieurs cœurs, sinon juste « ne fige pas l'UI »</td></tr>
-    </tbody>
-  </table>
-  <pre class="code"><script type="text/plain">
+      <h2 id="cpu-io">CPU-bound vs I/O-bound</h2>
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>I/O-bound (attente externe)</th>
+            <th>CPU-bound (calcul lourd)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Exemples</td>
+            <td>HTTP, fichier, base de données</td>
+            <td>hachage, compression, image</td>
+          </tr>
+          <tr>
+            <td>Bonne approche</td>
+            <td>API <code>...Async</code> native + <code>await</code></td>
+            <td><code>await Task.Run(() =&gt; …)</code> pour sortir du thread courant</td>
+          </tr>
+          <tr>
+            <td>Gagne du temps ?</td>
+            <td>libère le thread pendant l'attente</td>
+            <td>oui si plusieurs cœurs, sinon juste « ne fige pas l'UI »</td>
+          </tr>
+        </tbody>
+      </table>
+      <pre class="code"><script type="text/plain">
 // I/O-bound : pas de Task.Run, l'attente est déjà "gratuite"
 string page = await httpClient.GetStringAsync(url);
 
@@ -94,23 +146,28 @@ string page = await httpClient.GetStringAsync(url);
 int hash = await Task.Run(() => CalculLourd(donnees));
 </script></pre>
 
-  <h2 id="parallele">Lancer plusieurs tâches en parallèle</h2>
-  <p>Ne pas <code>await</code> tout de suite : on démarre plusieurs Tasks, puis on attend le lot.</p>
-  <figure>
-    <svg viewBox="0 0 560 170" role="img" aria-label="Séquentiel vs parallèle">
-      <rect class="svg-bg" x="0" y="0" width="560" height="170" rx="6"/>
-      <text class="svg-tm" x="16" y="26">Séquentiel : await A; await B; await C  →  3 s</text>
-      <rect class="svg-box-w" x="16" y="34" width="150" height="20"/><text class="svg-mono" x="70" y="49">A</text>
-      <rect class="svg-box-w" x="170" y="34" width="150" height="20"/><text class="svg-mono" x="235" y="49">B</text>
-      <rect class="svg-box-w" x="324" y="34" width="150" height="20"/><text class="svg-mono" x="390" y="49">C</text>
-      <text class="svg-tm" x="16" y="100">Parallèle : Task.WhenAll(A, B, C)  →  1 s</text>
-      <rect class="svg-box-g" x="16" y="108" width="150" height="20"/><text class="svg-mono" x="70" y="123">A</text>
-      <rect class="svg-box-g" x="16" y="130" width="150" height="20"/><text class="svg-mono" x="70" y="145">B</text>
-      <rect class="svg-box-g" x="16" y="152" width="150" height="14"/><text class="svg-mono" x="70" y="163">C</text>
-    </svg>
-    <figcaption>Trois appels indépendants : les lancer ensemble divise le temps d'attente.</figcaption>
-  </figure>
-  <pre class="code"><script type="text/plain">
+      <h2 id="parallele">Lancer plusieurs tâches en parallèle</h2>
+      <p>Ne pas <code>await</code> tout de suite : on démarre plusieurs Tasks, puis on attend le lot.</p>
+      <figure>
+        <svg viewBox="0 0 560 170" role="img" aria-label="Séquentiel vs parallèle">
+          <rect class="svg-bg" x="0" y="0" width="560" height="170" rx="6" />
+          <text class="svg-tm" x="16" y="26">Séquentiel : await A; await B; await C → 3 s</text>
+          <rect class="svg-box-w" x="16" y="34" width="150" height="20" /><text class="svg-mono" x="70" y="49">A</text>
+          <rect class="svg-box-w" x="170" y="34" width="150" height="20" /><text class="svg-mono" x="235"
+            y="49">B</text>
+          <rect class="svg-box-w" x="324" y="34" width="150" height="20" /><text class="svg-mono" x="390"
+            y="49">C</text>
+          <text class="svg-tm" x="16" y="100">Parallèle : Task.WhenAll(A, B, C) → 1 s</text>
+          <rect class="svg-box-g" x="16" y="108" width="150" height="20" /><text class="svg-mono" x="70"
+            y="123">A</text>
+          <rect class="svg-box-g" x="16" y="130" width="150" height="20" /><text class="svg-mono" x="70"
+            y="145">B</text>
+          <rect class="svg-box-g" x="16" y="152" width="150" height="14" /><text class="svg-mono" x="70"
+            y="163">C</text>
+        </svg>
+        <figcaption>Trois appels indépendants : les lancer ensemble divise le temps d'attente.</figcaption>
+      </figure>
+      <pre class="code"><script type="text/plain">
 Task<string> a = httpClient.GetStringAsync(url1);
 Task<string> b = httpClient.GetStringAsync(url2);
 Task<string> c = httpClient.GetStringAsync(url3);
@@ -126,13 +183,15 @@ Console.WriteLine(await gagnante);
 var urls = new[] { url1, url2, url3 };
 string[] tout = await Task.WhenAll(urls.Select(u => httpClient.GetStringAsync(u)));
 </script></pre>
-  <div class="callout warn">
-    <span class="label">Parallélisme borné</span>
-    <p>10 000 appels d'un coup vont saturer le réseau. Limiter la concurrence avec <code>SemaphoreSlim</code>, <code>Parallel.ForEachAsync</code> (option <code>MaxDegreeOfParallelism</code>) ou <code>System.Threading.Channels</code>.</p>
-  </div>
+      <div class="callout warn">
+        <span class="label">Parallélisme borné</span>
+        <p>10 000 appels d'un coup vont saturer le réseau. Limiter la concurrence avec <code>SemaphoreSlim</code>,
+          <code>Parallel.ForEachAsync</code> (option <code>MaxDegreeOfParallelism</code>) ou
+          <code>System.Threading.Channels</code>.</p>
+      </div>
 
-  <h2 id="annulation">Annulation & timeout</h2>
-  <pre class="code"><script type="text/plain">
+      <h2 id="annulation">Annulation & timeout</h2>
+      <pre class="code"><script type="text/plain">
 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3)); // timeout auto
 
 try
@@ -156,8 +215,8 @@ async Task TraiterAsync(CancellationToken ct)
 }
 </script></pre>
 
-  <h2 id="exceptions">Exceptions dans du code async</h2>
-  <pre class="code"><script type="text/plain">
+      <h2 id="exceptions">Exceptions dans du code async</h2>
+      <pre class="code"><script type="text/plain">
 try
 {
     await OperationRisqueeAsync();
@@ -179,9 +238,9 @@ catch
 }
 </script></pre>
 
-  <h2 id="stream">Flux asynchrones — IAsyncEnumerable</h2>
-  <p>Pour consommer des résultats <em>au fil de l'eau</em> (pagination d'API, lignes d'un gros fichier).</p>
-  <pre class="code"><script type="text/plain">
+      <h2 id="stream">Flux asynchrones — IAsyncEnumerable</h2>
+      <p>Pour consommer des résultats <em>au fil de l'eau</em> (pagination d'API, lignes d'un gros fichier).</p>
+      <pre class="code"><script type="text/plain">
 async IAsyncEnumerable<int> LirePagesAsync()
 {
     for (int page = 1; page <= 5; page++)
@@ -195,24 +254,51 @@ await foreach (int valeur in LirePagesAsync())
     Console.WriteLine(valeur);   // 10, 20, 30… affichés dès qu'ils arrivent
 </script></pre>
 
-  <h2 id="pieges">Pièges classiques</h2>
-  <table>
-    <thead><tr><th>À éviter</th><th>Pourquoi</th><th>À la place</th></tr></thead>
-    <tbody>
-      <tr><td><code>task.Result</code> / <code>task.Wait()</code></td><td>bloque le thread, risque d'interblocage (contexte UI)</td><td><code>await task</code></td></tr>
-      <tr><td><code>async void</code></td><td>impossible à attendre, exceptions non rattrapables</td><td><code>async Task</code> (sauf gestionnaire d'événement)</td></tr>
-      <tr><td>oublier le <code>await</code></td><td>« fire and forget » : erreurs silencieuses, ordre cassé</td><td>toujours <code>await</code>, ou stocker la <code>Task</code></td></tr>
-      <tr><td><code>await</code> dans une boucle sur des appels indépendants</td><td>séquentiel = lent</td><td>collecter les Tasks puis <code>Task.WhenAll</code></td></tr>
-      <tr><td>async par-dessus du pur CPU sans <code>Task.Run</code></td><td>fige quand même le thread appelant</td><td><code>await Task.Run(...)</code></td></tr>
-    </tbody>
-  </table>
-  <div class="callout tip">
-    <span class="label">Règle d'or</span>
-    <p><em>async all the way</em> : si une méthode appelle de l'async, elle-même devient async. Ne « recolle » jamais du synchrone avec <code>.Result</code>.</p>
-  </div>
+      <h2 id="pieges">Pièges classiques</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>À éviter</th>
+            <th>Pourquoi</th>
+            <th>À la place</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>task.Result</code> / <code>task.Wait()</code></td>
+            <td>bloque le thread, risque d'interblocage (contexte UI)</td>
+            <td><code>await task</code></td>
+          </tr>
+          <tr>
+            <td><code>async void</code></td>
+            <td>impossible à attendre, exceptions non rattrapables</td>
+            <td><code>async Task</code> (sauf gestionnaire d'événement)</td>
+          </tr>
+          <tr>
+            <td>oublier le <code>await</code></td>
+            <td>« fire and forget » : erreurs silencieuses, ordre cassé</td>
+            <td>toujours <code>await</code>, ou stocker la <code>Task</code></td>
+          </tr>
+          <tr>
+            <td><code>await</code> dans une boucle sur des appels indépendants</td>
+            <td>séquentiel = lent</td>
+            <td>collecter les Tasks puis <code>Task.WhenAll</code></td>
+          </tr>
+          <tr>
+            <td>async par-dessus du pur CPU sans <code>Task.Run</code></td>
+            <td>fige quand même le thread appelant</td>
+            <td><code>await Task.Run(...)</code></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout tip">
+        <span class="label">Règle d'or</span>
+        <p><em>async all the way</em> : si une méthode appelle de l'async, elle-même devient async. Ne « recolle »
+          jamais du synchrone avec <code>.Result</code>.</p>
+      </div>
 
-  <h2 id="exemple">Exemple complet — téléchargement parallèle avec timeout</h2>
-  <pre class="code"><script type="text/plain">
+      <h2 id="exemple">Exemple complet — téléchargement parallèle avec timeout</h2>
+      <pre class="code"><script type="text/plain">
 using System.Diagnostics;
 
 var urls = new[]
@@ -253,16 +339,17 @@ catch (HttpRequestException ex)
 }
 </script></pre>
 
-  <footer class="pg">
-    <span><a href="oriente-objet.html">← Orienté objet</a></span>
-    <span><a href="types-collections-uml.html">Suivant : Types & UML →</a></span>
-  </footer>
-</main>
-</div>
+      <footer class="pg">
+        <span><a href="oriente-objet.html">← Orienté objet</a></span>
+        <span><a href="types-collections-uml.html">Suivant : Types & UML →</a></span>
+      </footer>
+    </main>
+  </div>
 
-<script src="../assets/site.config.js"></script>
-<script src="../assets/highlighters/csharp.js"></script>
-<script src="../assets/main.js"></script>
-<script src="../assets/nav.js"></script>
+  <script src="../assets/site.config.js"></script>
+  <script src="../assets/highlighters/csharp.js"></script>
+  <script src="../assets/main.js"></script>
+  <script src="../assets/nav.js"></script>
 </body>
+
 </html>

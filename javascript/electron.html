@@ -1,73 +1,101 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Codex — JavaScript · Apps Electron</title>
-<meta name="description" content="Applications de bureau avec Electron : processus principal, renderer, preload/contextBridge, IPC, dialogues natifs, packaging.">
-<link rel="stylesheet" href="../assets/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Codex — JavaScript · Apps Electron</title>
+  <meta name="description"
+    content="Applications de bureau avec Electron : processus principal, renderer, preload/contextBridge, IPC, dialogues natifs, packaging.">
+  <link rel="stylesheet" href="../assets/style.css">
 </head>
+
 <body data-lang="javascript" data-page="electron">
 
-<div class="topbar" id="topbar"></div>
+  <div class="topbar" id="topbar"></div>
 
-<div class="wrap">
-<aside class="side" id="side"></aside>
+  <div class="wrap">
+    <aside class="side" id="side"></aside>
 
-<main>
-  <h1>2 · Applications Electron</h1>
-  <p class="lead">Electron empaquette <strong>Chromium</strong> (pour l'affichage) et <strong>Node.js</strong> (pour le système) ensemble : une application de bureau écrite en HTML/CSS/JS, qui tourne sur Windows, macOS et Linux depuis un seul code.</p>
+    <main>
+      <h1>2 · Applications Electron</h1>
+      <p class="lead">Electron empaquette <strong>Chromium</strong> (pour l'affichage) et <strong>Node.js</strong> (pour
+        le système) ensemble : une application de bureau écrite en HTML/CSS/JS, qui tourne sur Windows, macOS et Linux
+        depuis un seul code.</p>
 
-  <h2 id="idee">Deux processus, un rôle chacun</h2>
-  <p>C'est <strong>le</strong> concept à comprendre en Electron : le code ne tourne jamais dans un seul contexte.</p>
-  <figure>
-    <svg viewBox="0 0 620 210" role="img" aria-label="Processus principal, preload, renderer">
-      <defs><marker id="el-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
-        <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
-      <rect class="svg-bg" x="0" y="0" width="620" height="210" rx="6"/>
-      <rect class="svg-box-g" x="20" y="30" width="160" height="60" rx="6"/>
-      <text class="svg-t" x="100" y="55" text-anchor="middle">Processus principal</text>
-      <text class="svg-tm" x="100" y="73" text-anchor="middle">main.js — accès complet à Node</text>
+      <h2 id="idee">Deux processus, un rôle chacun</h2>
+      <p>C'est <strong>le</strong> concept à comprendre en Electron : le code ne tourne jamais dans un seul contexte.
+      </p>
+      <figure>
+        <svg viewBox="0 0 620 210" role="img" aria-label="Processus principal, preload, renderer">
+          <defs>
+            <marker id="el-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+              <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5" />
+            </marker>
+          </defs>
+          <rect class="svg-bg" x="0" y="0" width="620" height="210" rx="6" />
+          <rect class="svg-box-g" x="20" y="30" width="160" height="60" rx="6" />
+          <text class="svg-t" x="100" y="55" text-anchor="middle">Processus principal</text>
+          <text class="svg-tm" x="100" y="73" text-anchor="middle">main.js — accès complet à Node</text>
 
-      <rect class="svg-box" x="230" y="30" width="160" height="60" rx="6"/>
-      <text class="svg-t" x="310" y="55" text-anchor="middle">preload.js</text>
-      <text class="svg-tm" x="310" y="73" text-anchor="middle">contextBridge — le pont sécurisé</text>
+          <rect class="svg-box" x="230" y="30" width="160" height="60" rx="6" />
+          <text class="svg-t" x="310" y="55" text-anchor="middle">preload.js</text>
+          <text class="svg-tm" x="310" y="73" text-anchor="middle">contextBridge — le pont sécurisé</text>
 
-      <rect class="svg-box-a" x="440" y="30" width="160" height="60" rx="6"/>
-      <text class="svg-t" x="520" y="55" text-anchor="middle">Renderer</text>
-      <text class="svg-tm" x="520" y="73" text-anchor="middle">la page (HTML/CSS/JS), sans Node</text>
+          <rect class="svg-box-a" x="440" y="30" width="160" height="60" rx="6" />
+          <text class="svg-t" x="520" y="55" text-anchor="middle">Renderer</text>
+          <text class="svg-tm" x="520" y="73" text-anchor="middle">la page (HTML/CSS/JS), sans Node</text>
 
-      <path class="svg-arrow" d="M182 60 H228" style="marker-end:url(#el-arr)"/>
-      <path class="svg-arrow" d="M228 76 H182" style="marker-end:url(#el-arr)"/>
-      <text class="svg-tm" x="205" y="100" text-anchor="middle">ipcMain</text>
+          <path class="svg-arrow" d="M182 60 H228" style="marker-end:url(#el-arr)" />
+          <path class="svg-arrow" d="M228 76 H182" style="marker-end:url(#el-arr)" />
+          <text class="svg-tm" x="205" y="100" text-anchor="middle">ipcMain</text>
 
-      <path class="svg-arrow" d="M392 60 H438" style="marker-end:url(#el-arr)"/>
-      <path class="svg-arrow" d="M438 76 H392" style="marker-end:url(#el-arr)"/>
-      <text class="svg-tm" x="415" y="100" text-anchor="middle">ipcRenderer</text>
+          <path class="svg-arrow" d="M392 60 H438" style="marker-end:url(#el-arr)" />
+          <path class="svg-arrow" d="M438 76 H392" style="marker-end:url(#el-arr)" />
+          <text class="svg-tm" x="415" y="100" text-anchor="middle">ipcRenderer</text>
 
-      <text class="svg-tm" x="100" y="140" text-anchor="middle">fichiers, réseau bas niveau,</text>
-      <text class="svg-tm" x="100" y="156" text-anchor="middle">fenêtres, menus natifs</text>
-      <text class="svg-tm" x="520" y="140" text-anchor="middle">DOM, clics, formulaires —</text>
-      <text class="svg-tm" x="520" y="156" text-anchor="middle">un navigateur ordinaire</text>
-    </svg>
-    <figcaption>Le renderer affiche une page web normale, sans accès à Node — <code>preload.js</code> expose <em>uniquement</em> les fonctions choisies, via IPC vers le processus principal.</figcaption>
-  </figure>
-  <table>
-    <thead><tr><th></th><th>Processus principal</th><th>Renderer</th></tr></thead>
-    <tbody>
-      <tr><td>Rôle</td><td>cycle de vie de l'appli, fenêtres, système</td><td>affichage, interactions utilisateur</td></tr>
-      <tr><td>Accès à Node.js</td><td>complet</td><td>aucun (par sécurité, depuis Electron 12)</td></tr>
-      <tr><td>Combien d'instances</td><td>une seule pour toute l'appli</td><td>une par fenêtre</td></tr>
-    </tbody>
-  </table>
+          <text class="svg-tm" x="100" y="140" text-anchor="middle">fichiers, réseau bas niveau,</text>
+          <text class="svg-tm" x="100" y="156" text-anchor="middle">fenêtres, menus natifs</text>
+          <text class="svg-tm" x="520" y="140" text-anchor="middle">DOM, clics, formulaires —</text>
+          <text class="svg-tm" x="520" y="156" text-anchor="middle">un navigateur ordinaire</text>
+        </svg>
+        <figcaption>Le renderer affiche une page web normale, sans accès à Node — <code>preload.js</code> expose
+          <em>uniquement</em> les fonctions choisies, via IPC vers le processus principal.</figcaption>
+      </figure>
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>Processus principal</th>
+            <th>Renderer</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Rôle</td>
+            <td>cycle de vie de l'appli, fenêtres, système</td>
+            <td>affichage, interactions utilisateur</td>
+          </tr>
+          <tr>
+            <td>Accès à Node.js</td>
+            <td>complet</td>
+            <td>aucun (par sécurité, depuis Electron 12)</td>
+          </tr>
+          <tr>
+            <td>Combien d'instances</td>
+            <td>une seule pour toute l'appli</td>
+            <td>une par fenêtre</td>
+          </tr>
+        </tbody>
+      </table>
 
-  <h2 id="installer">Installer & premier projet</h2>
-  <pre class="code" data-lang="bash"><script type="text/plain">
+      <h2 id="installer">Installer & premier projet</h2>
+      <pre class="code" data-lang="bash"><script type="text/plain">
 mkdir mon-app && cd mon-app
 npm init -y
 npm install --save-dev electron
 </script></pre>
-  <pre class="code" data-lang="json"><script type="text/plain">
+      <pre class="code" data-lang="json"><script type="text/plain">
 {
   "name": "mon-app",
   "main": "main.js",
@@ -78,8 +106,8 @@ npm install --save-dev electron
 }
 </script></pre>
 
-  <h2 id="main">Le processus principal</h2>
-  <pre class="code" data-lang="javascript"><script type="text/plain">
+      <h2 id="main">Le processus principal</h2>
+      <pre class="code" data-lang="javascript"><script type="text/plain">
 // main.js
 import { app, BrowserWindow } from 'electron';
 import path from 'node:path';
@@ -105,9 +133,10 @@ app.on('window-all-closed', () => {
 });
 </script></pre>
 
-  <h2 id="renderer">Le renderer</h2>
-  <p>Une page HTML tout à fait ordinaire — elle ne peut pas faire <code>require('fs')</code> ni <code>import</code> de module Node directement, seulement ce que <code>preload.js</code> lui expose.</p>
-  <pre class="code" data-lang="html"><script type="text/plain">
+      <h2 id="renderer">Le renderer</h2>
+      <p>Une page HTML tout à fait ordinaire — elle ne peut pas faire <code>require('fs')</code> ni <code>import</code>
+        de module Node directement, seulement ce que <code>preload.js</code> lui expose.</p>
+      <pre class="code" data-lang="html"><script type="text/plain">
 <!-- index.html -->
 <!DOCTYPE html>
 <html>
@@ -119,9 +148,11 @@ app.on('window-all-closed', () => {
 </html>
 </script></pre>
 
-  <h2 id="preload">preload.js & contextBridge</h2>
-  <p>Le pont sécurisé : <code>preload.js</code> tourne avec un accès limité à Node, et n'expose au renderer <strong>que</strong> ce qu'on choisit explicitement via <code>contextBridge</code> — jamais Node.js en entier.</p>
-  <pre class="code" data-lang="javascript"><script type="text/plain">
+      <h2 id="preload">preload.js & contextBridge</h2>
+      <p>Le pont sécurisé : <code>preload.js</code> tourne avec un accès limité à Node, et n'expose au renderer
+        <strong>que</strong> ce qu'on choisit explicitement via <code>contextBridge</code> — jamais Node.js en entier.
+      </p>
+      <pre class="code" data-lang="javascript"><script type="text/plain">
 // preload.js
 import { contextBridge, ipcRenderer } from 'electron';
 
@@ -129,7 +160,7 @@ contextBridge.exposeInMainWorld('mabridge', {
     choisirFichier: () => ipcRenderer.invoke('dialogue:ouvrir'),
 });
 </script></pre>
-  <pre class="code" data-lang="javascript"><script type="text/plain">
+      <pre class="code" data-lang="javascript"><script type="text/plain">
 // renderer.js — utilise SEULEMENT ce que preload.js a exposé
 document.getElementById('ouvrir').addEventListener('click', async () => {
     const chemin = await window.mabridge.choisirFichier();
@@ -137,9 +168,11 @@ document.getElementById('ouvrir').addEventListener('click', async () => {
 });
 </script></pre>
 
-  <h2 id="ipc">Communication IPC</h2>
-  <p><code>ipcRenderer.invoke</code> (renderer → main, avec réponse) se traite côté main par <code>ipcMain.handle</code> ; pour un envoi sans réponse attendue, <code>ipcRenderer.send</code> / <code>ipcMain.on</code>.</p>
-  <pre class="code" data-lang="javascript"><script type="text/plain">
+      <h2 id="ipc">Communication IPC</h2>
+      <p><code>ipcRenderer.invoke</code> (renderer → main, avec réponse) se traite côté main par
+        <code>ipcMain.handle</code> ; pour un envoi sans réponse attendue, <code>ipcRenderer.send</code> /
+        <code>ipcMain.on</code>.</p>
+      <pre class="code" data-lang="javascript"><script type="text/plain">
 // main.js — répond à la demande faite via preload.js
 import { ipcMain, dialog } from 'electron';
 
@@ -149,8 +182,8 @@ ipcMain.handle('dialogue:ouvrir', async () => {
 });
 </script></pre>
 
-  <h2 id="natif">Dialogues & menus natifs</h2>
-  <pre class="code" data-lang="javascript"><script type="text/plain">
+      <h2 id="natif">Dialogues & menus natifs</h2>
+      <pre class="code" data-lang="javascript"><script type="text/plain">
 import { dialog, Menu } from 'electron';
 
 // Boîte de dialogue native
@@ -164,11 +197,11 @@ const menu = Menu.buildFromTemplate([
 Menu.setApplicationMenu(menu);
 </script></pre>
 
-  <h2 id="packaging">Empaqueter & distribuer</h2>
-  <pre class="code" data-lang="bash"><script type="text/plain">
+      <h2 id="packaging">Empaqueter & distribuer</h2>
+      <pre class="code" data-lang="bash"><script type="text/plain">
 npm install --save-dev electron-builder
 </script></pre>
-  <pre class="code" data-lang="json"><script type="text/plain">
+      <pre class="code" data-lang="json"><script type="text/plain">
 {
   "scripts": { "build": "electron-builder" },
   "build": {
@@ -179,10 +212,11 @@ npm install --save-dev electron-builder
   }
 }
 </script></pre>
-  <p><code>npm run build</code> génère un installeur natif par plateforme (<code>.exe</code>, <code>.dmg</code>, <code>.AppImage</code>).</p>
+      <p><code>npm run build</code> génère un installeur natif par plateforme (<code>.exe</code>, <code>.dmg</code>,
+        <code>.AppImage</code>).</p>
 
-  <h2 id="exemple">Exemple complet — arborescence</h2>
-  <pre class="code" data-lang="text"><script type="text/plain">
+      <h2 id="exemple">Exemple complet — arborescence</h2>
+      <pre class="code" data-lang="text"><script type="text/plain">
 mon-app/
 ├── main.js         # processus principal : fenêtre + gestion des dialogues
 ├── preload.js       # pont sécurisé : expose choisirFichier() au renderer
@@ -190,21 +224,25 @@ mon-app/
 ├── renderer.js         # logique de la page, utilise window.mabridge
 └── package.json
 </script></pre>
-  <div class="callout tip">
-    <span class="label">Le réflexe qui évite 90 % des bugs de sécurité Electron</span>
-    <p><code>contextIsolation: true</code> et <code>nodeIntegration: false</code> restent activés (ce sont les valeurs par défaut depuis longtemps — ne jamais les désactiver « pour aller plus vite »). Toute capacité système passe par un canal IPC explicite dans <code>preload.js</code>, jamais par un accès direct à Node depuis la page.</p>
+      <div class="callout tip">
+        <span class="label">Le réflexe qui évite 90 % des bugs de sécurité Electron</span>
+        <p><code>contextIsolation: true</code> et <code>nodeIntegration: false</code> restent activés (ce sont les
+          valeurs par défaut depuis longtemps — ne jamais les désactiver « pour aller plus vite »). Toute capacité
+          système passe par un canal IPC explicite dans <code>preload.js</code>, jamais par un accès direct à Node
+          depuis la page.</p>
+      </div>
+
+      <footer class="pg">
+        <span><a href="discord-bot.html">← Bot Discord</a></span>
+        <span><a href="backend.html">Suivant : Backend de sites web →</a></span>
+      </footer>
+    </main>
   </div>
 
-  <footer class="pg">
-    <span><a href="discord-bot.html">← Bot Discord</a></span>
-    <span><a href="backend.html">Suivant : Backend de sites web →</a></span>
-  </footer>
-</main>
-</div>
-
-<script src="../assets/site.config.js"></script>
-<script src="../assets/highlighters/javascript.js"></script>
-<script src="../assets/main.js"></script>
-<script src="../assets/nav.js"></script>
+  <script src="../assets/site.config.js"></script>
+  <script src="../assets/highlighters/javascript.js"></script>
+  <script src="../assets/main.js"></script>
+  <script src="../assets/nav.js"></script>
 </body>
+
 </html>

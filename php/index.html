@@ -1,65 +1,96 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Codex — PHP · Accueil</title>
-<meta name="description" content="Aide-mémoire de PHP pur (sans framework) : procédural, orienté objet, concurrence, types, collections et backend MVC.">
-<link rel="stylesheet" href="../assets/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Codex — PHP · Accueil</title>
+  <meta name="description"
+    content="Aide-mémoire de PHP pur (sans framework) : procédural, orienté objet, concurrence, types, collections et backend MVC.">
+  <link rel="stylesheet" href="../assets/style.css">
 </head>
+
 <body data-lang="php">
 
-<div class="topbar" id="topbar"></div>
+  <div class="topbar" id="topbar"></div>
 
-<div class="wrap">
-<aside class="side" id="side"></aside>
+  <div class="wrap">
+    <aside class="side" id="side"></aside>
 
-<main>
-  <h1>Apprendre à programmer en PHP</h1>
-  <p class="lead">Du PHP <strong>pur</strong>, sans framework (pas de Symfony, pas de Laravel) : juste le langage, son interpréteur, et sa bibliothèque standard.</p>
+    <main>
+      <h1>Apprendre à programmer en PHP</h1>
+      <p class="lead">Du PHP <strong>pur</strong>, sans framework (pas de Symfony, pas de Laravel) : juste le langage,
+        son interpréteur, et sa bibliothèque standard.</p>
 
-  <h2 id="cest-quoi">PHP, en bref</h2>
-  <p><strong>PHP</strong> est un langage de script, interprété, à typage <em>dynamique</em> (le type d'une variable se voit à l'exécution) mais de plus en plus <em>typable</em> : déclarations de type sur les paramètres, les retours, les propriétés depuis PHP 7/8. Conçu pour le web, il tourne surtout pour répondre à des requêtes HTTP, mais s'utilise aussi en ligne de commande.</p>
-  <figure>
-    <svg viewBox="0 0 620 190" role="img" aria-label="De la requête à la réponse">
-      <rect class="svg-bg" x="0" y="0" width="620" height="190" rx="6"/>
-      <rect class="svg-box" x="20" y="60" width="120" height="56" rx="6"/>
-      <text class="svg-t" x="80" y="84" text-anchor="middle">Requête HTTP</text>
-      <text class="svg-tm" x="80" y="102" text-anchor="middle">ou CLI</text>
-      <rect class="svg-box-a" x="190" y="60" width="120" height="56" rx="6"/>
-      <text class="svg-t" x="250" y="84" text-anchor="middle">Zend Engine</text>
-      <text class="svg-tm" x="250" y="102" text-anchor="middle">compile en opcodes</text>
-      <rect class="svg-box" x="360" y="60" width="120" height="56" rx="6"/>
-      <text class="svg-t" x="420" y="84" text-anchor="middle">script.php</text>
-      <text class="svg-tm" x="420" y="102" text-anchor="middle">exécuté</text>
-      <rect class="svg-box-g" x="500" y="60" width="100" height="56" rx="6"/>
-      <text class="svg-t" x="550" y="84" text-anchor="middle">Réponse</text>
-      <text class="svg-tm" x="550" y="102" text-anchor="middle">HTML / JSON…</text>
-      <path class="svg-arrow" d="M142 88 H186"/>
-      <path class="svg-arrow" d="M312 88 H356"/>
-      <path class="svg-arrow" d="M482 88 H498"/>
-    </svg>
-    <figcaption>Chaque requête ré-exécute le script (sauf usage de PHP-FPM/OPcache qui gardent les opcodes en cache entre deux requêtes).</figcaption>
-  </figure>
+      <h2 id="cest-quoi">PHP, en bref</h2>
+      <p><strong>PHP</strong> est un langage de script, interprété, à typage <em>dynamique</em> (le type d'une variable
+        se voit à l'exécution) mais de plus en plus <em>typable</em> : déclarations de type sur les paramètres, les
+        retours, les propriétés depuis PHP 7/8. Conçu pour le web, il tourne surtout pour répondre à des requêtes HTTP,
+        mais s'utilise aussi en ligne de commande.</p>
+      <figure>
+        <svg viewBox="0 0 620 190" role="img" aria-label="De la requête à la réponse">
+          <rect class="svg-bg" x="0" y="0" width="620" height="190" rx="6" />
+          <rect class="svg-box" x="20" y="60" width="120" height="56" rx="6" />
+          <text class="svg-t" x="80" y="84" text-anchor="middle">Requête HTTP</text>
+          <text class="svg-tm" x="80" y="102" text-anchor="middle">ou CLI</text>
+          <rect class="svg-box-a" x="190" y="60" width="120" height="56" rx="6" />
+          <text class="svg-t" x="250" y="84" text-anchor="middle">Zend Engine</text>
+          <text class="svg-tm" x="250" y="102" text-anchor="middle">compile en opcodes</text>
+          <rect class="svg-box" x="360" y="60" width="120" height="56" rx="6" />
+          <text class="svg-t" x="420" y="84" text-anchor="middle">script.php</text>
+          <text class="svg-tm" x="420" y="102" text-anchor="middle">exécuté</text>
+          <rect class="svg-box-g" x="500" y="60" width="100" height="56" rx="6" />
+          <text class="svg-t" x="550" y="84" text-anchor="middle">Réponse</text>
+          <text class="svg-tm" x="550" y="102" text-anchor="middle">HTML / JSON…</text>
+          <path class="svg-arrow" d="M142 88 H186" />
+          <path class="svg-arrow" d="M312 88 H356" />
+          <path class="svg-arrow" d="M482 88 H498" />
+        </svg>
+        <figcaption>Chaque requête ré-exécute le script (sauf usage de PHP-FPM/OPcache qui gardent les opcodes en cache
+          entre deux requêtes).</figcaption>
+      </figure>
 
-  <h2 id="paradigmes">Les styles couverts</h2>
-  <table>
-    <thead><tr><th>Style</th><th>Idée centrale</th><th>Page</th></tr></thead>
-    <tbody>
-      <tr><td><strong>Procédural</strong></td><td>Variables, tableaux, fonctions — le PHP « classique »</td><td><a href="procedural.html">1 · Procédural</a></td></tr>
-      <tr><td><strong>Orienté objet</strong></td><td>Classes, interfaces, traits, enums</td><td><a href="oriente-objet.html">2 · Orienté objet</a></td></tr>
-      <tr><td><strong>Concurrence</strong></td><td>PHP est bloquant par défaut — générateurs, Fibers, appels parallèles</td><td><a href="concurrence.html">3 · Concurrence</a></td></tr>
-      <tr><td><strong>Backend & MVC</strong></td><td>PDO, requêtes préparées, routage, pattern MVC, sécurité</td><td><a href="backend.html">5 · Backend & MVC</a></td></tr>
-    </tbody>
-  </table>
-  <p>En complément : <a href="types-collections-uml.html">types de données, tableaux/SPL et rédaction d'UML</a>.</p>
+      <h2 id="paradigmes">Les styles couverts</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Style</th>
+            <th>Idée centrale</th>
+            <th>Page</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Procédural</strong></td>
+            <td>Variables, tableaux, fonctions — le PHP « classique »</td>
+            <td><a href="procedural.html">1 · Procédural</a></td>
+          </tr>
+          <tr>
+            <td><strong>Orienté objet</strong></td>
+            <td>Classes, interfaces, traits, enums</td>
+            <td><a href="oriente-objet.html">2 · Orienté objet</a></td>
+          </tr>
+          <tr>
+            <td><strong>Concurrence</strong></td>
+            <td>PHP est bloquant par défaut — générateurs, Fibers, appels parallèles</td>
+            <td><a href="concurrence.html">3 · Concurrence</a></td>
+          </tr>
+          <tr>
+            <td><strong>Backend & MVC</strong></td>
+            <td>PDO, requêtes préparées, routage, pattern MVC, sécurité</td>
+            <td><a href="backend.html">5 · Backend & MVC</a></td>
+          </tr>
+        </tbody>
+      </table>
+      <p>En complément : <a href="types-collections-uml.html">types de données, tableaux/SPL et rédaction d'UML</a>.</p>
 
-  <h2 id="projet">Écrire et exécuter un script</h2>
-  <div class="callout info">
-    <span class="label">Prérequis</span>
-    <p>PHP installé (<code>php -v</code>). Aucun framework, aucun gestionnaire de paquets requis pour ce guide — tout tourne avec l'interpréteur seul.</p>
-  </div>
-  <pre class="code" data-lang="bash"><script type="text/plain">
+      <h2 id="projet">Écrire et exécuter un script</h2>
+      <div class="callout info">
+        <span class="label">Prérequis</span>
+        <p>PHP installé (<code>php -v</code>). Aucun framework, aucun gestionnaire de paquets requis pour ce guide —
+          tout tourne avec l'interpréteur seul.</p>
+      </div>
+      <pre class="code" data-lang="bash"><script type="text/plain">
 php -v                     # vérifier la version installée
 php script.php             # exécuter un script
 php -S localhost:8000      # serveur de développement intégré (sert le dossier courant)
@@ -67,9 +98,11 @@ php -l script.php          # vérifier la syntaxe sans exécuter (lint)
 php -a                     # console interactive (REPL)
 </script></pre>
 
-  <h2 id="anatomie">Anatomie d'un script</h2>
-  <p>Le code PHP s'écrit entre <code>&lt;?php</code> et <code>?&gt;</code> (la balise fermante est même omise en fin de fichier, par convention, pour éviter d'émettre un espace parasite). Il n'y a pas de méthode <code>Main</code> obligatoire : les instructions au niveau racine s'exécutent dans l'ordre.</p>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <h2 id="anatomie">Anatomie d'un script</h2>
+      <p>Le code PHP s'écrit entre <code>&lt;?php</code> et <code>?&gt;</code> (la balise fermante est même omise en fin
+        de fichier, par convention, pour éviter d'émettre un espace parasite). Il n'y a pas de méthode <code>Main</code>
+        obligatoire : les instructions au niveau racine s'exécutent dans l'ordre.</p>
+      <pre class="code" data-lang="php"><script type="text/plain">
 <?php
 
 declare(strict_types=1);      // active la vérification stricte des types (recommandé)
@@ -83,33 +116,56 @@ function saluer(string $nom): string
 
 echo saluer("Ada");
 </script></pre>
-  <div class="callout tip">
-    <span class="label">strict_types</span>
-    <p>Sans <code>declare(strict_types=1)</code>, PHP convertit silencieusement les types incompatibles aux frontières des fonctions (<code>"3"</code> devient <code>3</code>). Avec, une <code>TypeError</code> est levée à la place. À activer systématiquement dans du code neuf.</p>
+      <div class="callout tip">
+        <span class="label">strict_types</span>
+        <p>Sans <code>declare(strict_types=1)</code>, PHP convertit silencieusement les types incompatibles aux
+          frontières des fonctions (<code>"3"</code> devient <code>3</code>). Avec, une <code>TypeError</code> est levée
+          à la place. À activer systématiquement dans du code neuf.</p>
+      </div>
+
+      <h2 id="cli">Aide-mémoire</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Commande</th>
+            <th>Rôle</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>php -v</code></td>
+            <td>version de PHP installée</td>
+          </tr>
+          <tr>
+            <td><code>php -S localhost:8000</code></td>
+            <td>serveur web intégré, pratique pour tester sans Apache/Nginx</td>
+          </tr>
+          <tr>
+            <td><code>php -l fichier.php</code></td>
+            <td>vérifie la syntaxe (lint) sans exécuter</td>
+          </tr>
+          <tr>
+            <td><code>php -m</code></td>
+            <td>liste les extensions chargées</td>
+          </tr>
+          <tr>
+            <td><code>composer</code></td>
+            <td>gestionnaire de paquets — <em>optionnel</em>, non utilisé dans ce guide</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <footer class="pg">
+        <span>Site statique · 100 % HTML/CSS/JS · prêt pour GitHub Pages</span>
+        <span><a href="procedural.html">Suivant : Procédural →</a></span>
+      </footer>
+    </main>
   </div>
 
-  <h2 id="cli">Aide-mémoire</h2>
-  <table>
-    <thead><tr><th>Commande</th><th>Rôle</th></tr></thead>
-    <tbody>
-      <tr><td><code>php -v</code></td><td>version de PHP installée</td></tr>
-      <tr><td><code>php -S localhost:8000</code></td><td>serveur web intégré, pratique pour tester sans Apache/Nginx</td></tr>
-      <tr><td><code>php -l fichier.php</code></td><td>vérifie la syntaxe (lint) sans exécuter</td></tr>
-      <tr><td><code>php -m</code></td><td>liste les extensions chargées</td></tr>
-      <tr><td><code>composer</code></td><td>gestionnaire de paquets — <em>optionnel</em>, non utilisé dans ce guide</td></tr>
-    </tbody>
-  </table>
-
-  <footer class="pg">
-    <span>Site statique · 100 % HTML/CSS/JS · prêt pour GitHub Pages</span>
-    <span><a href="procedural.html">Suivant : Procédural →</a></span>
-  </footer>
-</main>
-</div>
-
-<script src="../assets/site.config.js"></script>
-<script src="../assets/highlighters/php.js"></script>
-<script src="../assets/main.js"></script>
-<script src="../assets/nav.js"></script>
+  <script src="../assets/site.config.js"></script>
+  <script src="../assets/highlighters/php.js"></script>
+  <script src="../assets/main.js"></script>
+  <script src="../assets/nav.js"></script>
 </body>
+
 </html>

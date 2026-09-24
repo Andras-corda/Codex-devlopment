@@ -1,36 +1,55 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Codex — JavaScript · Animations & style</title>
-<meta name="description" content="Variables CSS, Flexbox/Grid, transitions, transform, @keyframes, requestAnimationFrame, Web Animations API, IntersectionObserver, prefers-reduced-motion.">
-<link rel="stylesheet" href="../assets/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Codex — JavaScript · Animations & style</title>
+  <meta name="description"
+    content="Variables CSS, Flexbox/Grid, transitions, transform, @keyframes, requestAnimationFrame, Web Animations API, IntersectionObserver, prefers-reduced-motion.">
+  <link rel="stylesheet" href="../assets/style.css">
 </head>
+
 <body data-lang="javascript" data-page="animations">
 
-<div class="topbar" id="topbar"></div>
+  <div class="topbar" id="topbar"></div>
 
-<div class="wrap">
-<aside class="side" id="side"></aside>
+  <div class="wrap">
+    <aside class="side" id="side"></aside>
 
-<main>
-  <h1>4 · Animations & style</h1>
-  <p class="lead">Styler une page avec des <strong>variables CSS</strong> et une mise en page moderne, puis lui donner vie : transitions, animations, et quand ça ne suffit plus, JavaScript.</p>
+    <main>
+      <h1>4 · Animations & style</h1>
+      <p class="lead">Styler une page avec des <strong>variables CSS</strong> et une mise en page moderne, puis lui
+        donner vie : transitions, animations, et quand ça ne suffit plus, JavaScript.</p>
 
-  <h2 id="idee">Trois outils, du plus simple au plus contrôlé</h2>
-  <table>
-    <thead><tr><th>Outil</th><th>Pour</th></tr></thead>
-    <tbody>
-      <tr><td><code>transition</code></td><td>animer un changement d'état simple (hover, classe ajoutée)</td></tr>
-      <tr><td><code>@keyframes</code> + <code>animation</code></td><td>séquences répétées ou multi-étapes, sans interaction</td></tr>
-      <tr><td>JavaScript (<code>requestAnimationFrame</code>, Web Animations API)</td><td>logique dynamique : suivre la souris, réagir au scroll, contrôler play/pause</td></tr>
-    </tbody>
-  </table>
+      <h2 id="idee">Trois outils, du plus simple au plus contrôlé</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Outil</th>
+            <th>Pour</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>transition</code></td>
+            <td>animer un changement d'état simple (hover, classe ajoutée)</td>
+          </tr>
+          <tr>
+            <td><code>@keyframes</code> + <code>animation</code></td>
+            <td>séquences répétées ou multi-étapes, sans interaction</td>
+          </tr>
+          <tr>
+            <td>JavaScript (<code>requestAnimationFrame</code>, Web Animations API)</td>
+            <td>logique dynamique : suivre la souris, réagir au scroll, contrôler play/pause</td>
+          </tr>
+        </tbody>
+      </table>
 
-  <h2 id="variables">Variables CSS (custom properties)</h2>
-  <p>Des valeurs nommées et réutilisables — la base d'un thème cohérent (ce site les utilise pour son propre thème sombre).</p>
-  <pre class="code" data-lang="css"><script type="text/plain">
+      <h2 id="variables">Variables CSS (custom properties)</h2>
+      <p>Des valeurs nommées et réutilisables — la base d'un thème cohérent (ce site les utilise pour son propre thème
+        sombre).</p>
+      <pre class="code" data-lang="css"><script type="text/plain">
 :root {
     --couleur-accent: #2f81f7;
     --rayon: 8px;
@@ -49,15 +68,29 @@
 }
 </script></pre>
 
-  <h2 id="layout">Mise en page : Flexbox & Grid</h2>
-  <table>
-    <thead><tr><th></th><th>Flexbox</th><th>Grid</th></tr></thead>
-    <tbody>
-      <tr><td>Pensé pour</td><td>une seule dimension (une ligne <em>ou</em> une colonne)</td><td>deux dimensions à la fois (lignes <em>et</em> colonnes)</td></tr>
-      <tr><td>Bon pour</td><td>une barre de navigation, centrer un élément, répartir de l'espace</td><td>une mise en page de page entière, une galerie</td></tr>
-    </tbody>
-  </table>
-  <pre class="code" data-lang="css"><script type="text/plain">
+      <h2 id="layout">Mise en page : Flexbox & Grid</h2>
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>Flexbox</th>
+            <th>Grid</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Pensé pour</td>
+            <td>une seule dimension (une ligne <em>ou</em> une colonne)</td>
+            <td>deux dimensions à la fois (lignes <em>et</em> colonnes)</td>
+          </tr>
+          <tr>
+            <td>Bon pour</td>
+            <td>une barre de navigation, centrer un élément, répartir de l'espace</td>
+            <td>une mise en page de page entière, une galerie</td>
+          </tr>
+        </tbody>
+      </table>
+      <pre class="code" data-lang="css"><script type="text/plain">
 .barre {
     display: flex;
     justify-content: space-between;   /* espace entre les éléments */
@@ -72,9 +105,10 @@
 }
 </script></pre>
 
-  <h2 id="transitions">Transitions</h2>
-  <p>Une transition anime <strong>un changement de valeur existant</strong> — pas de séquence à décrire, juste « comment passer de l'ancienne à la nouvelle valeur ».</p>
-  <pre class="code" data-lang="css"><script type="text/plain">
+      <h2 id="transitions">Transitions</h2>
+      <p>Une transition anime <strong>un changement de valeur existant</strong> — pas de séquence à décrire, juste «
+        comment passer de l'ancienne à la nouvelle valeur ».</p>
+      <pre class="code" data-lang="css"><script type="text/plain">
 .carte {
     transform: translateY(0);
     box-shadow: 0 1px 3px rgba(0,0,0,.3);
@@ -86,30 +120,50 @@
     box-shadow: 0 8px 20px rgba(0,0,0,.4);
 }
 </script></pre>
-  <table>
-    <thead><tr><th>Fonction de timing</th><th>Effet</th></tr></thead>
-    <tbody>
-      <tr><td><code>ease</code></td><td>démarre et termine en douceur (défaut raisonnable)</td></tr>
-      <tr><td><code>linear</code></td><td>vitesse constante — rarement naturel pour de l'UI</td></tr>
-      <tr><td><code>ease-out</code></td><td>rapide au départ, ralentit à l'arrivée — bon pour une entrée</td></tr>
-      <tr><td><code>cubic-bezier(...)</code></td><td>courbe personnalisée</td></tr>
-    </tbody>
-  </table>
+      <table>
+        <thead>
+          <tr>
+            <th>Fonction de timing</th>
+            <th>Effet</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>ease</code></td>
+            <td>démarre et termine en douceur (défaut raisonnable)</td>
+          </tr>
+          <tr>
+            <td><code>linear</code></td>
+            <td>vitesse constante — rarement naturel pour de l'UI</td>
+          </tr>
+          <tr>
+            <td><code>ease-out</code></td>
+            <td>rapide au départ, ralentit à l'arrivée — bon pour une entrée</td>
+          </tr>
+          <tr>
+            <td><code>cubic-bezier(...)</code></td>
+            <td>courbe personnalisée</td>
+          </tr>
+        </tbody>
+      </table>
 
-  <h2 id="transform">transform — et pourquoi c'est le bon choix pour animer</h2>
-  <pre class="code" data-lang="css"><script type="text/plain">
+      <h2 id="transform">transform — et pourquoi c'est le bon choix pour animer</h2>
+      <pre class="code" data-lang="css"><script type="text/plain">
 .element {
     transform: translate(10px, -5px) scale(1.05) rotate(3deg);
 }
 </script></pre>
-  <div class="callout tip">
-    <span class="label">Performance : animer transform/opacity, pas width/top/margin</span>
-    <p><code>transform</code> et <code>opacity</code> se calculent sur le GPU, sans recalculer la mise en page de la page (« reflow »). Animer <code>width</code>, <code>top</code> ou <code>margin</code> force le navigateur à recalculer tout l'agencement à chaque image — plus saccadé, surtout sur mobile.</p>
-  </div>
+      <div class="callout tip">
+        <span class="label">Performance : animer transform/opacity, pas width/top/margin</span>
+        <p><code>transform</code> et <code>opacity</code> se calculent sur le GPU, sans recalculer la mise en page de la
+          page (« reflow »). Animer <code>width</code>, <code>top</code> ou <code>margin</code> force le navigateur à
+          recalculer tout l'agencement à chaque image — plus saccadé, surtout sur mobile.</p>
+      </div>
 
-  <h2 id="keyframes">Animations avec @keyframes</h2>
-  <p>Pour une séquence à plusieurs étapes, indépendante d'une interaction (chargement, pulsation, apparition automatique).</p>
-  <pre class="code" data-lang="css"><script type="text/plain">
+      <h2 id="keyframes">Animations avec @keyframes</h2>
+      <p>Pour une séquence à plusieurs étapes, indépendante d'une interaction (chargement, pulsation, apparition
+        automatique).</p>
+      <pre class="code" data-lang="css"><script type="text/plain">
 @keyframes apparition {
     from { opacity: 0; transform: translateY(12px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -128,19 +182,38 @@
     animation: pulsation 1.2s ease-in-out infinite;   /* infinite = boucle sans fin */
 }
 </script></pre>
-  <table>
-    <thead><tr><th>Propriété</th><th>Rôle</th></tr></thead>
-    <tbody>
-      <tr><td><code>animation-duration</code></td><td>durée d'un cycle</td></tr>
-      <tr><td><code>animation-iteration-count</code></td><td>nombre de répétitions, ou <code>infinite</code></td></tr>
-      <tr><td><code>animation-direction</code></td><td><code>normal</code>, <code>reverse</code>, <code>alternate</code> (aller-retour)</td></tr>
-      <tr><td><code>animation-fill-mode: forwards</code></td><td>garde l'état final après la fin (sinon ça « saute » au style d'origine)</td></tr>
-    </tbody>
-  </table>
+      <table>
+        <thead>
+          <tr>
+            <th>Propriété</th>
+            <th>Rôle</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>animation-duration</code></td>
+            <td>durée d'un cycle</td>
+          </tr>
+          <tr>
+            <td><code>animation-iteration-count</code></td>
+            <td>nombre de répétitions, ou <code>infinite</code></td>
+          </tr>
+          <tr>
+            <td><code>animation-direction</code></td>
+            <td><code>normal</code>, <code>reverse</code>, <code>alternate</code> (aller-retour)</td>
+          </tr>
+          <tr>
+            <td><code>animation-fill-mode: forwards</code></td>
+            <td>garde l'état final après la fin (sinon ça « saute » au style d'origine)</td>
+          </tr>
+        </tbody>
+      </table>
 
-  <h2 id="rafraf">JavaScript : requestAnimationFrame</h2>
-  <p>Quand une transition/animation CSS ne suffit plus (logique par image, valeur qui dépend d'un calcul) : <code>requestAnimationFrame</code> planifie un rappel juste avant le prochain rafraîchissement d'écran — fluide, et mis en pause automatiquement sur un onglet caché.</p>
-  <pre class="code" data-lang="javascript"><script type="text/plain">
+      <h2 id="rafraf">JavaScript : requestAnimationFrame</h2>
+      <p>Quand une transition/animation CSS ne suffit plus (logique par image, valeur qui dépend d'un calcul) :
+        <code>requestAnimationFrame</code> planifie un rappel juste avant le prochain rafraîchissement d'écran — fluide,
+        et mis en pause automatiquement sur un onglet caché.</p>
+      <pre class="code" data-lang="javascript"><script type="text/plain">
 const barre = document.querySelector('.progression');
 let debut = null;
 
@@ -157,9 +230,10 @@ function animer(horodatage) {
 requestAnimationFrame(animer);
 </script></pre>
 
-  <h2 id="webanim">Web Animations API</h2>
-  <p>L'équivalent programmable de <code>@keyframes</code> — utile pour construire une animation dont les valeurs dépendent de données, et pour la contrôler (<code>pause()</code>, <code>reverse()</code>, écouter sa fin).</p>
-  <pre class="code" data-lang="javascript"><script type="text/plain">
+      <h2 id="webanim">Web Animations API</h2>
+      <p>L'équivalent programmable de <code>@keyframes</code> — utile pour construire une animation dont les valeurs
+        dépendent de données, et pour la contrôler (<code>pause()</code>, <code>reverse()</code>, écouter sa fin).</p>
+      <pre class="code" data-lang="javascript"><script type="text/plain">
 const element = document.querySelector('.carte');
 
 const anim = element.animate(
@@ -174,9 +248,10 @@ anim.onfinish = () => console.log('Entrée terminée');
 // anim.pause(); anim.play(); anim.reverse();
 </script></pre>
 
-  <h2 id="scroll">Animer au scroll : IntersectionObserver</h2>
-  <p>Détecte quand un élément entre dans la zone visible, sans écouter l'événement <code>scroll</code> (coûteux). Le motif « révéler au scroll » quasi universel sur le web aujourd'hui.</p>
-  <pre class="code" data-lang="javascript"><script type="text/plain">
+      <h2 id="scroll">Animer au scroll : IntersectionObserver</h2>
+      <p>Détecte quand un élément entre dans la zone visible, sans écouter l'événement <code>scroll</code> (coûteux). Le
+        motif « révéler au scroll » quasi universel sur le web aujourd'hui.</p>
+      <pre class="code" data-lang="javascript"><script type="text/plain">
 const observateur = new IntersectionObserver((entrees) => {
     for (const entree of entrees) {
         if (entree.isIntersecting) {
@@ -188,7 +263,7 @@ const observateur = new IntersectionObserver((entrees) => {
 
 document.querySelectorAll('.carte').forEach((carte) => observateur.observe(carte));
 </script></pre>
-  <pre class="code" data-lang="css"><script type="text/plain">
+      <pre class="code" data-lang="css"><script type="text/plain">
 .carte {
     opacity: 0;
     transform: translateY(20px);
@@ -201,9 +276,10 @@ document.querySelectorAll('.carte').forEach((carte) => observateur.observe(carte
 }
 </script></pre>
 
-  <h2 id="reduced">Respecter prefers-reduced-motion</h2>
-  <p>Certains visiteurs désactivent les animations (confort, santé — vertiges/migraines). Toujours prévoir une version sans mouvement.</p>
-  <pre class="code" data-lang="css"><script type="text/plain">
+      <h2 id="reduced">Respecter prefers-reduced-motion</h2>
+      <p>Certains visiteurs désactivent les animations (confort, santé — vertiges/migraines). Toujours prévoir une
+        version sans mouvement.</p>
+      <pre class="code" data-lang="css"><script type="text/plain">
 @media (prefers-reduced-motion: reduce) {
     * {
         animation-duration: 0.001ms !important;
@@ -211,7 +287,7 @@ document.querySelectorAll('.carte').forEach((carte) => observateur.observe(carte
     }
 }
 </script></pre>
-  <pre class="code" data-lang="javascript"><script type="text/plain">
+      <pre class="code" data-lang="javascript"><script type="text/plain">
 const reduit = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 if (!reduit) {
     element.animate([...], { duration: 400 });
@@ -220,15 +296,15 @@ if (!reduit) {
 }
 </script></pre>
 
-  <h2 id="exemple">Exemple complet — cartes révélées au scroll</h2>
-  <pre class="code" data-lang="html"><script type="text/plain">
+      <h2 id="exemple">Exemple complet — cartes révélées au scroll</h2>
+      <pre class="code" data-lang="html"><script type="text/plain">
 <div class="grille">
     <div class="carte">Contenu 1</div>
     <div class="carte">Contenu 2</div>
     <div class="carte">Contenu 3</div>
 </div>
 </script></pre>
-  <pre class="code" data-lang="css"><script type="text/plain">
+      <pre class="code" data-lang="css"><script type="text/plain">
 .grille {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -251,7 +327,7 @@ if (!reduit) {
     .carte { transition: none; opacity: 1; transform: none; }
 }
 </script></pre>
-  <pre class="code" data-lang="javascript"><script type="text/plain">
+      <pre class="code" data-lang="javascript"><script type="text/plain">
 const observateur = new IntersectionObserver((entrees) => {
     entrees.forEach((entree) => {
         if (entree.isIntersecting) {
@@ -264,16 +340,17 @@ const observateur = new IntersectionObserver((entrees) => {
 document.querySelectorAll('.carte').forEach((c) => observateur.observe(c));
 </script></pre>
 
-  <footer class="pg">
-    <span><a href="backend.html">← Backend de sites web</a></span>
-    <span><a href="index.html">Retour à l'accueil JavaScript</a></span>
-  </footer>
-</main>
-</div>
+      <footer class="pg">
+        <span><a href="backend.html">← Backend de sites web</a></span>
+        <span><a href="index.html">Retour à l'accueil JavaScript</a></span>
+      </footer>
+    </main>
+  </div>
 
-<script src="../assets/site.config.js"></script>
-<script src="../assets/highlighters/javascript.js"></script>
-<script src="../assets/main.js"></script>
-<script src="../assets/nav.js"></script>
+  <script src="../assets/site.config.js"></script>
+  <script src="../assets/highlighters/javascript.js"></script>
+  <script src="../assets/main.js"></script>
+  <script src="../assets/nav.js"></script>
 </body>
+
 </html>

@@ -1,5 +1,3 @@
-/* Coloration syntaxique PHP. Même registre que csharp.js (voir assets/main.js) :
-   window.CodeHighlighters.php est appelée pour tout <pre class="code" data-lang="php">. */
 (function () {
   "use strict";
 
@@ -14,7 +12,6 @@
     return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
-  // Même principe que csharp.js : un seul passage, aucune re-lecture du HTML injecté.
   function highlightPlain(s) {
     var re = /(\$[A-Za-z_][A-Za-z0-9_]*)|([A-Za-z_][A-Za-z0-9_]*)|(0[xX][0-9a-fA-F]+|\d[\d_]*\.?\d*(?:[eE][+-]?\d+)?)|(\s+)|([^A-Za-z0-9_\s$]+)/g;
     var out = "", m;

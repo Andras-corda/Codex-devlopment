@@ -1,46 +1,53 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Codex — C# · Orienté objet</title>
-<meta name="description" content="POO en C# : classes, UML, get/set, propriétés, readonly, encapsulation, héritage, interfaces, struct, static, global using, listes et dictionnaires.">
-<link rel="stylesheet" href="../assets/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Codex — C# · Orienté objet</title>
+  <meta name="description"
+    content="POO en C# : classes, UML, get/set, propriétés, readonly, encapsulation, héritage, interfaces, struct, static, global using, listes et dictionnaires.">
+  <link rel="stylesheet" href="../assets/style.css">
 </head>
+
 <body data-lang="csharp" data-page="oo">
 
-<div class="topbar" id="topbar"></div>
+  <div class="topbar" id="topbar"></div>
 
-<div class="wrap">
-<aside class="side" id="side"></aside>
+  <div class="wrap">
+    <aside class="side" id="side"></aside>
 
-<main>
-  <h1>2 · Programmation orientée objet</h1>
-  <p class="lead">On modélise le problème avec des <strong>objets</strong> : chacun réunit un état (des données) et un comportement (des méthodes) cohérents.</p>
+    <main>
+      <h1>2 · Programmation orientée objet</h1>
+      <p class="lead">On modélise le problème avec des <strong>objets</strong> : chacun réunit un état (des données) et
+        un comportement (des méthodes) cohérents.</p>
 
-  <h2 id="idee">Classe & objet</h2>
-  <p>Une <strong>classe</strong> est un plan. Un <strong>objet</strong> est une réalisation concrète de ce plan, créée avec <code>new</code>. Une classe, mille objets.</p>
-  <figure>
-    <svg viewBox="0 0 520 210" role="img" aria-label="Classe et instances">
-      <rect class="svg-bg" x="0" y="0" width="520" height="210" rx="6"/>
-      <rect class="svg-box-a" x="30" y="55" width="150" height="100" rx="6"/>
-      <text class="svg-t" x="105" y="46" text-anchor="middle">classe Voiture</text>
-      <text class="svg-mono" x="42" y="82">- Couleur</text>
-      <text class="svg-mono" x="42" y="102">- Vitesse</text>
-      <text class="svg-mono" x="42" y="125">+ Accélérer()</text>
-      <path class="svg-line" d="M180 105 H250" style="stroke-dasharray:4 3"/>
-      <text class="svg-tm" x="200" y="98">new</text>
-      <rect class="svg-box-g" x="260" y="20" width="150" height="56" rx="6"/>
-      <text class="svg-mono" x="272" y="42">Couleur = "rouge"</text><text class="svg-mono" x="272" y="62">Vitesse = 90</text>
-      <rect class="svg-box-g" x="260" y="86" width="150" height="56" rx="6"/>
-      <text class="svg-mono" x="272" y="108">Couleur = "bleu"</text><text class="svg-mono" x="272" y="128">Vitesse = 0</text>
-      <rect class="svg-box-g" x="260" y="152" width="150" height="42" rx="6"/>
-      <text class="svg-mono" x="272" y="178">Couleur = "noir"</text>
-      <text class="svg-tm" x="430" y="110">objets</text>
-    </svg>
-    <figcaption>Le plan définit la <em>forme</em> ; chaque objet a ses propres valeurs.</figcaption>
-  </figure>
-  <pre class="code"><script type="text/plain">
+      <h2 id="idee">Classe & objet</h2>
+      <p>Une <strong>classe</strong> est un plan. Un <strong>objet</strong> est une réalisation concrète de ce plan,
+        créée avec <code>new</code>. Une classe, mille objets.</p>
+      <figure>
+        <svg viewBox="0 0 520 210" role="img" aria-label="Classe et instances">
+          <rect class="svg-bg" x="0" y="0" width="520" height="210" rx="6" />
+          <rect class="svg-box-a" x="30" y="55" width="150" height="100" rx="6" />
+          <text class="svg-t" x="105" y="46" text-anchor="middle">classe Voiture</text>
+          <text class="svg-mono" x="42" y="82">- Couleur</text>
+          <text class="svg-mono" x="42" y="102">- Vitesse</text>
+          <text class="svg-mono" x="42" y="125">+ Accélérer()</text>
+          <path class="svg-line" d="M180 105 H250" style="stroke-dasharray:4 3" />
+          <text class="svg-tm" x="200" y="98">new</text>
+          <rect class="svg-box-g" x="260" y="20" width="150" height="56" rx="6" />
+          <text class="svg-mono" x="272" y="42">Couleur = "rouge"</text><text class="svg-mono" x="272" y="62">Vitesse =
+            90</text>
+          <rect class="svg-box-g" x="260" y="86" width="150" height="56" rx="6" />
+          <text class="svg-mono" x="272" y="108">Couleur = "bleu"</text><text class="svg-mono" x="272" y="128">Vitesse =
+            0</text>
+          <rect class="svg-box-g" x="260" y="152" width="150" height="42" rx="6" />
+          <text class="svg-mono" x="272" y="178">Couleur = "noir"</text>
+          <text class="svg-tm" x="430" y="110">objets</text>
+        </svg>
+        <figcaption>Le plan définit la <em>forme</em> ; chaque objet a ses propres valeurs.</figcaption>
+      </figure>
+      <pre class="code"><script type="text/plain">
 class Voiture
 {
     public string Couleur;
@@ -56,44 +63,75 @@ Console.WriteLine(a.Vitesse);   // 30
 Console.WriteLine(b.Vitesse);   // 0  → objets indépendants
 </script></pre>
 
-  <h2 id="uml">Lire un diagramme de classes UML</h2>
-  <p>Un diagramme de classes montre les types et leurs relations, sans détail d'implémentation. Chaque classe est une boîte à trois compartiments : <strong>nom</strong>, <strong>attributs</strong>, <strong>opérations</strong>.</p>
-  <figure>
-    <svg viewBox="0 0 560 210" role="img" aria-label="Notation d'une classe UML">
-      <rect class="svg-bg" x="0" y="0" width="560" height="210" rx="6"/>
-      <rect class="uml-box" x="24" y="18" width="270" height="24"/>
-      <rect class="uml-box" x="24" y="42" width="270" height="74"/>
-      <rect class="uml-box" x="24" y="116" width="270" height="76"/>
-      <text class="uml-abual" x="159" y="35" text-anchor="middle">Compte</text>
-      <text class="uml-m" x="34" y="61">- solde : decimal</text>
-      <text class="uml-m" x="34" y="79">+ Titulaire : string</text>
-      <text class="uml-m" x="34" y="97"># TauxInteret : double</text>
-      <text class="uml-m" x="34" y="135">+ Deposer(m : decimal) : void</text>
-      <text class="uml-m" x="34" y="153">+ Solde() : decimal</text>
-      <text class="uml-m" x="34" y="171" style="text-decoration:underline">+ NombreDeComptes() : int</text>
-      <text class="uml-legend" x="330" y="40">+   public</text>
-      <text class="uml-legend" x="330" y="66">-   privé</text>
-      <text class="uml-legend" x="330" y="92">#   protégé</text>
-      <text class="uml-legend" x="330" y="118">souligné = statique</text>
-      <text class="uml-legend" x="330" y="144">italique = abstrait</text>
-      <text class="uml-legend" x="330" y="170">« interface » = stéréotype</text>
-    </svg>
-    <figcaption>Le nom en italique indique une classe abstraite ; un membre souligné est statique.</figcaption>
-  </figure>
-  <table>
-    <thead><tr><th>Relation</th><th>Notation</th><th>Se lit</th></tr></thead>
-    <tbody>
-      <tr><td>Héritage</td><td>trait plein + triangle creux vers la base</td><td>« <em>est un</em> »</td></tr>
-      <tr><td>Réalisation</td><td>trait pointillé + triangle creux vers l'interface</td><td>« <em>implémente</em> »</td></tr>
-      <tr><td>Composition</td><td>trait + losange plein côté conteneur</td><td>« <em>est composé de</em> » (le tout possède la partie)</td></tr>
-      <tr><td>Association</td><td>trait + flèche ouverte</td><td>« <em>utilise / connaît</em> »</td></tr>
-      <tr><td>Multiplicité</td><td><code>1</code>, <code>0..1</code>, <code>*</code></td><td>combien d'objets à chaque bout</td></tr>
-    </tbody>
-  </table>
+      <h2 id="uml">Lire un diagramme de classes UML</h2>
+      <p>Un diagramme de classes montre les types et leurs relations, sans détail d'implémentation. Chaque classe est
+        une boîte à trois compartiments : <strong>nom</strong>, <strong>attributs</strong>, <strong>opérations</strong>.
+      </p>
+      <figure>
+        <svg viewBox="0 0 560 210" role="img" aria-label="Notation d'une classe UML">
+          <rect class="svg-bg" x="0" y="0" width="560" height="210" rx="6" />
+          <rect class="uml-box" x="24" y="18" width="270" height="24" />
+          <rect class="uml-box" x="24" y="42" width="270" height="74" />
+          <rect class="uml-box" x="24" y="116" width="270" height="76" />
+          <text class="uml-abual" x="159" y="35" text-anchor="middle">Compte</text>
+          <text class="uml-m" x="34" y="61">- solde : decimal</text>
+          <text class="uml-m" x="34" y="79">+ Titulaire : string</text>
+          <text class="uml-m" x="34" y="97"># TauxInteret : double</text>
+          <text class="uml-m" x="34" y="135">+ Deposer(m : decimal) : void</text>
+          <text class="uml-m" x="34" y="153">+ Solde() : decimal</text>
+          <text class="uml-m" x="34" y="171" style="text-decoration:underline">+ NombreDeComptes() : int</text>
+          <text class="uml-legend" x="330" y="40">+ public</text>
+          <text class="uml-legend" x="330" y="66">- privé</text>
+          <text class="uml-legend" x="330" y="92"># protégé</text>
+          <text class="uml-legend" x="330" y="118">souligné = statique</text>
+          <text class="uml-legend" x="330" y="144">italique = abstrait</text>
+          <text class="uml-legend" x="330" y="170">« interface » = stéréotype</text>
+        </svg>
+        <figcaption>Le nom en italique indique une classe abstraite ; un membre souligné est statique.</figcaption>
+      </figure>
+      <table>
+        <thead>
+          <tr>
+            <th>Relation</th>
+            <th>Notation</th>
+            <th>Se lit</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Héritage</td>
+            <td>trait plein + triangle creux vers la base</td>
+            <td>« <em>est un</em> »</td>
+          </tr>
+          <tr>
+            <td>Réalisation</td>
+            <td>trait pointillé + triangle creux vers l'interface</td>
+            <td>« <em>implémente</em> »</td>
+          </tr>
+          <tr>
+            <td>Composition</td>
+            <td>trait + losange plein côté conteneur</td>
+            <td>« <em>est composé de</em> » (le tout possède la partie)</td>
+          </tr>
+          <tr>
+            <td>Association</td>
+            <td>trait + flèche ouverte</td>
+            <td>« <em>utilise / connaît</em> »</td>
+          </tr>
+          <tr>
+            <td>Multiplicité</td>
+            <td><code>1</code>, <code>0..1</code>, <code>*</code></td>
+            <td>combien d'objets à chaque bout</td>
+          </tr>
+        </tbody>
+      </table>
 
-  <h2 id="membres">Champs, propriétés et accesseurs <code>get</code> / <code>set</code></h2>
-  <p>Un <strong>champ</strong> (<em>field</em>) est une variable stockée dans l'objet. Une <strong>propriété</strong> (<em>property</em>) est une paire d'accesseurs — <code>get</code> pour lire, <code>set</code> pour écrire — qui s'utilise comme un champ mais laisse ajouter validation, calcul ou journalisation. Dans un <code>set</code>, le mot-clé <code>value</code> désigne la valeur affectée.</p>
-  <pre class="code"><script type="text/plain">
+      <h2 id="membres">Champs, propriétés et accesseurs <code>get</code> / <code>set</code></h2>
+      <p>Un <strong>champ</strong> (<em>field</em>) est une variable stockée dans l'objet. Une
+        <strong>propriété</strong> (<em>property</em>) est une paire d'accesseurs — <code>get</code> pour lire,
+        <code>set</code> pour écrire — qui s'utilise comme un champ mais laisse ajouter validation, calcul ou
+        journalisation. Dans un <code>set</code>, le mot-clé <code>value</code> désigne la valeur affectée.</p>
+      <pre class="code"><script type="text/plain">
 class Temperature
 {
     private double _celsius;              // champ privé = "backing field"
@@ -119,24 +157,53 @@ Console.WriteLine(t.Fahrenheit);  // get calculé      → 77
 // t.Celsius = -300;              // lève ArgumentOutOfRangeException
 </script></pre>
 
-  <h3>Les formes de propriété</h3>
-  <table>
-    <thead><tr><th>Écriture</th><th>Sens</th></tr></thead>
-    <tbody>
-      <tr><td><code>public int X { get; set; }</code></td><td>auto-implémentée : le compilateur crée le champ caché — snippet VS <code>prop</code></td></tr>
-      <tr><td><code>public int X { get; private set; }</code></td><td>lisible partout, modifiable seulement dans la classe — snippet <code>propg</code></td></tr>
-      <tr><td><code>public int X { get; }</code></td><td>lecture seule : affectée en ligne ou dans le constructeur</td></tr>
-      <tr><td><code>public int X { get; init; }</code></td><td>affectée uniquement à la création, puis immuable</td></tr>
-      <tr><td><code>public required int X { get; set; }</code></td><td>initialisation obligatoire à la création (C# 11)</td></tr>
-      <tr><td><code>public int X => _x * 2;</code></td><td>calculée : aucun stockage, recalculée à chaque lecture</td></tr>
-      <tr><td><code>get</code> / <code>set</code> avec corps + champ privé</td><td>version complète, pour la logique — snippet VS <code>propfull</code></td></tr>
-    </tbody>
-  </table>
-  <div class="callout tip">
-    <span class="label">Snippets Visual Studio</span>
-    <p>Taper <code>prop</code> puis <code>Tab</code> <code>Tab</code> insère <code>public int MyProperty { get; set; }</code>. <code>propfull</code> génère la version complète (champ privé <code>_myVar</code> + corps de <code>get</code>/<code>set</code>). <code>propg</code> : <code>get</code> public et <code>set</code> privé. Dans Rider et VS Code, les mêmes raccourcis existent.</p>
-  </div>
-  <pre class="code"><script type="text/plain">
+      <h3>Les formes de propriété</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Écriture</th>
+            <th>Sens</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>public int X { get; set; }</code></td>
+            <td>auto-implémentée : le compilateur crée le champ caché — snippet VS <code>prop</code></td>
+          </tr>
+          <tr>
+            <td><code>public int X { get; private set; }</code></td>
+            <td>lisible partout, modifiable seulement dans la classe — snippet <code>propg</code></td>
+          </tr>
+          <tr>
+            <td><code>public int X { get; }</code></td>
+            <td>lecture seule : affectée en ligne ou dans le constructeur</td>
+          </tr>
+          <tr>
+            <td><code>public int X { get; init; }</code></td>
+            <td>affectée uniquement à la création, puis immuable</td>
+          </tr>
+          <tr>
+            <td><code>public required int X { get; set; }</code></td>
+            <td>initialisation obligatoire à la création (C# 11)</td>
+          </tr>
+          <tr>
+            <td><code>public int X => _x * 2;</code></td>
+            <td>calculée : aucun stockage, recalculée à chaque lecture</td>
+          </tr>
+          <tr>
+            <td><code>get</code> / <code>set</code> avec corps + champ privé</td>
+            <td>version complète, pour la logique — snippet VS <code>propfull</code></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout tip">
+        <span class="label">Snippets Visual Studio</span>
+        <p>Taper <code>prop</code> puis <code>Tab</code> <code>Tab</code> insère
+          <code>public int MyProperty { get; set; }</code>. <code>propfull</code> génère la version complète (champ
+          privé <code>_myVar</code> + corps de <code>get</code>/<code>set</code>). <code>propg</code> : <code>get</code>
+          public et <code>set</code> privé. Dans Rider et VS Code, les mêmes raccourcis existent.</p>
+      </div>
+      <pre class="code"><script type="text/plain">
 // Ce que 'propfull' produit :
 private int _capacite;
 
@@ -147,8 +214,8 @@ public int Capacite
 }
 </script></pre>
 
-  <h2 id="constructeurs">Constructeurs</h2>
-  <pre class="code"><script type="text/plain">
+      <h2 id="constructeurs">Constructeurs</h2>
+      <pre class="code"><script type="text/plain">
 class CompteBancaire
 {
     public string Titulaire { get; }
@@ -177,22 +244,41 @@ var c = new CompteBancaire("Ada", 100m);
 c.Deposer(50m);
 Console.WriteLine(c.Solde);   // 150
 </script></pre>
-  <div class="callout info">
-    <span class="label">Depuis C# 12</span>
-    <p>Les <em>primary constructors</em> raccourcissent : <code>class Point(int X, int Y) { public int Norme() =&gt; X*X + Y*Y; }</code>.</p>
-  </div>
+      <div class="callout info">
+        <span class="label">Depuis C# 12</span>
+        <p>Les <em>primary constructors</em> raccourcissent :
+          <code>class Point(int X, int Y) { public int Norme() =&gt; X*X + Y*Y; }</code>.</p>
+      </div>
 
-  <h2 id="readonly">Champs <code>readonly</code> &amp; constantes</h2>
-  <p>Trois façons de figer une valeur, de la plus stricte à la plus souple :</p>
-  <table>
-    <thead><tr><th>Mot-clé</th><th>Fixée…</th><th>Portée</th></tr></thead>
-    <tbody>
-      <tr><td><code>const</code></td><td>à la compilation (littéral obligatoire)</td><td>une valeur, implicitement <code>static</code> ; copiée dans le code appelant</td></tr>
-      <tr><td><code>static readonly</code></td><td>au chargement du type (peut être un calcul, un <code>new</code>)</td><td>une valeur par type</td></tr>
-      <tr><td><code>readonly</code> (champ d'instance)</td><td>dans le constructeur</td><td>une valeur par objet, immuable ensuite</td></tr>
-    </tbody>
-  </table>
-  <pre class="code"><script type="text/plain">
+      <h2 id="readonly">Champs <code>readonly</code> &amp; constantes</h2>
+      <p>Trois façons de figer une valeur, de la plus stricte à la plus souple :</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Mot-clé</th>
+            <th>Fixée…</th>
+            <th>Portée</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>const</code></td>
+            <td>à la compilation (littéral obligatoire)</td>
+            <td>une valeur, implicitement <code>static</code> ; copiée dans le code appelant</td>
+          </tr>
+          <tr>
+            <td><code>static readonly</code></td>
+            <td>au chargement du type (peut être un calcul, un <code>new</code>)</td>
+            <td>une valeur par type</td>
+          </tr>
+          <tr>
+            <td><code>readonly</code> (champ d'instance)</td>
+            <td>dans le constructeur</td>
+            <td>une valeur par objet, immuable ensuite</td>
+          </tr>
+        </tbody>
+      </table>
+      <pre class="code"><script type="text/plain">
 class Cercle
 {
     public const double Pi = 3.14159;               // connue à la compilation
@@ -212,29 +298,56 @@ class Cercle
     }
 }
 </script></pre>
-  <div class="callout info">
-    <span class="label">readonly n'est pas une immuabilité profonde</span>
-    <p><code>private readonly List&lt;int&gt; _items;</code> empêche de <em>réaffecter</em> <code>_items</code>, mais pas d'appeler <code>_items.Add(3)</code>. Pour un objet vraiment gelé : propriétés <code>init</code>, <code>record</code>, ou <code>ImmutableArray&lt;T&gt;</code>.</p>
-  </div>
-  <p>Sur un type valeur : <code>readonly struct</code> gèle tout le type, et <code>readonly</code> sur une méthode de <code>struct</code> garantit qu'elle ne modifie pas l'instance. Voir <a href="#struct">Structures</a>.</p>
+      <div class="callout info">
+        <span class="label">readonly n'est pas une immuabilité profonde</span>
+        <p><code>private readonly List&lt;int&gt; _items;</code> empêche de <em>réaffecter</em> <code>_items</code>,
+          mais pas d'appeler <code>_items.Add(3)</code>. Pour un objet vraiment gelé : propriétés <code>init</code>,
+          <code>record</code>, ou <code>ImmutableArray&lt;T&gt;</code>.</p>
+      </div>
+      <p>Sur un type valeur : <code>readonly struct</code> gèle tout le type, et <code>readonly</code> sur une méthode
+        de <code>struct</code> garantit qu'elle ne modifie pas l'instance. Voir <a href="#struct">Structures</a>.</p>
 
-  <h2 id="encapsulation">Encapsulation &amp; modificateurs d'accès</h2>
-  <p>Cacher l'état interne, n'exposer que des opérations sûres. Le compilateur fait respecter les frontières.</p>
-  <table>
-    <thead><tr><th>Modificateur</th><th>Visible depuis…</th></tr></thead>
-    <tbody>
-      <tr><td><code>public</code></td><td>partout</td></tr>
-      <tr><td><code>private</code></td><td>la classe elle-même uniquement (défaut pour un membre)</td></tr>
-      <tr><td><code>protected</code></td><td>la classe et ses classes dérivées</td></tr>
-      <tr><td><code>internal</code></td><td>le même projet / assembly</td></tr>
-      <tr><td><code>protected internal</code></td><td>le projet, ou une classe dérivée ailleurs</td></tr>
-      <tr><td><code>private protected</code></td><td>classe dérivée <em>du même projet</em></td></tr>
-    </tbody>
-  </table>
+      <h2 id="encapsulation">Encapsulation &amp; modificateurs d'accès</h2>
+      <p>Cacher l'état interne, n'exposer que des opérations sûres. Le compilateur fait respecter les frontières.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Modificateur</th>
+            <th>Visible depuis…</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>public</code></td>
+            <td>partout</td>
+          </tr>
+          <tr>
+            <td><code>private</code></td>
+            <td>la classe elle-même uniquement (défaut pour un membre)</td>
+          </tr>
+          <tr>
+            <td><code>protected</code></td>
+            <td>la classe et ses classes dérivées</td>
+          </tr>
+          <tr>
+            <td><code>internal</code></td>
+            <td>le même projet / assembly</td>
+          </tr>
+          <tr>
+            <td><code>protected internal</code></td>
+            <td>le projet, ou une classe dérivée ailleurs</td>
+          </tr>
+          <tr>
+            <td><code>private protected</code></td>
+            <td>classe dérivée <em>du même projet</em></td>
+          </tr>
+        </tbody>
+      </table>
 
-  <h2 id="statique">Membres statiques</h2>
-  <p>Un membre <code>static</code> appartient au <strong>type</strong>, pas à une instance : il existe en un seul exemplaire, partagé, et s'appelle via le nom du type. Un membre d'instance appartient à chaque objet.</p>
-  <pre class="code"><script type="text/plain">
+      <h2 id="statique">Membres statiques</h2>
+      <p>Un membre <code>static</code> appartient au <strong>type</strong>, pas à une instance : il existe en un seul
+        exemplaire, partagé, et s'appelle via le nom du type. Un membre d'instance appartient à chaque objet.</p>
+      <pre class="code"><script type="text/plain">
 class Compteur
 {
     public static int Total;          // UNE valeur partagée par toutes les instances
@@ -261,52 +374,59 @@ static class Geo
 
 Console.WriteLine(Geo.Circonference(Geo.RayonTerre));
 </script></pre>
-  <div class="callout warn">
-    <span class="label">À manier avec prudence</span>
-    <p>Un champ <code>static</code> mutable est une <em>variable globale</em> : état partagé, difficile à tester, source de bugs en contexte multithread. Réserver <code>static</code> aux constantes, aux fonctions pures (<code>Math.Sqrt</code>) et aux fabriques.</p>
-  </div>
+      <div class="callout warn">
+        <span class="label">À manier avec prudence</span>
+        <p>Un champ <code>static</code> mutable est une <em>variable globale</em> : état partagé, difficile à tester,
+          source de bugs en contexte multithread. Réserver <code>static</code> aux constantes, aux fonctions pures
+          (<code>Math.Sqrt</code>) et aux fabriques.</p>
+      </div>
 
-  <h2 id="heritage">Héritage</h2>
-  <p>Une classe dérivée <em>est un</em> cas particulier de sa classe de base : elle hérite de ses membres et peut en ajouter ou en redéfinir.</p>
-  <figure>
-    <svg viewBox="0 0 620 300" role="img" aria-label="Diagramme UML — héritage">
-      <defs><marker id="mkh-tri" markerWidth="18" markerHeight="16" refX="16" refY="8" orient="auto">
-        <path d="M2 2 L16 8 L2 14 Z" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
-      <rect class="svg-bg" x="0" y="0" width="620" height="300" rx="6"/>
-      <!-- base -->
-      <rect class="uml-box-a" x="225" y="16" width="180" height="22"/>
-      <rect class="uml-box-a" x="225" y="38" width="180" height="40"/>
-      <rect class="uml-box-a" x="225" y="78" width="180" height="40"/>
-      <text class="uml-name" x="315" y="32" text-anchor="middle">Employe</text>
-      <text class="uml-m" x="233" y="55">+ Nom : string</text>
-      <text class="uml-m" x="233" y="72">+ SalaireBase : decimal</text>
-      <text class="uml-m" x="233" y="95">+ SalaireMensuel() : decimal</text>
-      <text class="uml-m" x="233" y="112">+ Pointer() : void</text>
-      <!-- children -->
-      <rect class="uml-box" x="20" y="210" width="170" height="22"/>
-      <rect class="uml-box" x="20" y="232" width="170" height="24"/>
-      <rect class="uml-box" x="20" y="256" width="170" height="24"/>
-      <text class="uml-name" x="105" y="226" text-anchor="middle">Commercial</text>
-      <text class="uml-m" x="28" y="249">+ Commission : decimal</text>
-      <text class="uml-m" x="28" y="273">+ SalaireMensuel() : decimal</text>
+      <h2 id="heritage">Héritage</h2>
+      <p>Une classe dérivée <em>est un</em> cas particulier de sa classe de base : elle hérite de ses membres et peut en
+        ajouter ou en redéfinir.</p>
+      <figure>
+        <svg viewBox="0 0 620 300" role="img" aria-label="Diagramme UML — héritage">
+          <defs>
+            <marker id="mkh-tri" markerWidth="18" markerHeight="16" refX="16" refY="8" orient="auto">
+              <path d="M2 2 L16 8 L2 14 Z" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5" />
+            </marker>
+          </defs>
+          <rect class="svg-bg" x="0" y="0" width="620" height="300" rx="6" />
+          <!-- base -->
+          <rect class="uml-box-a" x="225" y="16" width="180" height="22" />
+          <rect class="uml-box-a" x="225" y="38" width="180" height="40" />
+          <rect class="uml-box-a" x="225" y="78" width="180" height="40" />
+          <text class="uml-name" x="315" y="32" text-anchor="middle">Employe</text>
+          <text class="uml-m" x="233" y="55">+ Nom : string</text>
+          <text class="uml-m" x="233" y="72">+ SalaireBase : decimal</text>
+          <text class="uml-m" x="233" y="95">+ SalaireMensuel() : decimal</text>
+          <text class="uml-m" x="233" y="112">+ Pointer() : void</text>
+          <!-- children -->
+          <rect class="uml-box" x="20" y="210" width="170" height="22" />
+          <rect class="uml-box" x="20" y="232" width="170" height="24" />
+          <rect class="uml-box" x="20" y="256" width="170" height="24" />
+          <text class="uml-name" x="105" y="226" text-anchor="middle">Commercial</text>
+          <text class="uml-m" x="28" y="249">+ Commission : decimal</text>
+          <text class="uml-m" x="28" y="273">+ SalaireMensuel() : decimal</text>
 
-      <rect class="uml-box" x="225" y="210" width="170" height="22"/>
-      <rect class="uml-box" x="225" y="232" width="170" height="24"/>
-      <text class="uml-name" x="310" y="226" text-anchor="middle">Manager</text>
-      <text class="uml-m" x="233" y="249">+ Equipe : List&lt;Employe&gt;</text>
+          <rect class="uml-box" x="225" y="210" width="170" height="22" />
+          <rect class="uml-box" x="225" y="232" width="170" height="24" />
+          <text class="uml-name" x="310" y="226" text-anchor="middle">Manager</text>
+          <text class="uml-m" x="233" y="249">+ Equipe : List&lt;Employe&gt;</text>
 
-      <rect class="uml-box" x="430" y="210" width="170" height="22"/>
-      <rect class="uml-box" x="430" y="232" width="170" height="24"/>
-      <text class="uml-name" x="515" y="226" text-anchor="middle">Developpeur</text>
-      <text class="uml-m" x="438" y="249">+ Langages : string[]</text>
+          <rect class="uml-box" x="430" y="210" width="170" height="22" />
+          <rect class="uml-box" x="430" y="232" width="170" height="24" />
+          <text class="uml-name" x="515" y="226" text-anchor="middle">Developpeur</text>
+          <text class="uml-m" x="438" y="249">+ Langages : string[]</text>
 
-      <path class="uml-rel" style="marker-end:url(#mkh-tri)" d="M105 210 L300 118"/>
-      <path class="uml-rel" style="marker-end:url(#mkh-tri)" d="M310 210 L315 118"/>
-      <path class="uml-rel" style="marker-end:url(#mkh-tri)" d="M515 210 L330 118"/>
-    </svg>
-    <figcaption>Le triangle creux pointe vers la base et se lit « est un ». Seul <code>Commercial</code> est codé ci-dessous ; les autres montrent l'extensibilité.</figcaption>
-  </figure>
-  <pre class="code"><script type="text/plain">
+          <path class="uml-rel" style="marker-end:url(#mkh-tri)" d="M105 210 L300 118" />
+          <path class="uml-rel" style="marker-end:url(#mkh-tri)" d="M310 210 L315 118" />
+          <path class="uml-rel" style="marker-end:url(#mkh-tri)" d="M515 210 L330 118" />
+        </svg>
+        <figcaption>Le triangle creux pointe vers la base et se lit « est un ». Seul <code>Commercial</code> est codé
+          ci-dessous ; les autres montrent l'extensibilité.</figcaption>
+      </figure>
+      <pre class="code"><script type="text/plain">
 class Employe
 {
     public string Nom { get; set; } = "";
@@ -330,14 +450,15 @@ Employe e = new Commercial { Nom = "Ada", SalaireBase = 3000, Commission = 800 }
 Console.WriteLine(e.SalaireMensuel());   // 3800
 e.Pointer();                             // méthode héritée
 </script></pre>
-  <div class="callout warn">
-    <span class="label">Règles</span>
-    <p>C# n'a pas d'héritage multiple de classes (une seule base). <code>sealed class</code> interdit d'hériter. Sans <code>virtual</code> (ou <code>abstract</code>) sur le parent, pas d'<code>override</code> possible.</p>
-  </div>
+      <div class="callout warn">
+        <span class="label">Règles</span>
+        <p>C# n'a pas d'héritage multiple de classes (une seule base). <code>sealed class</code> interdit d'hériter.
+          Sans <code>virtual</code> (ou <code>abstract</code>) sur le parent, pas d'<code>override</code> possible.</p>
+      </div>
 
-  <h2 id="polymorphisme">Polymorphisme</h2>
-  <p>Un même appel, exécuté différemment selon le <em>type réel</em> de l'objet — décidé à l'exécution.</p>
-  <pre class="code"><script type="text/plain">
+      <h2 id="polymorphisme">Polymorphisme</h2>
+      <p>Un même appel, exécuté différemment selon le <em>type réel</em> de l'objet — décidé à l'exécution.</p>
+      <pre class="code"><script type="text/plain">
 Employe[] equipe =
 {
     new Employe    { Nom = "Bob",  SalaireBase = 2500 },
@@ -362,47 +483,73 @@ foreach (Employe emp in equipe)
 }
 </script></pre>
 
-  <h2 id="abstrait-interface">Classe abstraite vs interface</h2>
-  <table>
-    <thead><tr><th></th><th>Classe abstraite</th><th>Interface</th></tr></thead>
-    <tbody>
-      <tr><td>Rôle</td><td>base partielle commune (« est un »)</td><td>contrat de capacités (« sait faire »)</td></tr>
-      <tr><td>Peut contenir du code</td><td>oui (méthodes concrètes, champs, constructeur)</td><td>surtout des signatures (+ implémentations par défaut depuis C# 8)</td></tr>
-      <tr><td>Héritage multiple</td><td>non (une seule)</td><td>oui (autant qu'on veut)</td></tr>
-      <tr><td>Instanciable</td><td>non</td><td>non</td></tr>
-    </tbody>
-  </table>
-  <figure>
-    <svg viewBox="0 0 600 260" role="img" aria-label="Diagramme UML — abstrait et interfaces">
-      <defs><marker id="mka-tri" markerWidth="18" markerHeight="16" refX="16" refY="8" orient="auto">
-        <path d="M2 2 L16 8 L2 14 Z" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
-      <rect class="svg-bg" x="0" y="0" width="600" height="260" rx="6"/>
-      <rect class="uml-box-a" x="24" y="20" width="180" height="44"/>
-      <rect class="uml-box-a" x="24" y="64" width="180" height="24"/>
-      <text class="uml-stereo" x="114" y="38" text-anchor="middle">« interface »</text>
-      <text class="uml-name" x="114" y="58" text-anchor="middle">IExportable</text>
-      <text class="uml-m" x="32" y="81">+ EnCsv() : string</text>
+      <h2 id="abstrait-interface">Classe abstraite vs interface</h2>
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>Classe abstraite</th>
+            <th>Interface</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Rôle</td>
+            <td>base partielle commune (« est un »)</td>
+            <td>contrat de capacités (« sait faire »)</td>
+          </tr>
+          <tr>
+            <td>Peut contenir du code</td>
+            <td>oui (méthodes concrètes, champs, constructeur)</td>
+            <td>surtout des signatures (+ implémentations par défaut depuis C# 8)</td>
+          </tr>
+          <tr>
+            <td>Héritage multiple</td>
+            <td>non (une seule)</td>
+            <td>oui (autant qu'on veut)</td>
+          </tr>
+          <tr>
+            <td>Instanciable</td>
+            <td>non</td>
+            <td>non</td>
+          </tr>
+        </tbody>
+      </table>
+      <figure>
+        <svg viewBox="0 0 600 260" role="img" aria-label="Diagramme UML — abstrait et interfaces">
+          <defs>
+            <marker id="mka-tri" markerWidth="18" markerHeight="16" refX="16" refY="8" orient="auto">
+              <path d="M2 2 L16 8 L2 14 Z" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5" />
+            </marker>
+          </defs>
+          <rect class="svg-bg" x="0" y="0" width="600" height="260" rx="6" />
+          <rect class="uml-box-a" x="24" y="20" width="180" height="44" />
+          <rect class="uml-box-a" x="24" y="64" width="180" height="24" />
+          <text class="uml-stereo" x="114" y="38" text-anchor="middle">« interface »</text>
+          <text class="uml-name" x="114" y="58" text-anchor="middle">IExportable</text>
+          <text class="uml-m" x="32" y="81">+ EnCsv() : string</text>
 
-      <rect class="uml-box-a" x="24" y="150" width="180" height="44"/>
-      <rect class="uml-box-a" x="24" y="194" width="180" height="24"/>
-      <text class="uml-stereo" x="114" y="168" text-anchor="middle">« interface »</text>
-      <text class="uml-name" x="114" y="188" text-anchor="middle">IDatable</text>
-      <text class="uml-m" x="32" y="211">+ Date : DateTime</text>
+          <rect class="uml-box-a" x="24" y="150" width="180" height="44" />
+          <rect class="uml-box-a" x="24" y="194" width="180" height="24" />
+          <text class="uml-stereo" x="114" y="168" text-anchor="middle">« interface »</text>
+          <text class="uml-name" x="114" y="188" text-anchor="middle">IDatable</text>
+          <text class="uml-m" x="32" y="211">+ Date : DateTime</text>
 
-      <rect class="uml-box" x="360" y="80" width="210" height="22"/>
-      <rect class="uml-box" x="360" y="102" width="210" height="42"/>
-      <rect class="uml-box" x="360" y="144" width="210" height="24"/>
-      <text class="uml-name" x="465" y="96" text-anchor="middle">Facture</text>
-      <text class="uml-m" x="368" y="119">+ Montant : decimal</text>
-      <text class="uml-m" x="368" y="137">+ Date : DateTime</text>
-      <text class="uml-m" x="368" y="161">+ EnCsv() : string</text>
+          <rect class="uml-box" x="360" y="80" width="210" height="22" />
+          <rect class="uml-box" x="360" y="102" width="210" height="42" />
+          <rect class="uml-box" x="360" y="144" width="210" height="24" />
+          <text class="uml-name" x="465" y="96" text-anchor="middle">Facture</text>
+          <text class="uml-m" x="368" y="119">+ Montant : decimal</text>
+          <text class="uml-m" x="368" y="137">+ Date : DateTime</text>
+          <text class="uml-m" x="368" y="161">+ EnCsv() : string</text>
 
-      <path class="uml-rel-d" style="marker-end:url(#mka-tri)" d="M360 105 L206 62"/>
-      <path class="uml-rel-d" style="marker-end:url(#mka-tri)" d="M360 140 L206 178"/>
-    </svg>
-    <figcaption>Le trait pointillé + triangle creux = « réalise l'interface ». <code>Facture</code> honore deux contrats à la fois.</figcaption>
-  </figure>
-  <pre class="code"><script type="text/plain">
+          <path class="uml-rel-d" style="marker-end:url(#mka-tri)" d="M360 105 L206 62" />
+          <path class="uml-rel-d" style="marker-end:url(#mka-tri)" d="M360 140 L206 178" />
+        </svg>
+        <figcaption>Le trait pointillé + triangle creux = « réalise l'interface ». <code>Facture</code> honore deux
+          contrats à la fois.</figcaption>
+      </figure>
+      <pre class="code"><script type="text/plain">
 // Classe abstraite : impose une méthode, fournit le reste
 abstract class Forme
 {
@@ -432,14 +579,16 @@ IExportable doc = new Facture { Montant = 42m };
 Console.WriteLine(doc.EnCsv());
 </script></pre>
 
-  <h2 id="interfaces">Interfaces en détail</h2>
-  <p>Une interface est un <strong>contrat</strong> : la liste des membres qu'un type s'engage à fournir. Elle dit ce qu'un objet <em>sait faire</em>, jamais comment. Convention : le nom commence par <code>I</code>. Ses membres sont implicitement <code>public</code> et elle ne contient pas d'état d'instance.</p>
-  <ul>
-    <li>une classe (ou un <code>struct</code>) peut implémenter <strong>plusieurs</strong> interfaces ;</li>
-    <li>on déclare les variables du <em>type de l'interface</em> → l'implémentation devient interchangeable ;</li>
-    <li>depuis C# 8, une interface peut fournir une <strong>implémentation par défaut</strong>.</li>
-  </ul>
-  <pre class="code"><script type="text/plain">
+      <h2 id="interfaces">Interfaces en détail</h2>
+      <p>Une interface est un <strong>contrat</strong> : la liste des membres qu'un type s'engage à fournir. Elle dit ce
+        qu'un objet <em>sait faire</em>, jamais comment. Convention : le nom commence par <code>I</code>. Ses membres
+        sont implicitement <code>public</code> et elle ne contient pas d'état d'instance.</p>
+      <ul>
+        <li>une classe (ou un <code>struct</code>) peut implémenter <strong>plusieurs</strong> interfaces ;</li>
+        <li>on déclare les variables du <em>type de l'interface</em> → l'implémentation devient interchangeable ;</li>
+        <li>depuis C# 8, une interface peut fournir une <strong>implémentation par défaut</strong>.</li>
+      </ul>
+      <pre class="code"><script type="text/plain">
 interface IFormeDessinable
 {
     double Aire();
@@ -460,8 +609,8 @@ f.Dessiner();
 Console.WriteLine($"{f.Nom} d'aire {f.Aire()}");
 </script></pre>
 
-  <h3>Implémenter une interface de la bibliothèque : <code>IComparable&lt;T&gt;</code></h3>
-  <pre class="code"><script type="text/plain">
+      <h3>Implémenter une interface de la bibliothèque : <code>IComparable&lt;T&gt;</code></h3>
+      <pre class="code"><script type="text/plain">
 class Semver : IComparable<Semver>
 {
     public int Majeur { get; init; }
@@ -483,9 +632,9 @@ versions.Sort();                       // fonctionne car Semver sait se comparer
 Console.WriteLine(string.Join(", ", versions));   // 1.5, 2.0
 </script></pre>
 
-  <h3>Implémentation explicite</h3>
-  <p>Quand deux interfaces déclarent le même membre, ou pour retirer un membre de l'API publique de la classe :</p>
-  <pre class="code"><script type="text/plain">
+      <h3>Implémentation explicite</h3>
+      <p>Quand deux interfaces déclarent le même membre, ou pour retirer un membre de l'API publique de la classe :</p>
+      <pre class="code"><script type="text/plain">
 interface IEnglish { void Hello(); }
 interface IFrench  { void Hello(); }
 
@@ -501,9 +650,12 @@ var g = new Greeter();
 ((IEnglish)g).Hello();        // Hello
 </script></pre>
 
-  <h2 id="struct">Structures (<code>struct</code>)</h2>
-  <p>Un <code>struct</code> est un <strong>type valeur</strong> : il contient directement ses données (pas de référence), il est <strong>copié</strong> à chaque affectation ou passage en paramètre, et il vit en général sur la pile ou à l'intérieur de l'objet qui le contient. À réserver aux petites valeurs sans identité : un point, une couleur, un montant, une plage de dates.</p>
-  <pre class="code"><script type="text/plain">
+      <h2 id="struct">Structures (<code>struct</code>)</h2>
+      <p>Un <code>struct</code> est un <strong>type valeur</strong> : il contient directement ses données (pas de
+        référence), il est <strong>copié</strong> à chaque affectation ou passage en paramètre, et il vit en général sur
+        la pile ou à l'intérieur de l'objet qui le contient. À réserver aux petites valeurs sans identité : un point,
+        une couleur, un montant, une plage de dates.</p>
+      <pre class="code"><script type="text/plain">
 readonly struct Point2D
 {
     public double X { get; init; }
@@ -518,25 +670,59 @@ var b = a;                    // COPIE indépendante (une classe partagerait l'o
 
 Console.WriteLine(a.Distance(new Point2D { X = 3, Y = 4 }));   // 5
 </script></pre>
-  <table>
-    <thead><tr><th></th><th><code>struct</code> (valeur)</th><th><code>class</code> (référence)</th></tr></thead>
-    <tbody>
-      <tr><td>Affectation / passage</td><td>copie complète des données</td><td>copie de la référence (objet partagé)</td></tr>
-      <tr><td>Héritage</td><td>impossible (peut implémenter des interfaces)</td><td>oui</td></tr>
-      <tr><td><code>null</code></td><td>impossible (sauf <code>Point2D?</code>)</td><td>possible</td></tr>
-      <tr><td>Emplacement</td><td>pile, ou inline dans l'objet parent</td><td>tas</td></tr>
-      <tr><td>Égalité par défaut</td><td>compare champ à champ</td><td>compare les références</td></tr>
-      <tr><td>Bon usage</td><td>petites valeurs immuables, très nombreuses</td><td>entités, objets avec cycle de vie</td></tr>
-    </tbody>
-  </table>
-  <div class="callout warn">
-    <span class="label">Piège du type valeur</span>
-    <p>Modifier un <code>struct</code> renvoyé par une propriété ou lu dans une liste modifie une <em>copie</em>, silencieusement. Bonne pratique : <code>readonly struct</code> + propriétés <code>init</code> → immuable, aucune surprise.</p>
-  </div>
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th><code>struct</code> (valeur)</th>
+            <th><code>class</code> (référence)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Affectation / passage</td>
+            <td>copie complète des données</td>
+            <td>copie de la référence (objet partagé)</td>
+          </tr>
+          <tr>
+            <td>Héritage</td>
+            <td>impossible (peut implémenter des interfaces)</td>
+            <td>oui</td>
+          </tr>
+          <tr>
+            <td><code>null</code></td>
+            <td>impossible (sauf <code>Point2D?</code>)</td>
+            <td>possible</td>
+          </tr>
+          <tr>
+            <td>Emplacement</td>
+            <td>pile, ou inline dans l'objet parent</td>
+            <td>tas</td>
+          </tr>
+          <tr>
+            <td>Égalité par défaut</td>
+            <td>compare champ à champ</td>
+            <td>compare les références</td>
+          </tr>
+          <tr>
+            <td>Bon usage</td>
+            <td>petites valeurs immuables, très nombreuses</td>
+            <td>entités, objets avec cycle de vie</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout warn">
+        <span class="label">Piège du type valeur</span>
+        <p>Modifier un <code>struct</code> renvoyé par une propriété ou lu dans une liste modifie une <em>copie</em>,
+          silencieusement. Bonne pratique : <code>readonly struct</code> + propriétés <code>init</code> → immuable,
+          aucune surprise.</p>
+      </div>
 
-  <h2 id="records">record — données par valeur</h2>
-  <p>Un <code>record</code> est une classe que le compilateur outille pour représenter une <strong>donnée</strong> : égalité par valeur, <code>ToString()</code> lisible, copie non destructive avec <code>with</code>, immuabilité par défaut.</p>
-  <pre class="code"><script type="text/plain">
+      <h2 id="records">record — données par valeur</h2>
+      <p>Un <code>record</code> est une classe que le compilateur outille pour représenter une <strong>donnée</strong> :
+        égalité par valeur, <code>ToString()</code> lisible, copie non destructive avec <code>with</code>, immuabilité
+        par défaut.</p>
+      <pre class="code"><script type="text/plain">
 record Point(double X, double Y);
 
 var p1 = new Point(1, 2);
@@ -546,21 +732,39 @@ Console.WriteLine(p1 == p2);        // True  (compare X et Y, pas les référenc
 var p3 = p1 with { Y = 9 };        // copie modifiée → Point(1, 9)
 Console.WriteLine(p3);             // Point { X = 1, Y = 9 }  (ToString auto)
 </script></pre>
-  <table>
-    <thead><tr><th>Choisir…</th><th>quand</th></tr></thead>
-    <tbody>
-      <tr><td><code>class</code></td><td>entité avec identité et cycle de vie, état mutable</td></tr>
-      <tr><td><code>record</code></td><td>donnée immuable définie par son contenu (DTO, message, valeur métier)</td></tr>
-      <tr><td><code>record struct</code></td><td>idem, mais type valeur (petite, copiée)</td></tr>
-      <tr><td><code>struct</code></td><td>petite valeur (&lt; 16 octets), créée très souvent</td></tr>
-    </tbody>
-  </table>
+      <table>
+        <thead>
+          <tr>
+            <th>Choisir…</th>
+            <th>quand</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>class</code></td>
+            <td>entité avec identité et cycle de vie, état mutable</td>
+          </tr>
+          <tr>
+            <td><code>record</code></td>
+            <td>donnée immuable définie par son contenu (DTO, message, valeur métier)</td>
+          </tr>
+          <tr>
+            <td><code>record struct</code></td>
+            <td>idem, mais type valeur (petite, copiée)</td>
+          </tr>
+          <tr>
+            <td><code>struct</code></td>
+            <td>petite valeur (&lt; 16 octets), créée très souvent</td>
+          </tr>
+        </tbody>
+      </table>
 
-  <h2 id="collections">Listes & dictionnaires</h2>
-  <p>Deux collections génériques omniprésentes, dans <code>System.Collections.Generic</code> (importé par défaut). Le <code>&lt;T&gt;</code> précise le type des éléments — vérifié à la compilation.</p>
+      <h2 id="collections">Listes & dictionnaires</h2>
+      <p>Deux collections génériques omniprésentes, dans <code>System.Collections.Generic</code> (importé par défaut).
+        Le <code>&lt;T&gt;</code> précise le type des éléments — vérifié à la compilation.</p>
 
-  <h3><code>List&lt;T&gt;</code> — séquence ordonnée, taille dynamique</h3>
-  <pre class="code"><script type="text/plain">
+      <h3><code>List&lt;T&gt;</code> — séquence ordonnée, taille dynamique</h3>
+      <pre class="code"><script type="text/plain">
 var panier = new List<string> { "pain", "lait" };
 
 panier.Add("café");
@@ -586,8 +790,8 @@ var bienPayes = employes.Where(e => e.SalaireBase > 2500)
                         .ToList();
 </script></pre>
 
-  <h3><code>Dictionary&lt;TCle, TValeur&gt;</code> — table associative clé → valeur</h3>
-  <pre class="code"><script type="text/plain">
+      <h3><code>Dictionary&lt;TCle, TValeur&gt;</code> — table associative clé → valeur</h3>
+      <pre class="code"><script type="text/plain">
 var stock = new Dictionary<string, int>
 {
     ["pommes"] = 12,
@@ -608,27 +812,50 @@ Console.WriteLine(stock.GetValueOrDefault("kiwis", 0));  // 0
 foreach (var (fruit, quantite) in stock)
     Console.WriteLine($"{fruit} : {quantite}");
 </script></pre>
-  <table>
-    <thead><tr><th>Besoin</th><th>Collection</th></tr></thead>
-    <tbody>
-      <tr><td>liste ordonnée, doublons acceptés, accès par position</td><td><code>List&lt;T&gt;</code></td></tr>
-      <tr><td>retrouver une valeur par une clé unique</td><td><code>Dictionary&lt;TCle,TValeur&gt;</code></td></tr>
-      <tr><td>ensemble sans doublon</td><td><code>HashSet&lt;T&gt;</code></td></tr>
-      <tr><td>file (FIFO) / pile (LIFO)</td><td><code>Queue&lt;T&gt;</code> / <code>Stack&lt;T&gt;</code></td></tr>
-      <tr><td>exposer sans permettre la modification</td><td><code>IReadOnlyList&lt;T&gt;</code>, <code>IReadOnlyDictionary&lt;,&gt;</code></td></tr>
-    </tbody>
-  </table>
-  <div class="callout warn">
-    <span class="label">Dictionnaire</span>
-    <p><code>stock["absent"]</code> lève <code>KeyNotFoundException</code>. Préférer <code>TryGetValue</code>, <code>ContainsKey</code> ou <code>GetValueOrDefault</code>. La clé doit être unique et son type doit avoir une égalité stable (<code>string</code> et types valeur conviennent).</p>
-  </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Besoin</th>
+            <th>Collection</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>liste ordonnée, doublons acceptés, accès par position</td>
+            <td><code>List&lt;T&gt;</code></td>
+          </tr>
+          <tr>
+            <td>retrouver une valeur par une clé unique</td>
+            <td><code>Dictionary&lt;TCle,TValeur&gt;</code></td>
+          </tr>
+          <tr>
+            <td>ensemble sans doublon</td>
+            <td><code>HashSet&lt;T&gt;</code></td>
+          </tr>
+          <tr>
+            <td>file (FIFO) / pile (LIFO)</td>
+            <td><code>Queue&lt;T&gt;</code> / <code>Stack&lt;T&gt;</code></td>
+          </tr>
+          <tr>
+            <td>exposer sans permettre la modification</td>
+            <td><code>IReadOnlyList&lt;T&gt;</code>, <code>IReadOnlyDictionary&lt;,&gt;</code></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="callout warn">
+        <span class="label">Dictionnaire</span>
+        <p><code>stock["absent"]</code> lève <code>KeyNotFoundException</code>. Préférer <code>TryGetValue</code>,
+          <code>ContainsKey</code> ou <code>GetValueOrDefault</code>. La clé doit être unique et son type doit avoir une
+          égalité stable (<code>string</code> et types valeur conviennent).</p>
+      </div>
 
-  <h2 id="global"><code>global using</code> &amp; <code>global::</code></h2>
-  <p>Deux usages distincts du mot-clé <code>global</code>.</p>
+      <h2 id="global"><code>global using</code> &amp; <code>global::</code></h2>
+      <p>Deux usages distincts du mot-clé <code>global</code>.</p>
 
-  <h3><code>global using</code> — importer un espace de noms dans tout le projet</h3>
-  <p>Un <code>global using</code> vaut pour <strong>tous</strong> les fichiers du projet : on le déclare une seule fois, en général dans un fichier dédié (<code>GlobalUsings.cs</code>).</p>
-  <pre class="code"><script type="text/plain">
+      <h3><code>global using</code> — importer un espace de noms dans tout le projet</h3>
+      <p>Un <code>global using</code> vaut pour <strong>tous</strong> les fichiers du projet : on le déclare une seule
+        fois, en général dans un fichier dédié (<code>GlobalUsings.cs</code>).</p>
+      <pre class="code"><script type="text/plain">
 // GlobalUsings.cs
 global using System.Text;
 global using System.Collections.Generic;
@@ -638,14 +865,18 @@ global using static System.Console;      // importe aussi les membres statiques
 var sb = new StringBuilder();
 WriteLine("plus besoin d'écrire 'using' ni le préfixe 'Console.'");
 </script></pre>
-  <div class="callout info">
-    <span class="label">ImplicitUsings</span>
-    <p>Avec <code>&lt;ImplicitUsings&gt;enable&lt;/ImplicitUsings&gt;</code> dans le <code>.csproj</code>, le SDK génère déjà des <code>global using</code> pour les espaces de noms courants (<code>System</code>, <code>System.Linq</code>, <code>System.Collections.Generic</code>…). C'est pourquoi les exemples de ce guide n'ont aucun <code>using</code>.</p>
-  </div>
+      <div class="callout info">
+        <span class="label">ImplicitUsings</span>
+        <p>Avec <code>&lt;ImplicitUsings&gt;enable&lt;/ImplicitUsings&gt;</code> dans le <code>.csproj</code>, le SDK
+          génère déjà des <code>global using</code> pour les espaces de noms courants (<code>System</code>,
+          <code>System.Linq</code>, <code>System.Collections.Generic</code>…). C'est pourquoi les exemples de ce guide
+          n'ont aucun <code>using</code>.</p>
+      </div>
 
-  <h3><code>global::</code> — lever une ambiguïté de nom</h3>
-  <p>Le préfixe <code>global::</code> force la résolution depuis la racine des espaces de noms, utile quand un nom local masque un type de la bibliothèque.</p>
-  <pre class="code"><script type="text/plain">
+      <h3><code>global::</code> — lever une ambiguïté de nom</h3>
+      <p>Le préfixe <code>global::</code> force la résolution depuis la racine des espaces de noms, utile quand un nom
+        local masque un type de la bibliothèque.</p>
+      <pre class="code"><script type="text/plain">
 namespace Mon.App
 {
     class Console { }        // masque System.Console dans cet espace de noms
@@ -661,44 +892,49 @@ namespace Mon.App
 }
 </script></pre>
 
-  <h2 id="composition">Composition plutôt qu'héritage</h2>
-  <p>Souvent, « a un » vaut mieux que « est un » : au lieu d'hériter, on <em>contient</em> un objet qui fait le travail. Plus souple, moins fragile.</p>
-  <figure>
-    <svg viewBox="0 0 600 230" role="img" aria-label="Diagramme UML — composition">
-      <defs>
-        <marker id="mkc-tri" markerWidth="18" markerHeight="16" refX="16" refY="8" orient="auto">
-          <path d="M2 2 L16 8 L2 14 Z" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5"/></marker>
-        <marker id="mkc-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
-          <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker>
-        <marker id="mkc-dia" markerWidth="22" markerHeight="14" refX="3" refY="7" orient="auto">
-          <path d="M3 7 L11 2 L19 7 L11 12 Z" fill="var(--muted)"/></marker>
-      </defs>
-      <rect class="svg-bg" x="0" y="0" width="600" height="230" rx="6"/>
-      <rect class="uml-box" x="24" y="70" width="180" height="22"/>
-      <rect class="uml-box" x="24" y="92" width="180" height="24"/>
-      <rect class="uml-box" x="24" y="116" width="180" height="24"/>
-      <text class="uml-name" x="114" y="86" text-anchor="middle">Voiture</text>
-      <text class="uml-m" x="32" y="109">- moteur : IMoteur</text>
-      <text class="uml-m" x="32" y="133">+ Rouler() : void</text>
+      <h2 id="composition">Composition plutôt qu'héritage</h2>
+      <p>Souvent, « a un » vaut mieux que « est un » : au lieu d'hériter, on <em>contient</em> un objet qui fait le
+        travail. Plus souple, moins fragile.</p>
+      <figure>
+        <svg viewBox="0 0 600 230" role="img" aria-label="Diagramme UML — composition">
+          <defs>
+            <marker id="mkc-tri" markerWidth="18" markerHeight="16" refX="16" refY="8" orient="auto">
+              <path d="M2 2 L16 8 L2 14 Z" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5" />
+            </marker>
+            <marker id="mkc-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+              <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5" />
+            </marker>
+            <marker id="mkc-dia" markerWidth="22" markerHeight="14" refX="3" refY="7" orient="auto">
+              <path d="M3 7 L11 2 L19 7 L11 12 Z" fill="var(--muted)" />
+            </marker>
+          </defs>
+          <rect class="svg-bg" x="0" y="0" width="600" height="230" rx="6" />
+          <rect class="uml-box" x="24" y="70" width="180" height="22" />
+          <rect class="uml-box" x="24" y="92" width="180" height="24" />
+          <rect class="uml-box" x="24" y="116" width="180" height="24" />
+          <text class="uml-name" x="114" y="86" text-anchor="middle">Voiture</text>
+          <text class="uml-m" x="32" y="109">- moteur : IMoteur</text>
+          <text class="uml-m" x="32" y="133">+ Rouler() : void</text>
 
-      <rect class="uml-box-a" x="360" y="20" width="200" height="44"/>
-      <rect class="uml-box-a" x="360" y="64" width="200" height="24"/>
-      <text class="uml-stereo" x="460" y="38" text-anchor="middle">« interface »</text>
-      <text class="uml-name" x="460" y="58" text-anchor="middle">IMoteur</text>
-      <text class="uml-m" x="368" y="81">+ Demarrer() : void</text>
+          <rect class="uml-box-a" x="360" y="20" width="200" height="44" />
+          <rect class="uml-box-a" x="360" y="64" width="200" height="24" />
+          <text class="uml-stereo" x="460" y="38" text-anchor="middle">« interface »</text>
+          <text class="uml-name" x="460" y="58" text-anchor="middle">IMoteur</text>
+          <text class="uml-m" x="368" y="81">+ Demarrer() : void</text>
 
-      <rect class="uml-box" x="360" y="150" width="200" height="22"/>
-      <rect class="uml-box" x="360" y="172" width="200" height="24"/>
-      <text class="uml-name" x="460" y="166" text-anchor="middle">MoteurElectrique</text>
-      <text class="uml-m" x="368" y="189">+ Demarrer() : void</text>
+          <rect class="uml-box" x="360" y="150" width="200" height="22" />
+          <rect class="uml-box" x="360" y="172" width="200" height="24" />
+          <text class="uml-name" x="460" y="166" text-anchor="middle">MoteurElectrique</text>
+          <text class="uml-m" x="368" y="189">+ Demarrer() : void</text>
 
-      <path class="uml-rel" style="marker-start:url(#mkc-dia);marker-end:url(#mkc-arr)" d="M204 100 L360 64"/>
-      <text class="uml-legend" x="330" y="92">1</text>
-      <path class="uml-rel-d" style="marker-end:url(#mkc-tri)" d="M460 150 L460 88"/>
-    </svg>
-    <figcaption>Le losange plein côté <code>Voiture</code> = composition. <code>Voiture</code> dépend de l'<em>interface</em> <code>IMoteur</code>, pas d'un moteur précis.</figcaption>
-  </figure>
-  <pre class="code"><script type="text/plain">
+          <path class="uml-rel" style="marker-start:url(#mkc-dia);marker-end:url(#mkc-arr)" d="M204 100 L360 64" />
+          <text class="uml-legend" x="330" y="92">1</text>
+          <path class="uml-rel-d" style="marker-end:url(#mkc-tri)" d="M460 150 L460 88" />
+        </svg>
+        <figcaption>Le losange plein côté <code>Voiture</code> = composition. <code>Voiture</code> dépend de
+          l'<em>interface</em> <code>IMoteur</code>, pas d'un moteur précis.</figcaption>
+      </figure>
+      <pre class="code"><script type="text/plain">
 interface IMoteur { void Demarrer(); }
 
 class MoteurElectrique : IMoteur
@@ -722,51 +958,55 @@ class Voiture
 new Voiture(new MoteurElectrique()).Rouler();  // on branche l'implémentation voulue
 </script></pre>
 
-  <h2 id="exemple">Exemple complet — formes & rendu</h2>
-  <figure>
-    <svg viewBox="0 0 620 300" role="img" aria-label="Diagramme UML — exemple formes">
-      <defs>
-        <marker id="mke-tri" markerWidth="18" markerHeight="16" refX="16" refY="8" orient="auto">
-          <path d="M2 2 L16 8 L2 14 Z" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5"/></marker>
-        <marker id="mke-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
-          <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker>
-        <marker id="mke-dia" markerWidth="22" markerHeight="14" refX="3" refY="7" orient="auto">
-          <path d="M3 7 L11 2 L19 7 L11 12 Z" fill="var(--muted)"/></marker>
-      </defs>
-      <rect class="svg-bg" x="0" y="0" width="620" height="300" rx="6"/>
-      <rect class="uml-box-a" x="215" y="18" width="190" height="22"/>
-      <rect class="uml-box-a" x="215" y="40" width="190" height="42"/>
-      <text class="uml-abual" x="310" y="34" text-anchor="middle">Forme</text>
-      <text class="uml-m" x="223" y="57">+ Aire() : double</text>
-      <text class="uml-m" x="223" y="75">+ Perimetre() : double</text>
+      <h2 id="exemple">Exemple complet — formes & rendu</h2>
+      <figure>
+        <svg viewBox="0 0 620 300" role="img" aria-label="Diagramme UML — exemple formes">
+          <defs>
+            <marker id="mke-tri" markerWidth="18" markerHeight="16" refX="16" refY="8" orient="auto">
+              <path d="M2 2 L16 8 L2 14 Z" fill="var(--panel)" stroke="var(--muted)" stroke-width="1.5" />
+            </marker>
+            <marker id="mke-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+              <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5" />
+            </marker>
+            <marker id="mke-dia" markerWidth="22" markerHeight="14" refX="3" refY="7" orient="auto">
+              <path d="M3 7 L11 2 L19 7 L11 12 Z" fill="var(--muted)" />
+            </marker>
+          </defs>
+          <rect class="svg-bg" x="0" y="0" width="620" height="300" rx="6" />
+          <rect class="uml-box-a" x="215" y="18" width="190" height="22" />
+          <rect class="uml-box-a" x="215" y="40" width="190" height="42" />
+          <text class="uml-abual" x="310" y="34" text-anchor="middle">Forme</text>
+          <text class="uml-m" x="223" y="57">+ Aire() : double</text>
+          <text class="uml-m" x="223" y="75">+ Perimetre() : double</text>
 
-      <rect class="uml-box" x="430" y="18" width="180" height="22"/>
-      <rect class="uml-box" x="430" y="40" width="180" height="24"/>
-      <rect class="uml-box" x="430" y="64" width="180" height="42"/>
-      <text class="uml-name" x="520" y="34" text-anchor="middle">Toile</text>
-      <text class="uml-m" x="438" y="57">- formes : List&lt;Forme&gt;</text>
-      <text class="uml-m" x="438" y="81">+ Ajouter(f : Forme)</text>
-      <text class="uml-m" x="438" y="99">+ AireTotale() : double</text>
+          <rect class="uml-box" x="430" y="18" width="180" height="22" />
+          <rect class="uml-box" x="430" y="40" width="180" height="24" />
+          <rect class="uml-box" x="430" y="64" width="180" height="42" />
+          <text class="uml-name" x="520" y="34" text-anchor="middle">Toile</text>
+          <text class="uml-m" x="438" y="57">- formes : List&lt;Forme&gt;</text>
+          <text class="uml-m" x="438" y="81">+ Ajouter(f : Forme)</text>
+          <text class="uml-m" x="438" y="99">+ AireTotale() : double</text>
 
-      <rect class="uml-box" x="30" y="210" width="180" height="22"/>
-      <rect class="uml-box" x="30" y="232" width="180" height="40"/>
-      <text class="uml-name" x="120" y="226" text-anchor="middle">Rectangle</text>
-      <text class="uml-m" x="38" y="249">+ L : double</text>
-      <text class="uml-m" x="38" y="266">+ H : double</text>
+          <rect class="uml-box" x="30" y="210" width="180" height="22" />
+          <rect class="uml-box" x="30" y="232" width="180" height="40" />
+          <text class="uml-name" x="120" y="226" text-anchor="middle">Rectangle</text>
+          <text class="uml-m" x="38" y="249">+ L : double</text>
+          <text class="uml-m" x="38" y="266">+ H : double</text>
 
-      <rect class="uml-box" x="250" y="210" width="180" height="22"/>
-      <rect class="uml-box" x="250" y="232" width="180" height="24"/>
-      <text class="uml-name" x="340" y="226" text-anchor="middle">Cercle</text>
-      <text class="uml-m" x="258" y="249">+ R : double</text>
+          <rect class="uml-box" x="250" y="210" width="180" height="22" />
+          <rect class="uml-box" x="250" y="232" width="180" height="24" />
+          <text class="uml-name" x="340" y="226" text-anchor="middle">Cercle</text>
+          <text class="uml-m" x="258" y="249">+ R : double</text>
 
-      <path class="uml-rel" style="marker-end:url(#mke-tri)" d="M120 210 L290 82"/>
-      <path class="uml-rel" style="marker-end:url(#mke-tri)" d="M340 210 L320 82"/>
-      <path class="uml-rel" style="marker-start:url(#mke-dia);marker-end:url(#mke-arr)" d="M430 55 L405 55"/>
-      <text class="uml-legend" x="410" y="48">*</text>
-    </svg>
-    <figcaption><code>Rectangle</code> et <code>Cercle</code> héritent de <code>Forme</code> (triangles). <code>Toile</code> est composée de <code>*</code> <code>Forme</code> (losange).</figcaption>
-  </figure>
-  <pre class="code"><script type="text/plain">
+          <path class="uml-rel" style="marker-end:url(#mke-tri)" d="M120 210 L290 82" />
+          <path class="uml-rel" style="marker-end:url(#mke-tri)" d="M340 210 L320 82" />
+          <path class="uml-rel" style="marker-start:url(#mke-dia);marker-end:url(#mke-arr)" d="M430 55 L405 55" />
+          <text class="uml-legend" x="410" y="48">*</text>
+        </svg>
+        <figcaption><code>Rectangle</code> et <code>Cercle</code> héritent de <code>Forme</code> (triangles).
+          <code>Toile</code> est composée de <code>*</code> <code>Forme</code> (losange).</figcaption>
+      </figure>
+      <pre class="code"><script type="text/plain">
 abstract class Forme
 {
     public abstract double Aire();
@@ -810,27 +1050,43 @@ toile.Ajouter(new Cercle { R = 2 });
 toile.Rapport();
 </script></pre>
 
-  <h2 id="solid">SOLID en une phrase chacun</h2>
-  <table>
-    <tbody>
-      <tr><td><strong>S</strong>ingle responsibility</td><td>une classe, une raison de changer</td></tr>
-      <tr><td><strong>O</strong>pen/closed</td><td>ouverte à l'extension, fermée à la modification</td></tr>
-      <tr><td><strong>L</strong>iskov</td><td>une dérivée doit pouvoir remplacer sa base sans surprise</td></tr>
-      <tr><td><strong>I</strong>nterface segregation</td><td>plusieurs petites interfaces valent mieux qu'une géante</td></tr>
-      <tr><td><strong>D</strong>ependency inversion</td><td>dépendre d'abstractions (interfaces), pas d'implémentations</td></tr>
-    </tbody>
-  </table>
+      <h2 id="solid">SOLID en une phrase chacun</h2>
+      <table>
+        <tbody>
+          <tr>
+            <td><strong>S</strong>ingle responsibility</td>
+            <td>une classe, une raison de changer</td>
+          </tr>
+          <tr>
+            <td><strong>O</strong>pen/closed</td>
+            <td>ouverte à l'extension, fermée à la modification</td>
+          </tr>
+          <tr>
+            <td><strong>L</strong>iskov</td>
+            <td>une dérivée doit pouvoir remplacer sa base sans surprise</td>
+          </tr>
+          <tr>
+            <td><strong>I</strong>nterface segregation</td>
+            <td>plusieurs petites interfaces valent mieux qu'une géante</td>
+          </tr>
+          <tr>
+            <td><strong>D</strong>ependency inversion</td>
+            <td>dépendre d'abstractions (interfaces), pas d'implémentations</td>
+          </tr>
+        </tbody>
+      </table>
 
-  <footer class="pg">
-    <span><a href="procedural.html">← Procédural</a></span>
-    <span><a href="asynchrone.html">Suivant : Asynchrone →</a></span>
-  </footer>
-</main>
-</div>
+      <footer class="pg">
+        <span><a href="procedural.html">← Procédural</a></span>
+        <span><a href="asynchrone.html">Suivant : Asynchrone →</a></span>
+      </footer>
+    </main>
+  </div>
 
-<script src="../assets/site.config.js"></script>
-<script src="../assets/highlighters/csharp.js"></script>
-<script src="../assets/main.js"></script>
-<script src="../assets/nav.js"></script>
+  <script src="../assets/site.config.js"></script>
+  <script src="../assets/highlighters/csharp.js"></script>
+  <script src="../assets/main.js"></script>
+  <script src="../assets/nav.js"></script>
 </body>
+
 </html>

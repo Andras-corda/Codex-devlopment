@@ -1,26 +1,32 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Codex — PHP · Procédural</title>
-<meta name="description" content="PHP procédural : variables, constantes, types, tableaux, fonctions, portée, exceptions.">
-<link rel="stylesheet" href="../assets/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Codex — PHP · Procédural</title>
+  <meta name="description"
+    content="PHP procédural : variables, constantes, types, tableaux, fonctions, portée, exceptions.">
+  <link rel="stylesheet" href="../assets/style.css">
 </head>
+
 <body data-lang="php" data-page="procedural">
 
-<div class="topbar" id="topbar"></div>
+  <div class="topbar" id="topbar"></div>
 
-<div class="wrap">
-<aside class="side" id="side"></aside>
+  <div class="wrap">
+    <aside class="side" id="side"></aside>
 
-<main>
-  <h1>1 · Programmation procédurale</h1>
-  <p class="lead">Le PHP « de base » : variables, tableaux, fonctions. C'est le style le plus courant pour un script ou une page, et le socle de tout le reste.</p>
+    <main>
+      <h1>1 · Programmation procédurale</h1>
+      <p class="lead">Le PHP « de base » : variables, tableaux, fonctions. C'est le style le plus courant pour un script
+        ou une page, et le socle de tout le reste.</p>
 
-  <h2 id="idee">L'idée</h2>
-  <p>Un script PHP s'exécute de haut en bas, comme une recette. Les balises <code>&lt;?php … ?&gt;</code> délimitent le code ; en dehors, tout est renvoyé tel quel (utile pour mélanger PHP et HTML, même si ce guide s'en tient au code).</p>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <h2 id="idee">L'idée</h2>
+      <p>Un script PHP s'exécute de haut en bas, comme une recette. Les balises <code>&lt;?php … ?&gt;</code> délimitent
+        le code ; en dehors, tout est renvoyé tel quel (utile pour mélanger PHP et HTML, même si ce guide s'en tient au
+        code).</p>
+      <pre class="code" data-lang="php"><script type="text/plain">
 <?php
 $temperature = 21;
 
@@ -31,9 +37,10 @@ if ($temperature > 25) {
 }
 </script></pre>
 
-  <h2 id="variables">Variables & affectation</h2>
-  <p>Toute variable commence par <code>$</code>. Pas besoin de déclarer son type : PHP le déduit de la valeur, et il peut changer en cours de route (typage <em>dynamique</em>).</p>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <h2 id="variables">Variables & affectation</h2>
+      <p>Toute variable commence par <code>$</code>. Pas besoin de déclarer son type : PHP le déduit de la valeur, et il
+        peut changer en cours de route (typage <em>dynamique</em>).</p>
+      <pre class="code" data-lang="php"><script type="text/plain">
 $compteur = 0;          // int
 $compteur = $compteur + 1;
 $compteur += 4;          // 5
@@ -48,38 +55,67 @@ var_dump($compteur);      // string(4) "cinq"
 [$a, $b] = [1, 2];         // déstructuration de tableau
 ["nom" => $n] = ["nom" => "Ada"];   // déstructuration par clé
 </script></pre>
-  <div class="callout warn">
-    <span class="label">Dynamique ≠ imprudent</span>
-    <p>Rien n'empêche une variable de changer de type — c'est voulu. Pour des <strong>paramètres</strong> et <strong>retours</strong> de fonction en revanche, on déclare presque toujours un type (voir <a href="#fonctions">Fonctions</a>) : c'est là que <code>strict_types</code> protège vraiment.</p>
-  </div>
+      <div class="callout warn">
+        <span class="label">Dynamique ≠ imprudent</span>
+        <p>Rien n'empêche une variable de changer de type — c'est voulu. Pour des <strong>paramètres</strong> et
+          <strong>retours</strong> de fonction en revanche, on déclare presque toujours un type (voir <a
+            href="#fonctions">Fonctions</a>) : c'est là que <code>strict_types</code> protège vraiment.</p>
+      </div>
 
-  <h2 id="const">Constantes</h2>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <h2 id="const">Constantes</h2>
+      <pre class="code" data-lang="php"><script type="text/plain">
 const JOURS_PAR_SEMAINE = 7;         // au niveau du fichier / d'une classe
 define("TAUX_TVA", 0.20);            // équivalent dynamique (nom calculable)
 
 echo JOURS_PAR_SEMAINE;              // pas de $ pour lire une constante
 // JOURS_PAR_SEMAINE = 5;            // erreur : une constante ne se réaffecte pas
 </script></pre>
-  <table>
-    <thead><tr><th></th><th>Quand</th></tr></thead>
-    <tbody>
-      <tr><td><code>const</code></td><td>valeur fixée à la compilation, nom connu à l'écriture du code — à préférer</td></tr>
-      <tr><td><code>define()</code></td><td>nom ou valeur calculés à l'exécution ; utile hors d'une classe uniquement dans ce cas</td></tr>
-    </tbody>
-  </table>
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>Quand</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>const</code></td>
+            <td>valeur fixée à la compilation, nom connu à l'écriture du code — à préférer</td>
+          </tr>
+          <tr>
+            <td><code>define()</code></td>
+            <td>nom ou valeur calculés à l'exécution ; utile hors d'une classe uniquement dans ce cas</td>
+          </tr>
+        </tbody>
+      </table>
 
-  <h2 id="types">Types</h2>
-  <table>
-    <thead><tr><th>Famille</th><th>Types</th></tr></thead>
-    <tbody>
-      <tr><td>Scalaires</td><td><code>int</code>, <code>float</code>, <code>string</code>, <code>bool</code></td></tr>
-      <tr><td>Composés</td><td><code>array</code>, <code>object</code>, <code>callable</code>, <code>iterable</code></td></tr>
-      <tr><td>Spéciaux</td><td><code>null</code>, <code>void</code> (retour), <code>mixed</code>, <code>never</code></td></tr>
-    </tbody>
-  </table>
-  <p>Contrairement à C# (types valeur vs référence explicites), PHP a sa propre règle : les <strong>tableaux</strong> sont copiés à l'affectation (comme un type valeur), les <strong>objets</strong> sont manipulés par une <em>référence interne</em> (comme un type référence).</p>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <h2 id="types">Types</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Famille</th>
+            <th>Types</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Scalaires</td>
+            <td><code>int</code>, <code>float</code>, <code>string</code>, <code>bool</code></td>
+          </tr>
+          <tr>
+            <td>Composés</td>
+            <td><code>array</code>, <code>object</code>, <code>callable</code>, <code>iterable</code></td>
+          </tr>
+          <tr>
+            <td>Spéciaux</td>
+            <td><code>null</code>, <code>void</code> (retour), <code>mixed</code>, <code>never</code></td>
+          </tr>
+        </tbody>
+      </table>
+      <p>Contrairement à C# (types valeur vs référence explicites), PHP a sa propre règle : les
+        <strong>tableaux</strong> sont copiés à l'affectation (comme un type valeur), les <strong>objets</strong> sont
+        manipulés par une <em>référence interne</em> (comme un type référence).</p>
+      <pre class="code" data-lang="php"><script type="text/plain">
 $a = [1, 2, 3];
 $b = $a;              // COPIE du tableau
 $b[] = 4;
@@ -93,13 +129,14 @@ $y->valeur = 99;
 
 $z = clone $x;        // clone : copie explicite d'un objet
 </script></pre>
-  <div class="callout info">
-    <span class="label">gettype / var_dump</span>
-    <p><code>var_dump($x)</code> affiche le type ET la valeur — le réflexe numéro un pour déboguer. <code>gettype($x)</code> renvoie juste le type sous forme de texte.</p>
-  </div>
+      <div class="callout info">
+        <span class="label">gettype / var_dump</span>
+        <p><code>var_dump($x)</code> affiche le type ET la valeur — le réflexe numéro un pour déboguer.
+          <code>gettype($x)</code> renvoie juste le type sous forme de texte.</p>
+      </div>
 
-  <h2 id="operateurs">Opérateurs</h2>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <h2 id="operateurs">Opérateurs</h2>
+      <pre class="code" data-lang="php"><script type="text/plain">
 7 % 2;             // 1  (modulo)
 2 ** 8;             // 256 (puissance)
 
@@ -115,8 +152,8 @@ $age >= 18 ? "majeur" : "mineur";   // ternaire
 $age ?: "0";                        // ternaire court : $age s'il est "truthy", sinon "0"
 </script></pre>
 
-  <h2 id="conditions">Conditions</h2>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <h2 id="conditions">Conditions</h2>
+      <pre class="code" data-lang="php"><script type="text/plain">
 $note = 14;
 
 if ($note >= 16) {
@@ -144,8 +181,8 @@ $categorie = match (true) {
 };
 </script></pre>
 
-  <h2 id="boucles">Boucles</h2>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <h2 id="boucles">Boucles</h2>
+      <pre class="code" data-lang="php"><script type="text/plain">
 for ($i = 0; $i < 5; $i++) {
     echo $i;                       // 01234
 }
@@ -174,9 +211,10 @@ foreach (range(1, 20) as $n) {
 }
 </script></pre>
 
-  <h2 id="tableaux">Tableaux</h2>
-  <p>Le tableau (<code>array</code>) est <strong>LA</strong> structure de données de PHP : liste ordonnée, table associative, pile, file — tout passe par lui.</p>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <h2 id="tableaux">Tableaux</h2>
+      <p>Le tableau (<code>array</code>) est <strong>LA</strong> structure de données de PHP : liste ordonnée, table
+        associative, pile, file — tout passe par lui.</p>
+      <pre class="code" data-lang="php"><script type="text/plain">
 // Liste indexée
 $fruits = ["pomme", "kiwi", "café"];
 $fruits[] = "beurre";          // ajoute à la fin
@@ -198,13 +236,14 @@ $total    = array_reduce([1, 2, 3], fn($acc, $n) => $acc + $n, 0); // 6
 
 usort($fruits, fn($a, $b) => strcmp($a, $b));   // trie en place
 </script></pre>
-  <div class="callout warn">
-    <span class="label">Piège</span>
-    <p><code>array_filter</code> conserve les clés d'origine (des « trous » apparaissent) — utiliser <code>array_values(...)</code> pour ré-indexer si besoin.</p>
-  </div>
+      <div class="callout warn">
+        <span class="label">Piège</span>
+        <p><code>array_filter</code> conserve les clés d'origine (des « trous » apparaissent) — utiliser
+          <code>array_values(...)</code> pour ré-indexer si besoin.</p>
+      </div>
 
-  <h2 id="fonctions">Fonctions</h2>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <h2 id="fonctions">Fonctions</h2>
+      <pre class="code" data-lang="php"><script type="text/plain">
 function addition(int $a, int $b): int
 {
     return $a + $b;
@@ -231,14 +270,18 @@ $fois = fn(int $n): int => $n * $facteur;
 function trouver(int $id): ?string { /* … */ return null; }
 function formater(int|string $valeur): string { return (string) $valeur; }
 </script></pre>
-  <div class="callout tip">
-    <span class="label">Pas de génériques</span>
-    <p>PHP n'a pas de <code>&lt;T&gt;</code> comme C# ou Java : le typage dynamique en tient lieu (une fonction accepte déjà n'importe quel type tant qu'aucune annotation ne le restreint). Les outils d'analyse statique (PHPStan, Psalm) simulent des génériques via des annotations PHPDoc (<code>@template</code>), mais ce n'est pas une fonctionnalité du langage.</p>
-  </div>
+      <div class="callout tip">
+        <span class="label">Pas de génériques</span>
+        <p>PHP n'a pas de <code>&lt;T&gt;</code> comme C# ou Java : le typage dynamique en tient lieu (une fonction
+          accepte déjà n'importe quel type tant qu'aucune annotation ne le restreint). Les outils d'analyse statique
+          (PHPStan, Psalm) simulent des génériques via des annotations PHPDoc (<code>@template</code>), mais ce n'est
+          pas une fonctionnalité du langage.</p>
+      </div>
 
-  <h2 id="portee">Portée des variables</h2>
-  <p>Différence importante avec C# : en PHP, la portée d'une variable est la <strong>fonction</strong>, pas le bloc. Une variable déclarée dans un <code>if</code> ou une boucle reste visible après.</p>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <h2 id="portee">Portée des variables</h2>
+      <p>Différence importante avec C# : en PHP, la portée d'une variable est la <strong>fonction</strong>, pas le bloc.
+        Une variable déclarée dans un <code>if</code> ou une boucle reste visible après.</p>
+      <pre class="code" data-lang="php"><script type="text/plain">
 function exemple(): void
 {
     if (true) {
@@ -263,8 +306,8 @@ function compteur(): int
 compteur(); compteur();   // 1, puis 2
 </script></pre>
 
-  <h2 id="erreurs">Gestion des erreurs</h2>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <h2 id="erreurs">Gestion des erreurs</h2>
+      <pre class="code" data-lang="php"><script type="text/plain">
 try {
     $resultat = 10 / 0;                     // DivisionByZeroError
 } catch (DivisionByZeroError $e) {
@@ -284,8 +327,8 @@ function retirer(float $montant): float
 }
 </script></pre>
 
-  <h2 id="exemple">Exemple complet — FizzBuzz + stats</h2>
-  <pre class="code" data-lang="php"><script type="text/plain">
+      <h2 id="exemple">Exemple complet — FizzBuzz + stats</h2>
+      <pre class="code" data-lang="php"><script type="text/plain">
 $compteurs = ["fizz" => 0, "buzz" => 0, "autres" => 0];
 
 for ($n = 1; $n <= 30; $n++) {
@@ -308,16 +351,17 @@ for ($n = 1; $n <= 30; $n++) {
 printf("Fizz : %d | Buzz : %d | Nombres : %d\n", ...array_values($compteurs));
 </script></pre>
 
-  <footer class="pg">
-    <span><a href="index.html">← Accueil</a></span>
-    <span><a href="oriente-objet.html">Suivant : Orienté objet →</a></span>
-  </footer>
-</main>
-</div>
+      <footer class="pg">
+        <span><a href="index.html">← Accueil</a></span>
+        <span><a href="oriente-objet.html">Suivant : Orienté objet →</a></span>
+      </footer>
+    </main>
+  </div>
 
-<script src="../assets/site.config.js"></script>
-<script src="../assets/highlighters/php.js"></script>
-<script src="../assets/main.js"></script>
-<script src="../assets/nav.js"></script>
+  <script src="../assets/site.config.js"></script>
+  <script src="../assets/highlighters/php.js"></script>
+  <script src="../assets/main.js"></script>
+  <script src="../assets/nav.js"></script>
 </body>
+
 </html>
