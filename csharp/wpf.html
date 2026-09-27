@@ -23,7 +23,7 @@
         .NET. Interfaces décrites en <strong>XAML</strong>, logique en C#, et un pattern d'architecture qui revient
         partout : <strong>MVVM</strong>.</p>
 
-      <h2 id="idee">Qu'est-ce que WPF</h2>
+      <h2 id="idee" data-group="Démarrer">Qu'est-ce que WPF</h2>
       <p>WPF sépare structurellement ce qu'on voit (le <strong>XAML</strong>, un langage à balises déclaratif) de ce qui
         se passe (le <strong>C#</strong>, dans un fichier « code-behind »). Windows uniquement, mais toujours
         d'actualité pour des applications de bureau riches (outils internes, logiciels métier).</p>
@@ -45,7 +45,7 @@
           C# réagit aux événements.</figcaption>
       </figure>
 
-      <h2 id="projet">Créer un projet</h2>
+      <h2 id="projet" data-group="Démarrer">Créer un projet</h2>
       <pre class="code" data-lang="bash"><script type="text/plain">
 dotnet new wpf -o MonApp
 cd MonApp
@@ -78,7 +78,7 @@ dotnet run
         </tbody>
       </table>
 
-      <h2 id="xaml">Bases de XAML</h2>
+      <h2 id="xaml" data-group="Démarrer">Bases de XAML</h2>
       <p>XAML est du XML : chaque balise est une classe .NET, chaque attribut une propriété. Un élément enfant devient
         une propriété de contenu ou de collection du parent.</p>
       <pre class="code" data-lang="xaml"><script type="text/plain">
@@ -110,7 +110,7 @@ fenetre.Content = pile;
           (<code>MonBouton.Content = "..."</code>) — le compilateur génère un champ correspondant automatiquement.</p>
       </div>
 
-      <h2 id="layout">Panneaux de disposition</h2>
+      <h2 id="layout" data-group="Interface">Panneaux de disposition</h2>
       <table>
         <thead>
           <tr>
@@ -158,7 +158,7 @@ fenetre.Content = pile;
 </Grid>
 </script></pre>
 
-      <h2 id="controles">Contrôles courants</h2>
+      <h2 id="controles" data-group="Interface">Contrôles courants</h2>
       <table>
         <thead>
           <tr>
@@ -202,7 +202,7 @@ fenetre.Content = pile;
         </tbody>
       </table>
 
-      <h2 id="evenements">Événements</h2>
+      <h2 id="evenements" data-group="Interface">Événements</h2>
       <p>En XAML, un attribut d'événement (<code>Click</code>, <code>TextChanged</code>…) référence une méthode du
         code-behind. Sous le capot, c'est exactement le mécanisme <a href="procedural.html#delegues">délégué /
           <code>event</code></a> vu en Procédural.</p>
@@ -231,7 +231,7 @@ public partial class MainWindow : Window
         </p>
       </div>
 
-      <h2 id="binding">Liaison de données (data binding)</h2>
+      <h2 id="binding" data-group="Données & MVVM">Liaison de données (data binding)</h2>
       <p>Plutôt que de lire/écrire manuellement chaque contrôle, on <strong>lie</strong> une propriété XAML à une
         propriété C#. WPF synchronise automatiquement dans les deux sens.</p>
       <pre class="code" data-lang="xaml"><script type="text/plain">
@@ -275,7 +275,7 @@ public MainWindow()
           enfants, par héritage) se résolvent. Le fixer une fois sur la fenêtre suffit pour tous ses contrôles.</p>
       </div>
 
-      <h2 id="mvvm">Le pattern MVVM</h2>
+      <h2 id="mvvm" data-group="Données & MVVM">Le pattern MVVM</h2>
       <p><strong>Model</strong>-<strong>View</strong>-<strong>ViewModel</strong> : la variante de <a
           href="../php/backend.html#mvc">MVC</a> pensée pour le data binding. La Vue ne connaît que des liaisons ; le
         ViewModel expose des propriétés observables ; le Modèle reste la donnée et les règles métier.</p>
@@ -342,7 +342,7 @@ public MainWindow()
         </tbody>
       </table>
 
-      <h2 id="commands">Commandes (<code>ICommand</code>)</h2>
+      <h2 id="commands" data-group="Données & MVVM">Commandes (<code>ICommand</code>)</h2>
       <p>L'équivalent MVVM d'un gestionnaire d'événement : un bouton se lie à une <strong>commande</strong> plutôt qu'à
         une méthode <code>Click</code>, ce qui garde toute la logique dans le ViewModel.</p>
       <pre class="code" data-lang="xaml"><script type="text/plain">
@@ -391,7 +391,7 @@ public class PersonneViewModel : INotifyPropertyChanged
           <code>IsEnabled</code> à la main.</p>
       </div>
 
-      <h2 id="styles">Styles & ressources</h2>
+      <h2 id="styles" data-group="Aller plus loin">Styles & ressources</h2>
       <p>Un <code>Style</code> regroupe des valeurs de propriétés réutilisables ; une <code>ResourceDictionary</code>
         les rend disponibles à toute une fenêtre (ou toute l'application, depuis <code>App.xaml</code>).</p>
       <pre class="code" data-lang="xaml"><script type="text/plain">
@@ -413,7 +413,7 @@ public class PersonneViewModel : INotifyPropertyChanged
 <Button Content="Supprimer" Style="{StaticResource BoutonDanger}"/>
 </script></pre>
 
-      <h2 id="convertisseurs">Convertisseurs de valeur</h2>
+      <h2 id="convertisseurs" data-group="Aller plus loin">Convertisseurs de valeur</h2>
       <p>Un <code>IValueConverter</code> transforme la valeur liée entre le ViewModel et l'affichage (ex.
         <code>bool</code> → <code>Visibility</code>).</p>
       <pre class="code"><script type="text/plain">
@@ -434,7 +434,7 @@ public class BoolVersVisibilite : IValueConverter
 <TextBlock Text="Erreur !" Visibility="{Binding AErreur, Converter={StaticResource BoolVersVisibilite}}"/>
 </script></pre>
 
-      <h2 id="navigation">Navigation entre fenêtres</h2>
+      <h2 id="navigation" data-group="Aller plus loin">Navigation entre fenêtres</h2>
       <pre class="code"><script type="text/plain">
 // Ouvrir une fenêtre secondaire
 var fenetreDetail = new DetailWindow();
@@ -449,7 +449,7 @@ this.Close();
       <p>Pour une navigation « en place » dans une seule fenêtre (comme des onglets successifs), on utilise un
         <code>Frame</code> qui affiche des <code>Page</code> plutôt que des <code>Window</code> séparées.</p>
 
-      <h2 id="exemple">Exemple complet — compteur en MVVM</h2>
+      <h2 id="exemple" data-group="Aller plus loin">Exemple complet — compteur en MVVM</h2>
       <pre class="code" data-lang="xaml"><script type="text/plain">
 <!-- MainWindow.xaml -->
 <Window x:Class="MonApp.MainWindow"

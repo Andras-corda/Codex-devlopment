@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Codex — Blueprint · Personnage & Input</title>
-<meta name="description" content="Composants d'un Character 3e personne (Capsule, SkeletalMesh, CharacterMovement, SpringArm) et Enhanced Input (Input Actions & Mapping Context).">
+<meta name="description" content="Composants d'un Character 3e personne (Capsule, SkeletalMesh, CharacterMovement, SpringArm) et caméra (SpringArm, CameraComponent, réglages) Enhanced Input (Input Actions & Mapping Context) et boîtes de collision (Overlap, Block, événements).">
 <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body data-lang="blueprint" data-page="personnage">
@@ -15,8 +15,8 @@
 <aside class="side" id="side"></aside>
 
 <main>
-  <h1>1 · Personnage & Input</h1>
-  <p class="lead">Le point de départ classique : un <strong>Character</strong> à la troisième personne, capable de se déplacer via l'<strong>Enhanced Input</strong>.</p>
+  <h1>2 · Personnage & Input</h1>
+  <p class="lead">Le point de départ classique : un <strong>Character</strong> à la troisième personne, avec sa <strong>caméra</strong>, capable de se déplacer via l'<strong>Enhanced Input</strong>.</p>
 
   <h2 id="personnage">Personnage à la troisième personne</h2>
   <p>Un <code>Character</code> (sous-classe de <code>Pawn</code> déjà équipée pour se déplacer) s'organise en une hiérarchie de composants : un seul se charge de la collision et sert de racine, les autres s'y accrochent.</p>
@@ -57,8 +57,79 @@
       <tr><td><code>SkeletalMeshComponent</code></td><td>le modèle 3D + son squelette, animé par l'Animation Blueprint</td></tr>
       <tr><td><code>CharacterMovementComponent</code></td><td>marche, chute, saut, natation — déjà fourni par <code>Character</code></td></tr>
       <tr><td><code>SpringArm</code> (Camera Boom)</td><td>maintient la caméra à distance, la ramène si un mur s'interpose</td></tr>
+      <tr><td><code>CameraComponent</code> (Follow Camera)</td><td>le point de vue du joueur, accroché au bout du SpringArm</td></tr>
     </tbody>
   </table>
+
+  <h2 id="camera">Caméra : SpringArm & CameraComponent</h2>
+  <p>La caméra 3e personne repose sur deux composants : le <code>SpringArm</code> est un bras attaché à la capsule, et la <code>Camera</code> est accrochée à son extrémité (socket <code>SpringEndpoint</code>). C'est le <strong>bras</strong> qui tourne avec la souris ; la caméra suit sans rien calculer elle-même.</p>
+  <figure>
+    <svg viewBox="0 0 620 220" role="img" aria-label="SpringArm, Socket Offset et caméra vus de côté">
+      <defs><marker id="bpcam-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+        <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
+      <rect class="svg-bg" x="0" y="0" width="620" height="220" rx="6"/>
+      <rect class="svg-box-a" x="440" y="70" width="60" height="120" rx="30"/>
+      <text class="svg-t" x="470" y="208" text-anchor="middle">Personnage</text>
+      <circle cx="470" cy="100" r="5" fill="var(--link)"/>
+      <path d="M470 100 L200 70" stroke="var(--warn)" stroke-width="3" fill="none"/>
+      <text class="svg-tm" x="345" y="70" text-anchor="middle">Target Arm Length</text>
+      <path d="M200 70 L200 40" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3" fill="none" style="marker-end:url(#bpcam-arr)"/>
+      <text class="svg-tm" x="210" y="30">Socket Offset (épaule)</text>
+      <rect class="svg-box-g" x="150" y="22" width="44" height="30" rx="4"/>
+      <text class="svg-tm" x="172" y="41" text-anchor="middle">CAM</text>
+      <text class="svg-tm" x="120" y="80" text-anchor="middle">Camera</text>
+      <rect class="svg-box-w" x="300" y="110" width="20" height="80" rx="3"/>
+      <text class="svg-tm" x="310" y="205" text-anchor="middle">mur</text>
+      <text class="svg-tm" x="80" y="150">Do Collision Test : si un mur</text>
+      <text class="svg-tm" x="80" y="166">coupe le bras, il se raccourcit</text>
+    </svg>
+    <figcaption>Le bras part du personnage, la caméra est au bout ; le Socket Offset la décale (vue par-dessus l'épaule).</figcaption>
+  </figure>
+
+  <h3>Réglages du SpringArm</h3>
+  <table>
+    <thead><tr><th>Propriété</th><th>Effet</th><th>Valeur typique</th></tr></thead>
+    <tbody>
+      <tr><td><code>Target Arm Length</code></td><td>distance caméra ↔ personnage</td><td>300–400 (≈ 3–4 m)</td></tr>
+      <tr><td><code>Socket Offset</code></td><td>décale la caméra <strong>au bout</strong> du bras (dans l'espace du bras) — vue par-dessus l'épaule</td><td><code>(0, 60, 60)</code></td></tr>
+      <tr><td><code>Target Offset</code></td><td>décale le <strong>point de départ</strong> du bras (espace monde, ne tourne pas)</td><td>hauteur de la tête</td></tr>
+      <tr><td><code>Use Pawn Control Rotation</code></td><td>le bras suit la rotation du contrôleur (souris / stick droit)</td><td><strong>coché</strong></td></tr>
+      <tr><td><code>Inherit Pitch / Yaw / Roll</code></td><td>quels axes de la rotation du contrôleur le bras reprend</td><td>Roll souvent décoché</td></tr>
+      <tr><td><code>Do Collision Test</code></td><td>raccourcit le bras quand un obstacle s'interpose (Probe Size, Probe Channel)</td><td>coché</td></tr>
+      <tr><td><code>Enable Camera Lag</code> / <code>Lag Speed</code></td><td>la caméra rattrape le personnage avec un léger retard — mouvement plus doux</td><td>10–15</td></tr>
+      <tr><td><code>Enable Camera Rotation Lag</code></td><td>même chose pour la rotation</td><td>optionnel</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Réglages de la caméra et du personnage</h3>
+  <table>
+    <thead><tr><th>Où</th><th>Propriété</th><th>Pour une caméra « orbitale » classique</th></tr></thead>
+    <tbody>
+      <tr><td>Camera</td><td><code>Use Pawn Control Rotation</code></td><td><strong>décoché</strong> — c'est déjà le SpringArm qui tourne</td></tr>
+      <tr><td>Camera</td><td><code>Field Of View</code></td><td>90 par défaut ; plus bas = effet zoom</td></tr>
+      <tr><td>Character (Class Defaults)</td><td><code>Use Controller Rotation Yaw</code></td><td><strong>décoché</strong> — le corps ne pivote pas avec la souris</td></tr>
+      <tr><td>CharacterMovement</td><td><code>Orient Rotation to Movement</code></td><td><strong>coché</strong> — le personnage se tourne vers sa direction de marche</td></tr>
+      <tr><td>CharacterMovement</td><td><code>Rotation Rate</code></td><td><code>(0, 0, 500)</code> — vitesse de ce demi-tour (Z = yaw)</td></tr>
+    </tbody>
+  </table>
+  <div class="callout tip">
+    <span class="label">Mode « visée » (strafe)</span>
+    <p>Pour un personnage qui regarde toujours devant la caméra (tir, lock-on) : décocher <code>Orient Rotation to Movement</code> et cocher <code>Use Controller Desired Rotation</code> (ou <code>Use Controller Rotation Yaw</code>). On bascule souvent entre les deux modes à l'exécution, en même temps qu'un <code>Socket Offset</code> et un <code>FOV</code> plus serrés.</p>
+  </div>
+
+  <h3>Faire tourner la caméra : IA_Look</h3>
+  <p><code>IA_Look</code> est une action <code>Axis2D</code> liée à <em>Mouse XY 2D-Axis</em> et au stick droit dans le Mapping Context. Dans l'Event Graph :</p>
+  <table>
+    <thead><tr><th>Valeur</th><th>Nœud</th><th>Effet</th></tr></thead>
+    <tbody>
+      <tr><td><code>Action Value X</code></td><td><code>Add Controller Yaw Input</code></td><td>rotation gauche / droite</td></tr>
+      <tr><td><code>Action Value Y</code></td><td><code>Add Controller Pitch Input</code></td><td>rotation haut / bas</td></tr>
+    </tbody>
+  </table>
+  <div class="callout info">
+    <span class="label">Inverser, limiter, zoomer</span>
+    <p><strong>Inverser l'axe Y</strong> : ajouter un modificateur <code>Negate</code> (Y seulement) sur la touche dans le Mapping Context, ou multiplier par -1. <strong>Limiter le pitch</strong> : <code>Get Player Camera Manager</code> → <code>View Pitch Min / Max</code> (par défaut ±89.9°). <strong>Zoom molette</strong> : une action sur <em>Mouse Wheel Axis</em> qui modifie <code>Target Arm Length</code>, avec <code>Clamp</code> + <code>FInterp To</code> pour une transition douce. <strong>Changer de caméra</strong> (cinématique, caméra fixe) : <code>Set View Target with Blend</code> sur le PlayerController.</p>
+  </div>
 
   <h2 id="input">Enhanced Input : Input Actions & Mapping Context</h2>
   <p>Le système moderne (Unreal 5+) sépare la <strong>touche physique</strong> de <strong>l'action logique</strong> : un <code>Input Mapping Context</code> associe des touches à des <code>Input Actions</code> (<code>IA_Move</code>, <code>IA_Look</code>, <code>IA_Jump</code>) ; le Blueprint du personnage ne réagit qu'aux actions, jamais aux touches directement.</p>
@@ -76,8 +147,60 @@
     <p>Le Mapping Context s'ajoute typiquement dans <code>BeginPlay</code> du <code>PlayerController</code> (ou du personnage), via <code>Add Mapping Context</code> sur le sous-système <code>Enhanced Input Local Player Subsystem</code> — sans ça, les Input Actions restent silencieuses.</p>
   </div>
 
+  <h2 id="collisions">Boîtes de collision</h2>
+  <p>La capsule du personnage n'est qu'un cas particulier : n'importe quel Actor peut recevoir des <strong>formes de collision</strong> invisibles en jeu. Elles servent à deux choses différentes : <strong>bloquer</strong> (un mur, le sol) ou <strong>détecter</strong> (une zone de déclenchement, un objet à ramasser).</p>
+  <table>
+    <thead><tr><th>Composant</th><th>Forme</th><th>Usage typique</th></tr></thead>
+    <tbody>
+      <tr><td><code>Box Collision</code></td><td>boîte</td><td>zone de déclenchement (trigger), porte, zone de dégâts</td></tr>
+      <tr><td><code>Sphere Collision</code></td><td>sphère</td><td>rayon de détection, portée d'interaction, pickup</td></tr>
+      <tr><td><code>Capsule Collision</code></td><td>capsule</td><td>personnages, PNJ</td></tr>
+      <tr><td>collision du <code>Static Mesh</code></td><td>simplifiée (<em>simple</em>) ou polygone exact (<em>complex</em>)</td><td>décor : définie dans l'éditeur du mesh</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Réponses : Ignore, Overlap, Block</h3>
+  <p>Chaque composant a un <strong>Object Type</strong> (ce qu'il est : <code>WorldStatic</code>, <code>WorldDynamic</code>, <code>Pawn</code>, <code>PhysicsBody</code>…) et une <strong>réponse</strong> pour chaque canal (comment il réagit aux autres). Quand deux objets se rencontrent, c'est la réponse <strong>la plus faible</strong> des deux qui gagne :</p>
+  <table>
+    <thead><tr><th>A \ B</th><th>Ignore</th><th>Overlap</th><th>Block</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Ignore</strong></td><td>rien</td><td>rien</td><td>rien</td></tr>
+      <tr><td><strong>Overlap</strong></td><td>rien</td><td>overlap</td><td>overlap</td></tr>
+      <tr><td><strong>Block</strong></td><td>rien</td><td>overlap</td><td><strong>block</strong></td></tr>
+    </tbody>
+  </table>
+  <table>
+    <thead><tr><th>Réglage (panneau Collision)</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>Collision Presets</code></td><td>combinaisons prêtes : <code>BlockAll</code>, <code>OverlapAllDynamic</code>, <code>Trigger</code>, <code>Pawn</code>, <code>NoCollision</code>… ou <code>Custom</code> pour tout régler à la main</td></tr>
+      <tr><td><code>Collision Enabled</code></td><td><code>No Collision</code>, <code>Query Only</code> (overlaps, traces), <code>Physics Only</code>, <code>Query and Physics</code></td></tr>
+      <tr><td><code>Generate Overlap Events</code></td><td>doit être coché <strong>sur les deux</strong> composants pour recevoir les événements d'overlap</td></tr>
+      <tr><td><code>Simulation Generates Hit Events</code></td><td>nécessaire pour <code>On Component Hit</code> quand l'objet simule la physique</td></tr>
+      <tr><td>Canaux personnalisés</td><td><em>Project Settings → Collision</em> : nouveaux Object Channels (ex. <code>Projectile</code>) ou Trace Channels (ex. <code>Interact</code>)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Réagir : événements de collision</h3>
+  <table>
+    <thead><tr><th>Événement</th><th>Déclenché quand…</th></tr></thead>
+    <tbody>
+      <tr><td><code>On Component Begin Overlap</code></td><td>un autre objet <strong>entre</strong> dans la zone (réponse Overlap)</td></tr>
+      <tr><td><code>On Component End Overlap</code></td><td>il en <strong>sort</strong></td></tr>
+      <tr><td><code>On Component Hit</code></td><td>un choc <strong>bloquant</strong> a lieu (sort le point d'impact et la normale)</td></tr>
+      <tr><td><code>Event ActorBeginOverlap</code></td><td>même chose, mais pour n'importe quel composant de l'Actor</td></tr>
+    </tbody>
+  </table>
+  <div class="callout tip">
+    <span class="label">« Est-ce que c'est le joueur ? »</span>
+    <p>L'événement fournit l'<code>Other Actor</code>. Avant d'agir, vérifier sa nature : comparer à <code>Get Player Character</code>, <code>Cast To BP_Character</code>, <a href="variables-types.html#tags"><code>Actor Has Tag</code></a>, ou <code>Does Implement Interface</code>. Sinon une caisse poussée dans la zone déclenche aussi la porte.</p>
+  </div>
+  <div class="callout info">
+    <span class="label">Déboguer une collision</span>
+    <p>Décocher <code>Hidden in Game</code> sur la boîte pour la voir en jeu, ou taper <code>show collision</code> dans la console (touche <kbd>²</kbd>/<kbd>~</kbd>). Les <strong>traces</strong> (<code>Line Trace by Channel</code>, <code>Sphere Trace</code>) sont l'autre moitié du système : un rayon qui teste un canal — c'est le canal <code>Camera</code> que le SpringArm utilise pour sa <a href="#camera">sonde anti-mur</a>, et <code>Visibility</code> pour viser un objet.</p>
+  </div>
+
   <footer class="pg">
-    <span><a href="index.html">← Accueil Blueprint</a></span>
+    <span><a href="variables-types.html">← Variables & types</a></span>
     <span><a href="animation-blueprint.html">Suivant : Animation Blueprint →</a></span>
   </footer>
 </main>

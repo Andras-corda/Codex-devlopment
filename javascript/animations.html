@@ -22,7 +22,7 @@
       <p class="lead">Styler une page avec des <strong>variables CSS</strong> et une mise en page moderne, puis lui
         donner vie : transitions, animations, et quand ça ne suffit plus, JavaScript.</p>
 
-      <h2 id="idee">Trois outils, du plus simple au plus contrôlé</h2>
+      <h2 id="idee" data-group="Bases CSS">Trois outils, du plus simple au plus contrôlé</h2>
       <table>
         <thead>
           <tr>
@@ -46,7 +46,7 @@
         </tbody>
       </table>
 
-      <h2 id="variables">Variables CSS (custom properties)</h2>
+      <h2 id="variables" data-group="Bases CSS">Variables CSS (custom properties)</h2>
       <p>Des valeurs nommées et réutilisables — la base d'un thème cohérent (ce site les utilise pour son propre thème
         sombre).</p>
       <pre class="code" data-lang="css"><script type="text/plain">
@@ -68,7 +68,7 @@
 }
 </script></pre>
 
-      <h2 id="layout">Mise en page : Flexbox & Grid</h2>
+      <h2 id="layout" data-group="Bases CSS">Mise en page : Flexbox & Grid</h2>
       <table>
         <thead>
           <tr>
@@ -105,7 +105,7 @@
 }
 </script></pre>
 
-      <h2 id="transitions">Transitions</h2>
+      <h2 id="transitions" data-group="Animer en CSS">Transitions</h2>
       <p>Une transition anime <strong>un changement de valeur existant</strong> — pas de séquence à décrire, juste «
         comment passer de l'ancienne à la nouvelle valeur ».</p>
       <pre class="code" data-lang="css"><script type="text/plain">
@@ -147,7 +147,7 @@
         </tbody>
       </table>
 
-      <h2 id="transform">transform — et pourquoi c'est le bon choix pour animer</h2>
+      <h2 id="transform" data-group="Animer en CSS">transform — et pourquoi c'est le bon choix pour animer</h2>
       <pre class="code" data-lang="css"><script type="text/plain">
 .element {
     transform: translate(10px, -5px) scale(1.05) rotate(3deg);
@@ -160,7 +160,7 @@
           recalculer tout l'agencement à chaque image — plus saccadé, surtout sur mobile.</p>
       </div>
 
-      <h2 id="keyframes">Animations avec @keyframes</h2>
+      <h2 id="keyframes" data-group="Animer en CSS">Animations avec @keyframes</h2>
       <p>Pour une séquence à plusieurs étapes, indépendante d'une interaction (chargement, pulsation, apparition
         automatique).</p>
       <pre class="code" data-lang="css"><script type="text/plain">
@@ -209,7 +209,7 @@
         </tbody>
       </table>
 
-      <h2 id="rafraf">JavaScript : requestAnimationFrame</h2>
+      <h2 id="rafraf" data-group="Animer en JavaScript">JavaScript : requestAnimationFrame</h2>
       <p>Quand une transition/animation CSS ne suffit plus (logique par image, valeur qui dépend d'un calcul) :
         <code>requestAnimationFrame</code> planifie un rappel juste avant le prochain rafraîchissement d'écran — fluide,
         et mis en pause automatiquement sur un onglet caché.</p>
@@ -230,7 +230,7 @@ function animer(horodatage) {
 requestAnimationFrame(animer);
 </script></pre>
 
-      <h2 id="webanim">Web Animations API</h2>
+      <h2 id="webanim" data-group="Animer en JavaScript">Web Animations API</h2>
       <p>L'équivalent programmable de <code>@keyframes</code> — utile pour construire une animation dont les valeurs
         dépendent de données, et pour la contrôler (<code>pause()</code>, <code>reverse()</code>, écouter sa fin).</p>
       <pre class="code" data-lang="javascript"><script type="text/plain">
@@ -248,7 +248,7 @@ anim.onfinish = () => console.log('Entrée terminée');
 // anim.pause(); anim.play(); anim.reverse();
 </script></pre>
 
-      <h2 id="scroll">Animer au scroll : IntersectionObserver</h2>
+      <h2 id="scroll" data-group="Animer en JavaScript">Animer au scroll : IntersectionObserver</h2>
       <p>Détecte quand un élément entre dans la zone visible, sans écouter l'événement <code>scroll</code> (coûteux). Le
         motif « révéler au scroll » quasi universel sur le web aujourd'hui.</p>
       <pre class="code" data-lang="javascript"><script type="text/plain">
@@ -276,7 +276,7 @@ document.querySelectorAll('.carte').forEach((carte) => observateur.observe(carte
 }
 </script></pre>
 
-      <h2 id="reduced">Respecter prefers-reduced-motion</h2>
+      <h2 id="reduced" data-group="En pratique">Respecter prefers-reduced-motion</h2>
       <p>Certains visiteurs désactivent les animations (confort, santé — vertiges/migraines). Toujours prévoir une
         version sans mouvement.</p>
       <pre class="code" data-lang="css"><script type="text/plain">
@@ -296,7 +296,7 @@ if (!reduit) {
 }
 </script></pre>
 
-      <h2 id="exemple">Exemple complet — cartes révélées au scroll</h2>
+      <h2 id="exemple" data-group="En pratique">Exemple complet — cartes révélées au scroll</h2>
       <pre class="code" data-lang="html"><script type="text/plain">
 <div class="grille">
     <div class="carte">Contenu 1</div>

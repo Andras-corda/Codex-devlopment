@@ -23,7 +23,7 @@
         de données, rendre du HTML. Le tout <strong>sans framework</strong> — juste PDO et une organisation MVC
         construite à la main.</p>
 
-      <h2 id="cycle">Cycle requête → réponse</h2>
+      <h2 id="cycle" data-group="HTTP & formulaires">Cycle requête → réponse</h2>
       <p>Plutôt qu'un fichier <code>.php</code> par URL, on fait passer <strong>toutes</strong> les requêtes par un
         point d'entrée unique (<em>front controller</em>) qui décide quoi faire selon l'URL demandée.</p>
       <figure>
@@ -65,7 +65,7 @@
           navigateur.</figcaption>
       </figure>
 
-      <h2 id="superglobales">Superglobales</h2>
+      <h2 id="superglobales" data-group="HTTP & formulaires">Superglobales</h2>
       <p>PHP expose la requête courante via des tableaux toujours accessibles, quelle que soit la portée (les seules
         variables qui échappent à la règle de <a href="procedural.html#portee">portée par fonction</a>).</p>
       <table>
@@ -110,7 +110,7 @@
           une requête SQL (voir <a href="#requetes-preparees">Requêtes préparées</a>).</p>
       </div>
 
-      <h2 id="formulaires">Formulaires</h2>
+      <h2 id="formulaires" data-group="HTTP & formulaires">Formulaires</h2>
       <p>Un formulaire HTML envoie ses champs dans <code>$_GET</code> (méthode <code>GET</code>, visible dans l'URL —
         pour filtrer/rechercher) ou <code>$_POST</code> (méthode <code>POST</code> — pour créer/modifier/supprimer).</p>
       <pre class="code" data-lang="php"><script type="text/plain">
@@ -224,7 +224,7 @@ if ($fichier !== null && $fichier['error'] === UPLOAD_ERR_OK) {
       <p>Un formulaire qui modifie des données reste soumis à la même règle que partout ailleurs sur cette page : un
         jeton <a href="#securite">CSRF</a> vérifié à la réception.</p>
 
-      <h2 id="routage">Routage minimal (front controller)</h2>
+      <h2 id="routage" data-group="HTTP & formulaires">Routage minimal (front controller)</h2>
       <pre class="code" data-lang="php"><script type="text/plain">
 // public/index.php — point d'entrée UNIQUE de l'application
 declare(strict_types=1);
@@ -261,7 +261,7 @@ echo "Page introuvable";
           controller, comme le ferait Apache/Nginx en production.</p>
       </div>
 
-      <h2 id="pdo">Se connecter à une base avec PDO</h2>
+      <h2 id="pdo" data-group="Base de données">Se connecter à une base avec PDO</h2>
       <p><strong>PDO</strong> (<em>PHP Data Objects</em>) est l'API native, orientée objet, pour parler à une base SQL —
         indépendante du moteur (MySQL, PostgreSQL, SQLite…).</p>
       <pre class="code" data-lang="php"><script type="text/plain">
@@ -288,7 +288,7 @@ function connecter(): PDO
           fichier versionné.</p>
       </div>
 
-      <h2 id="requetes-preparees">Requêtes préparées — se protéger de l'injection SQL</h2>
+      <h2 id="requetes-preparees" data-group="Base de données">Requêtes préparées — se protéger de l'injection SQL</h2>
       <pre class="code" data-lang="php"><script type="text/plain">
 // ❌ DANGER : concaténer une valeur utilisateur dans le SQL — injection SQL possible
 $titre = $_GET['titre'];
@@ -311,7 +311,7 @@ $article = $stmt->fetch();          // une seule ligne, ou false
           <code>prepare()</code> + <code>execute([...])</code> — quel que soit le moteur ou la taille du projet.</p>
       </div>
 
-      <h2 id="crud">CRUD complet</h2>
+      <h2 id="crud" data-group="Base de données">CRUD complet</h2>
       <pre class="code" data-lang="sql"><script type="text/plain">
 CREATE TABLE articles (
     id      INT AUTO_INCREMENT PRIMARY KEY,
@@ -345,7 +345,7 @@ $stmt = $pdo->prepare('DELETE FROM articles WHERE id = :id');
 $stmt->execute(['id' => $nouvelId]);
 </script></pre>
 
-      <h2 id="transactions">Transactions</h2>
+      <h2 id="transactions" data-group="Base de données">Transactions</h2>
       <p>Pour garantir que plusieurs écritures réussissent <strong>toutes ensemble ou pas du tout</strong> (ex.
         transférer un solde entre deux comptes).</p>
       <pre class="code" data-lang="php"><script type="text/plain">
@@ -371,7 +371,7 @@ function transferer(PDO $pdo, int $depuis, int $vers, float $montant): void
 }
 </script></pre>
 
-      <h2 id="mvc">Le pattern MVC</h2>
+      <h2 id="mvc" data-group="Pattern MVC">Le pattern MVC</h2>
       <p><strong>Modèle</strong>-<strong>Vue</strong>-<strong>Contrôleur</strong> sépare trois responsabilités qui,
         mélangées dans un seul script, deviennent vite illisibles.</p>
       <figure>
@@ -429,7 +429,7 @@ function transferer(PDO $pdo, int $depuis, int $vers, float $montant): void
         </tbody>
       </table>
 
-      <h2 id="mvc-styles">Deux façons de l'implémenter : objet ou procédural</h2>
+      <h2 id="mvc-styles" data-group="Pattern MVC">Deux façons de l'implémenter : objet ou procédural</h2>
       <p>MVC est une idée de séparation des responsabilités, pas une syntaxe imposée. On peut l'appliquer avec des
         classes (la version détaillée plus bas) ou avec de simples fonctions et fichiers inclus — la version qu'on
         trouve dans beaucoup de petits sites PHP, souvent plus rapide à lire d'un bout à l'autre pour un projet modeste.
@@ -629,7 +629,7 @@ function articles_trouver(PDO $pdo, int $id): ?array
         est une classe qu'on peut étendre, remplacer par injection, ou tester isolément avec un faux <code>PDO</code>.
       </p>
 
-      <h2 id="modele">Le Modèle</h2>
+      <h2 id="modele" data-group="Pattern MVC">Le Modèle</h2>
       <pre class="code" data-lang="php"><script type="text/plain">
 final class ArticleModel
 {
@@ -656,7 +656,7 @@ final class ArticleModel
 }
 </script></pre>
 
-      <h2 id="vue">La Vue</h2>
+      <h2 id="vue" data-group="Pattern MVC">La Vue</h2>
       <p>Un gabarit PHP simple : du HTML avec quelques échappatoires <code>&lt;?= ?&gt;</code> pour insérer des données
         — <strong>toujours échappées</strong>.</p>
       <pre class="code" data-lang="php"><script type="text/plain">
@@ -692,7 +692,7 @@ final class Vue
           dans le navigateur des autres visiteurs.</p>
       </div>
 
-      <h2 id="controleur">Le Contrôleur</h2>
+      <h2 id="controleur" data-group="Pattern MVC">Le Contrôleur</h2>
       <pre class="code" data-lang="php"><script type="text/plain">
 final class ArticleController
 {
@@ -740,7 +740,7 @@ final class ArticleController
 }
 </script></pre>
 
-      <h2 id="exemple">Exemple complet — arborescence du mini-projet</h2>
+      <h2 id="exemple" data-group="Pattern MVC">Exemple complet — arborescence du mini-projet</h2>
       <pre class="code" data-lang="text"><script type="text/plain">
 mon-appli/
 ├── public/
@@ -765,7 +765,7 @@ mon-appli/
           pas être téléchargé en clair.</p>
       </div>
 
-      <h2 id="securite">Sécurité de base</h2>
+      <h2 id="securite" data-group="Sécurité">Sécurité de base</h2>
       <pre class="code" data-lang="php"><script type="text/plain">
 // Mots de passe : jamais en clair, jamais un simple md5()/sha1()
 $hash = password_hash($motDePasse, PASSWORD_DEFAULT);     // à l'inscription
@@ -812,7 +812,7 @@ if (!hash_equals($_SESSION['csrf'], $_POST['csrf'] ?? '')) {
         </tbody>
       </table>
 
-      <h2 id="sessions">Sessions & authentification</h2>
+      <h2 id="sessions" data-group="Sécurité">Sessions & authentification</h2>
       <pre class="code" data-lang="php"><script type="text/plain">
 session_start();
 

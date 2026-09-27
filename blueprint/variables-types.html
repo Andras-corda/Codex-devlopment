@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Codex — Blueprint · Variables, types & tags</title>
+<meta name="description" content="Variables Blueprint type par type : Boolean (logique), Byte, Integer et Float (maths), String/Name/Text, Vector, Rotator, Transform, références d'objet et de classe, Actor Tags et Gameplay Tags.">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-lang="blueprint" data-page="variables">
+
+<div class="topbar" id="topbar"></div>
+
+<div class="wrap">
+<aside class="side" id="side"></aside>
+
+<main>
+  <h1>1 · Variables, types & tags</h1>
+  <p class="lead">Chaque type de variable Blueprint a sa couleur de pin, ses nœuds et ses pièges. Cette page les prend <strong>un par un</strong> — logique pour les booléens, maths pour les nombres, texte, espace 3D, références — puis termine par les <strong>tags</strong>, qui servent à étiqueter les Actors.</p>
+
+  <h2 id="variables" data-group="Généralités">Créer et utiliser une variable</h2>
+  <p>Panneau <em>My Blueprint → Variables → +</em>, puis choisir le type dans <em>Details</em>. L'icône à droite du type la transforme en <a href="index.html#collections">Array, Set ou Map</a>.</p>
+  <table>
+    <thead><tr><th>Geste / option</th><th>Effet</th></tr></thead>
+    <tbody>
+      <tr><td>Glisser la variable + <kbd>Ctrl</kbd> / <kbd>Alt</kbd></td><td>crée directement un <code>Get</code> / un <code>Set</code></td></tr>
+      <tr><td>Clic droit sur un pin → <em>Promote to Variable</em></td><td>crée une variable du bon type à partir d'une sortie</td></tr>
+      <tr><td><em>Default Value</em></td><td>valeur de départ (après avoir compilé)</td></tr>
+      <tr><td><em>Instance Editable</em> (œil)</td><td>modifiable par instance dans le niveau — chaque porte posée peut avoir son propre réglage</td></tr>
+      <tr><td><em>Expose on Spawn</em></td><td>apparaît comme entrée sur <code>Spawn Actor from Class</code> / <code>Create Widget</code></td></tr>
+      <tr><td><em>Private</em>, <em>Category</em>, <em>Tooltip</em></td><td>cacher aux autres Blueprints, ranger, documenter</td></tr>
+      <tr><td>Variable locale</td><td>dans une <a href="index.html#event-fonction-macro">fonction</a> uniquement : n'existe que pendant l'appel</td></tr>
+    </tbody>
+  </table>
+  <div class="callout tip">
+    <span class="label">Couleur = type</span>
+    <p>Un fil ne se branche qu'entre pins compatibles. Quand deux types diffèrent mais se convertissent (Integer → Float, Float → String…), Unreal insère tout seul un <strong>nœud de conversion</strong>. Si le fil refuse de se brancher, c'est qu'il n'y a pas de conversion directe.</p>
+  </div>
+
+  <h2 id="bool" data-group="Types simples">Boolean — logique</h2>
+  <p><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#8f2d2d;vertical-align:middle;margin-right:6px"></span>Pin <strong>rouge sombre</strong>. Vrai ou faux, <code>false</code> par défaut. Préfixe courant : <code>bIsDead</code>, <code>bHasKey</code> (convention Unreal).</p>
+  <table>
+    <thead><tr><th>Nœud</th><th>Vrai quand…</th><th>C++</th></tr></thead>
+    <tbody>
+      <tr><td><code>AND</code></td><td>toutes les entrées sont vraies</td><td><code>a &amp;&amp; b</code></td></tr>
+      <tr><td><code>OR</code></td><td>au moins une entrée est vraie</td><td><code>a || b</code></td></tr>
+      <tr><td><code>NOT</code></td><td>l'entrée est fausse</td><td><code>!a</code></td></tr>
+      <tr><td><code>XOR</code></td><td>une seule des deux est vraie</td><td><code>a != b</code></td></tr>
+      <tr><td><code>NAND</code> / <code>NOR</code></td><td>inverse de AND / de OR</td><td><code>!(a &amp;&amp; b)</code></td></tr>
+      <tr><td><code>==</code> / <code>!=</code></td><td>deux booléens égaux / différents</td><td></td></tr>
+    </tbody>
+  </table>
+  <p>Les nœuds de comparaison (<code>&gt;</code>, <code>&lt;=</code>, <code>==</code>…) de tous les autres types <strong>produisent</strong> un Boolean, qu'on branche ensuite dans un <a href="index.html#branch-switch">Branch</a> ou un <code>Select</code>. <code>AND</code> et <code>OR</code> acceptent plus de deux entrées (<em>Add pin +</em>).</p>
+  <div class="callout warn">
+    <span class="label">Deux réflexes</span>
+    <p><strong>Basculer</strong> un booléen : <code>Set bLightOn</code> ← <code>NOT bLightOn</code> (ou un <code>Flip Flop</code>). <strong>Pas de court-circuit</strong> : <code>AND</code>/<code>OR</code> évaluent toutes leurs entrées, contrairement au C++ — voir <a href="index.html#branch-switch">Décisions</a>. Et plusieurs booléens qui s'excluent (<code>bIsWalking</code>, <code>bIsRunning</code>…) gagnent à devenir une <a href="ui-structures-interfaces.html#enums">énumération</a>.</p>
+  </div>
+
+  <h2 id="byte" data-group="Types simples">Byte</h2>
+  <p><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#006a6a;vertical-align:middle;margin-right:6px"></span>Pin <strong>bleu-vert foncé</strong>. Entier non signé de 0 à 255 (<code>uint8</code>). Rarement utilisé seul : c'est surtout le type de stockage des <a href="ui-structures-interfaces.html#enums">enums</a>. Comme en C++, <strong>il fait le tour</strong> : 255 + 1 = 0, 0 - 1 = 255.</p>
+
+  <h2 id="int" data-group="Types simples">Integer — maths entières</h2>
+  <p><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#1faaa4;vertical-align:middle;margin-right:6px"></span>Pin <strong>cyan / turquoise</strong>. Entier signé 32 bits (≈ ±2,1 milliards) ; <code>Integer64</code> pour plus grand. Pour compter : munitions, vies, score, index de tableau.</p>
+  <table>
+    <thead><tr><th>Nœud</th><th>Rôle</th><th>Exemple</th></tr></thead>
+    <tbody>
+      <tr><td><code>+ − × ÷</code></td><td>opérations de base</td><td><code>7 ÷ 2 = 3</code> — <strong>division entière</strong>, tronquée</td></tr>
+      <tr><td><code>%</code> (modulo)</td><td>reste de la division</td><td><code>7 % 2 = 1</code> — pair/impair, boucler sur un index</td></tr>
+      <tr><td><code>Increment Int</code> / <code>Decrement Int</code></td><td>+1 / −1 directement sur la variable (par référence)</td><td><code>Ammo--</code></td></tr>
+      <tr><td><code>Clamp (Integer)</code></td><td>borne entre Min et Max</td><td>vie entre 0 et 100</td></tr>
+      <tr><td><code>Min</code> / <code>Max</code> / <code>Abs</code></td><td>plus petit, plus grand, valeur absolue</td><td></td></tr>
+      <tr><td><code>Random Integer in Range</code></td><td>aléatoire entre Min et Max <strong>inclus</strong></td><td>dé à 6 faces : 1 → 6</td></tr>
+      <tr><td><code>&gt; &lt; ≥ ≤ == !=</code></td><td>comparaisons → Boolean</td><td></td></tr>
+    </tbody>
+  </table>
+  <div class="callout tip">
+    <span class="label">Nœud Math Expression</span>
+    <p>Clic droit → <em>Add Math Expression</em>, puis taper une formule (<code>(a + b) * 2 % c</code>) : Unreal génère les entrées et les nœuds tout seul. Beaucoup plus lisible qu'une chaîne de dix nœuds <code>+</code> et <code>×</code>.</p>
+  </div>
+
+  <h2 id="float" data-group="Types simples">Float — maths décimales</h2>
+  <p><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#7ec699;vertical-align:middle;margin-right:6px"></span>Pin <strong>vert pâle</strong>. Nombre à virgule — en Unreal 5, c'est en réalité un <code>double</code> (précision double). Pour tout ce qui est continu : vitesse, temps, distance, pourcentage.</p>
+  <table>
+    <thead><tr><th>Nœud</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>+ − × ÷</code>, <code>Clamp</code>, <code>Min</code>, <code>Max</code>, <code>Abs</code></td><td>comme pour les entiers, mais <code>7 ÷ 2 = 3.5</code></td></tr>
+      <tr><td><code>Lerp</code></td><td>interpolation linéaire : <code>A + (B − A) × Alpha</code> — Alpha 0 → A, 1 → B (voir <a href="index.html#timelines">Timelines</a>)</td></tr>
+      <tr><td><code>FInterp To</code></td><td>rapproche une valeur d'une cible à chaque frame (avec <code>Delta Time</code> et une vitesse) — zoom, caméra, jauge qui descend en douceur</td></tr>
+      <tr><td><code>Map Range Clamped</code></td><td>convertit une plage en une autre : vitesse 0–600 → volume 0–1</td></tr>
+      <tr><td><code>Nearly Equal</code></td><td>compare avec une tolérance — <strong>jamais</strong> <code>==</code> entre deux floats</td></tr>
+      <tr><td><code>Truncate</code>, <code>Round</code>, <code>Floor</code>, <code>Ceil</code></td><td>vers Integer : tronquer, arrondir, arrondir en dessous / au-dessus</td></tr>
+      <tr><td><code>Random Float in Range</code>, <code>Sin</code>, <code>Cos</code>, <code>Power</code>, <code>Sqrt</code></td><td>aléatoire, trigonométrie (degrés : <code>Sin (Degrees)</code>), puissance, racine</td></tr>
+    </tbody>
+  </table>
+  <div class="callout warn">
+    <span class="label">Indépendant du framerate</span>
+    <p>Ajouter <code>5</code> à une position sur <code>Event Tick</code> va deux fois plus vite à 120 FPS qu'à 60. Multiplier par <code>Delta Seconds</code> (sortie de <code>Event Tick</code>, ou <code>Get World Delta Seconds</code>) : <code>vitesse × Delta Seconds</code> = une vitesse <strong>par seconde</strong>, identique sur toutes les machines.</p>
+  </div>
+
+  <h2 id="string" data-group="Texte">String — manipuler du texte</h2>
+  <p><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#e04ec4;vertical-align:middle;margin-right:6px"></span>Pin <strong>magenta</strong>. Texte brut et modifiable : le type « de travail » pour le débogage, les sauvegardes, construire ou découper du texte. Pas traduisible.</p>
+  <table>
+    <thead><tr><th>Nœud</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>Print String</code></td><td>affiche à l'écran et dans le log — l'outil de débogage n°1 (accepte tout type via conversion auto)</td></tr>
+      <tr><td><code>Append</code></td><td>colle plusieurs textes bout à bout (<em>Add pin +</em>)</td></tr>
+      <tr><td><code>Len</code>, <code>Contains</code>, <code>Starts With</code>, <code>Find Substring</code></td><td>longueur, recherche</td></tr>
+      <tr><td><code>Replace</code>, <code>To Upper</code> / <code>To Lower</code>, <code>Trim</code></td><td>transformer</td></tr>
+      <tr><td><code>Split</code>, <code>Parse into Array</code>, <code>Get Substring</code></td><td>découper (ex. <code>"12;5;40"</code> → tableau)</td></tr>
+      <tr><td><code>To String (…)</code> / <code>String to Int</code>, <code>String to Float</code></td><td>convertir depuis / vers les nombres</td></tr>
+      <tr><td><code>==</code> (option <em>Ignore Case</em>)</td><td>comparer deux Strings</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="name" data-group="Texte">Name — identifiants</h2>
+  <p><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#b06fe0;vertical-align:middle;margin-right:6px"></span>Pin <strong>violet</strong>. Un <strong>nom qui identifie quelque chose</strong>, pas un texte à lire. Unreal les stocke une seule fois dans une table interne : les comparer revient à comparer deux nombres, donc c'est très rapide.</p>
+  <table>
+    <thead><tr><th>Utilisé pour</th><th>Exemple</th></tr></thead>
+    <tbody>
+      <tr><td>sockets de squelette</td><td><code>hand_r</code> pour attacher une arme</td></tr>
+      <tr><td>lignes de Data Table</td><td><code>Get Data Table Row</code> → <em>Row Name</em></td></tr>
+      <tr><td>niveaux</td><td><code>Open Level (by Name)</code>, <code>Load Stream Level</code></td></tr>
+      <tr><td>tags</td><td><a href="#tags">Actor Tags</a></td></tr>
+    </tbody>
+  </table>
+  <div class="callout info">
+    <span class="label">Insensible à la casse, non modifiable</span>
+    <p><code>Hand_R</code> et <code>hand_r</code> sont le <strong>même</strong> Name. Il n'y a pas de nœuds pour le découper ou le modifier : pour ça, convertir en String (<code>To String</code>), travailler, puis revenir (<code>String to Name</code>).</p>
+  </div>
+
+  <h2 id="text" data-group="Texte">Text — ce que le joueur lit</h2>
+  <p><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#e0869b;vertical-align:middle;margin-right:6px"></span>Pin <strong>rose saumon</strong>. Tout texte affiché au joueur : UI, dialogues, noms d'objets, descriptions. C'est le seul des trois qui est <strong>traduisible</strong> (localisation) et qui formate les nombres selon la langue.</p>
+  <table>
+    <thead><tr><th>Nœud</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>Format Text</code></td><td>modèle avec trous nommés : <code>"{Name} a {Count} pièces"</code> — l'ordre des mots peut changer selon la langue</td></tr>
+      <tr><td><code>To Text (Integer)</code> / <code>To Text (Float)</code></td><td>nombre → texte, avec options (décimales min/max, séparateur de milliers)</td></tr>
+      <tr><td><code>Set Text</code> (widget Text)</td><td>afficher dans l'<a href="ui-structures-interfaces.html#widgets">UI</a></td></tr>
+      <tr><td><code>Equal (Text)</code>, <code>Is Empty</code></td><td>comparer, tester</td></tr>
+    </tbody>
+  </table>
+  <table>
+    <thead><tr><th>Besoin</th><th>Type</th></tr></thead>
+    <tbody>
+      <tr><td>déboguer, construire, découper du texte</td><td><code>String</code></td></tr>
+      <tr><td>identifier (socket, ligne, niveau, tag)</td><td><code>Name</code></td></tr>
+      <tr><td>afficher au joueur</td><td><code>Text</code></td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="vector" data-group="Espace 3D">Vector</h2>
+  <p><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#e8c547;vertical-align:middle;margin-right:6px"></span>Pin <strong>jaune / or</strong>. Trois floats <code>X, Y, Z</code> : une <strong>position</strong> (un point du monde) ou une <strong>direction</strong> (une flèche). En Unreal, <strong>X = avant, Y = droite, Z = haut</strong>, en centimètres. <code>Vector 2D</code> (X, Y) sert pour l'input et l'UI.</p>
+  <table>
+    <thead><tr><th>Nœud</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>Get Actor Location</code> / <code>Set Actor Location</code></td><td>lire / placer un Actor</td></tr>
+      <tr><td><code>+</code> / <code>−</code></td><td>déplacer un point ; <code>B − A</code> = vecteur qui va de A vers B</td></tr>
+      <tr><td><code>× float</code></td><td>allonger une direction : <code>Forward Vector × 500</code> = 5 m devant</td></tr>
+      <tr><td><code>Vector Length</code> / <code>Distance (Vector)</code></td><td>longueur d'un vecteur ; distance entre deux points</td></tr>
+      <tr><td><code>Normalize</code></td><td>garde la direction, longueur ramenée à 1</td></tr>
+      <tr><td><code>Get Forward / Right / Up Vector</code></td><td>directions locales d'un Actor ou d'une rotation</td></tr>
+      <tr><td><code>Dot Product</code></td><td>&gt; 0 : même sens, 0 : perpendiculaire, &lt; 0 : opposé — « l'ennemi est-il devant moi ? »</td></tr>
+      <tr><td><code>Cross Product</code></td><td>vecteur perpendiculaire aux deux autres</td></tr>
+      <tr><td><code>Break Vector</code> / <code>Make Vector</code>, <em>Split Struct Pin</em></td><td>accéder à X, Y, Z séparément</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="rotator" data-group="Espace 3D">Rotator</h2>
+  <p><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#9ea8f5;vertical-align:middle;margin-right:6px"></span>Pin <strong>bleu lavande</strong>. Une orientation en trois angles (degrés) : <strong>Roll</strong> (X, pencher sur le côté), <strong>Pitch</strong> (Y, lever/baisser le nez), <strong>Yaw</strong> (Z, tourner à gauche/droite).</p>
+  <table>
+    <thead><tr><th>Nœud</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>Get Actor Rotation</code> / <code>Set Actor Rotation</code>, <code>Add Actor Local Rotation</code></td><td>lire, fixer, ajouter une rotation</td></tr>
+      <tr><td><code>Find Look at Rotation</code></td><td>rotation pour regarder d'un point vers un autre (tourelle, PNJ qui suit du regard)</td></tr>
+      <tr><td><code>RInterp To</code>, <code>Lerp (Rotator)</code></td><td>tourner en douceur — prend le chemin le plus court</td></tr>
+      <tr><td><code>Combine Rotators</code>, <code>Delta (Rotator)</code></td><td>additionner deux rotations ; différence normalisée entre deux</td></tr>
+      <tr><td><code>Get Forward Vector</code> (depuis un Rotator)</td><td>direction dans laquelle pointe cette rotation</td></tr>
+    </tbody>
+  </table>
+  <div class="callout info">
+    <span class="label">Rotator ≠ Vector</span>
+    <p>Un Rotator a aussi trois nombres, mais ce sont des <strong>angles</strong>, dans l'ordre Roll/Pitch/Yaw. Pour passer de l'un à l'autre : <code>Get Forward Vector</code> (rotation → direction), <code>Rotation From X Vector</code> ou <code>Make Rot from X</code> (direction → rotation).</p>
+  </div>
+
+  <h2 id="transform" data-group="Espace 3D">Transform</h2>
+  <p><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#e8872a;vertical-align:middle;margin-right:6px"></span>Pin <strong>orange</strong>. Le trio complet : <strong>Location</strong> (Vector) + <strong>Rotation</strong> + <strong>Scale</strong> (Vector, 1 = taille normale). C'est ce que demande <code>Spawn Actor from Class</code>.</p>
+  <table>
+    <thead><tr><th>Nœud</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>Make Transform</code> / <code>Break Transform</code></td><td>assembler / séparer les trois composantes</td></tr>
+      <tr><td><code>Get Actor Transform</code>, <code>Get World Transform</code> (composant)</td><td>transform dans le monde</td></tr>
+      <tr><td><code>Get Relative Transform</code></td><td>transform <strong>par rapport au parent</strong> (composant attaché)</td></tr>
+      <tr><td><code>Transform Location</code> / <code>Inverse Transform Location</code></td><td>passer un point de l'espace local à l'espace monde, et inversement</td></tr>
+    </tbody>
+  </table>
+  <div class="callout tip">
+    <span class="label">World vs Relative</span>
+    <p>Un composant attaché (arme dans la main, lampe sur un casque) a une position <strong>relative</strong> à son parent. <code>Set Relative Location</code> le déplace par rapport au parent, <code>Set World Location</code> dans le monde. Ouvrir une porte = changer sa rotation <strong>relative</strong>, sinon elle ignore la rotation de son mur.</p>
+  </div>
+
+  <h2 id="object" data-group="Références">Object Reference</h2>
+  <p><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#1f6feb;vertical-align:middle;margin-right:6px"></span>Pin <strong>bleu</strong>. Pas l'objet lui-même : une <strong>flèche vers un objet</strong> qui existe dans le jeu (un Actor, un composant, un widget). Vide par défaut (<em>None</em>).</p>
+  <table>
+    <thead><tr><th>Obtenir une référence</th><th>Exemple</th></tr></thead>
+    <tbody>
+      <tr><td>sortie d'un événement</td><td><code>Other Actor</code> d'un overlap, <code>Hit Actor</code> d'un trace</td></tr>
+      <tr><td>nœuds « Get »</td><td><code>Get Player Character</code>, <code>Get Player Controller</code>, <code>Get Game Instance</code></td></tr>
+      <tr><td>valeur de retour</td><td><code>Spawn Actor from Class</code>, <code>Create Widget</code> → <em>Promote to Variable</em></td></tr>
+      <tr><td>variable <em>Instance Editable</em></td><td>choisir l'Actor avec la pipette dans le niveau</td></tr>
+    </tbody>
+  </table>
+  <div class="callout danger">
+    <span class="label">Accessed None</span>
+    <p>Utiliser une référence vide (Actor détruit, variable jamais remplie) donne l'erreur <em>Accessed None trying to read property…</em>. Protéger avec <code>Is Valid</code> (la version macro, avec pins d'exécution <em>Is Valid</em> / <em>Is Not Valid</em>). Pour accéder aux variables propres à <code>BP_Character</code> depuis une référence générique (<code>Actor</code>), il faut un <code>Cast To BP_Character</code> — ou une <a href="ui-structures-interfaces.html#interfaces">interface</a>.</p>
+  </div>
+
+  <h2 id="class" data-group="Références">Class Reference & Soft Reference</h2>
+  <table>
+    <thead><tr><th>Type</th><th>Pin</th><th>Pointe vers</th><th>Sert à</th></tr></thead>
+    <tbody>
+      <tr><td>Object Reference</td><td><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#1f6feb;vertical-align:middle"></span> bleu</td><td>un objet <strong>existant</strong></td><td>lire/modifier cet objet</td></tr>
+      <tr><td>Class Reference</td><td><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#8a3fd1;vertical-align:middle"></span> violet</td><td>un <strong>plan</strong> (<code>BP_Enemy</code>), pas une instance</td><td><code>Spawn Actor from Class</code>, <code>Create Widget</code>, <code>Get All Actors of Class</code></td></tr>
+      <tr><td>Soft Object / Soft Class</td><td>bleu / violet clair</td><td>un asset <strong>pas forcément chargé</strong></td><td>charger à la demande (<code>Async Load Asset</code>) — gros assets, skins, niveaux</td></tr>
+    </tbody>
+  </table>
+  <div class="callout info">
+    <span class="label">Hard vs Soft</span>
+    <p>Une référence normale (<em>hard</em>) charge l'asset pointé en même temps que le Blueprint qui la contient — cent variables vers cent armes = cent armes en mémoire. Une <em>soft reference</em> ne stocke qu'un chemin : l'asset n'est chargé que quand on le demande.</p>
+  </div>
+
+  <h2 id="tags" data-group="Tags">Actor Tags & Component Tags</h2>
+  <p>Un <strong>tag</strong> est une étiquette (un <code>Name</code>) posée sur un Actor ou un composant, pour le reconnaître sans connaître sa classe : <code>Player</code>, <code>Enemy</code>, <code>Interactable</code>, <code>Flammable</code>. Chaque Actor a un tableau <code>Tags</code> (<em>Details → Actor → Tags</em>), chaque composant aussi (<em>Component Tags</em>).</p>
+  <table>
+    <thead><tr><th>Nœud</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>Actor Has Tag</code></td><td>l'Actor porte-t-il ce tag ? — typique après un overlap : « est-ce un ennemi ? »</td></tr>
+      <tr><td><code>Component Has Tag</code></td><td>même chose sur un composant (ex. distinguer la hitbox de la tête)</td></tr>
+      <tr><td><code>Get All Actors with Tag</code></td><td>tous les Actors du niveau portant ce tag (tous les points de spawn)</td></tr>
+      <tr><td><code>Get Components by Tag</code></td><td>les composants d'un Actor portant ce tag</td></tr>
+      <tr><td><code>Tags</code> (variable Array)</td><td>ajouter/retirer à l'exécution : <code>Add</code> / <code>Remove</code> sur le tableau</td></tr>
+    </tbody>
+  </table>
+  <div class="callout warn">
+    <span class="label">Deux limites</span>
+    <p><code>Get All Actors with Tag</code> parcourt <strong>tout le niveau</strong> : à faire une fois (au <code>BeginPlay</code>, stocker le résultat), jamais sur <code>Event Tick</code>. Et un tag est un simple texte tapé à la main : <code>Enemy</code>, <code>enemy</code> et <code>Ennemy</code> ne se protègent pas des fautes de frappe (<code>Name</code> est insensible à la casse, mais pas à l'orthographe).</p>
+  </div>
+
+  <h2 id="gameplay-tags" data-group="Tags">Gameplay Tags</h2>
+  <p>Les <strong>Gameplay Tags</strong> sont la version robuste : des tags <strong>hiérarchiques</strong> déclarés une seule fois dans <em>Project Settings → GameplayTags</em>, puis choisis dans une liste (plus de fautes de frappe). Ils s'écrivent avec des points : <code>Status.Debuff.Poison</code>, <code>Weapon.Type.Sword</code>, <code>Ability.Dash</code>.</p>
+  <table>
+    <thead><tr><th>Type / nœud</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>Gameplay Tag</code></td><td>un seul tag (variable)</td></tr>
+      <tr><td><code>Gameplay Tag Container</code></td><td>un ensemble de tags — l'état complet d'un personnage</td></tr>
+      <tr><td><code>Has Tag</code></td><td>le conteneur contient-il ce tag ? (option <em>Exact Match</em>)</td></tr>
+      <tr><td><code>Has Any</code> / <code>Has All</code></td><td>au moins un / tous les tags d'un autre conteneur</td></tr>
+      <tr><td><code>Matches Tag</code></td><td>compare deux tags en tenant compte de la hiérarchie</td></tr>
+      <tr><td><code>Add Gameplay Tag</code> / <code>Remove Gameplay Tag from Container</code></td><td>modifier l'état</td></tr>
+    </tbody>
+  </table>
+  <div class="callout tip">
+    <span class="label">La hiérarchie fait le travail</span>
+    <p>Un personnage qui porte <code>Status.Debuff.Poison</code> répond <strong>vrai</strong> à « a-t-il <code>Status.Debuff</code> ? » (sans <em>Exact Match</em>). Une potion « purifie tous les debuffs » teste donc le parent, sans connaître la liste des poisons, brûlures et gels qui existeront plus tard. C'est la base du <em>Gameplay Ability System</em> d'Unreal.</p>
+  </div>
+  <table>
+    <thead><tr><th></th><th>Actor / Component Tags</th><th>Gameplay Tags</th></tr></thead>
+    <tbody>
+      <tr><td>Type</td><td><code>Name</code> libre</td><td>tag déclaré dans le projet</td></tr>
+      <tr><td>Fautes de frappe</td><td>possibles</td><td>impossibles (choix dans une liste)</td></tr>
+      <tr><td>Hiérarchie</td><td>non</td><td>oui (<code>A.B.C</code> correspond à <code>A.B</code>)</td></tr>
+      <tr><td>Bon pour</td><td>marquer vite un Actor dans le niveau</td><td>états, capacités, types de dégâts — tout ce qui grossit avec le projet</td></tr>
+    </tbody>
+  </table>
+
+  <footer class="pg">
+    <span><a href="index.html">← Accueil Blueprint</a></span>
+    <span><a href="personnage.html">Suivant : Personnage & Input →</a></span>
+  </footer>
+</main>
+</div>
+
+<script src="../assets/site.config.js"></script>
+<script src="../assets/nav.js"></script>
+</body>
+</html>

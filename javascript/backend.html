@@ -22,7 +22,7 @@
       <p class="lead">Node.js comme serveur : répondre à des requêtes HTTP, parler à une base de données, exposer une
         API. Avec <strong>Express</strong>, le framework minimal qui domine l'écosystème.</p>
 
-      <h2 id="idee">Node.js comme serveur</h2>
+      <h2 id="idee" data-group="Démarrer">Node.js comme serveur</h2>
       <p>Node fournit un module <code>http</code> natif — capable de servir des requêtes sans aucune dépendance — mais
         tout le monde (ou presque) passe par Express, qui ajoute routage et middleware par-dessus.</p>
       <pre class="code" data-lang="javascript"><script type="text/plain">
@@ -37,7 +37,7 @@ const serveur = http.createServer((req, res) => {
 serveur.listen(3000, () => console.log('Écoute sur le port 3000'));
 </script></pre>
 
-      <h2 id="installer">Installer Express</h2>
+      <h2 id="installer" data-group="Démarrer">Installer Express</h2>
       <pre class="code" data-lang="bash"><script type="text/plain">
 npm install express
 </script></pre>
@@ -50,7 +50,7 @@ app.get('/', (req, res) => res.send('Bonjour !'));
 app.listen(3000, () => console.log('Écoute sur le port 3000'));
 </script></pre>
 
-      <h2 id="routage">Routage</h2>
+      <h2 id="routage" data-group="Express">Routage</h2>
       <pre class="code" data-lang="javascript"><script type="text/plain">
 app.get('/articles', (req, res) => { /* lister */ });
 app.get('/articles/:id', (req, res) => { /* un seul, req.params.id */ });
@@ -65,7 +65,7 @@ routeurArticles.get('/:id', afficherArticle);
 app.use('/articles', routeurArticles);
 </script></pre>
 
-      <h2 id="middleware">Middleware</h2>
+      <h2 id="middleware" data-group="Express">Middleware</h2>
       <p>Une fonction <code>(req, res, next)</code> qui s'exécute avant la route — pour parser le corps de la requête,
         journaliser, authentifier… <code>next()</code> passe la main au middleware ou à la route suivante.</p>
       <pre class="code" data-lang="javascript"><script type="text/plain">
@@ -85,7 +85,7 @@ function exigerAuth(req, res, next) {
 app.delete('/articles/:id', exigerAuth, supprimerArticle);   // middleware sur UNE route
 </script></pre>
 
-      <h2 id="requetes">Requête & réponse</h2>
+      <h2 id="requetes" data-group="Express">Requête & réponse</h2>
       <pre class="code" data-lang="javascript"><script type="text/plain">
 app.get('/articles/:id', (req, res) => {
     const id = Number(req.params.id);           // paramètre d'URL : /articles/42
@@ -127,13 +127,13 @@ app.get('/articles/:id', (req, res) => {
         </tbody>
       </table>
 
-      <h2 id="statique">Fichiers statiques</h2>
+      <h2 id="statique" data-group="Express">Fichiers statiques</h2>
       <pre class="code" data-lang="javascript"><script type="text/plain">
 app.use(express.static('public'));   // tout ce qui est dans public/ devient accessible tel quel
 // public/style.css → https://.../style.css
 </script></pre>
 
-      <h2 id="bdd">Connexion à une base de données</h2>
+      <h2 id="bdd" data-group="Données">Connexion à une base de données</h2>
       <p>Comme pour PDO côté <a href="../php/backend.html#pdo">PHP</a> : une connexion, et des requêtes
         <strong>paramétrées</strong> — jamais de concaténation d'une valeur utilisateur dans le SQL.</p>
       <pre class="code" data-lang="bash"><script type="text/plain">
@@ -152,7 +152,7 @@ await pool.query(`SELECT * FROM articles WHERE titre = '${titre}'`);
 const { rows } = await pool.query('SELECT * FROM articles WHERE titre = $1', [titre]);
 </script></pre>
 
-      <h2 id="crud">CRUD complet</h2>
+      <h2 id="crud" data-group="Données">CRUD complet</h2>
       <pre class="code" data-lang="sql"><script type="text/plain">
 CREATE TABLE articles (
     id      SERIAL PRIMARY KEY,
@@ -186,7 +186,7 @@ export async function supprimer(pool, id) {
 }
 </script></pre>
 
-      <h2 id="structure">Organiser en couches</h2>
+      <h2 id="structure" data-group="Projet">Organiser en couches</h2>
       <p>Express n'impose aucune structure — le motif le plus courant reprend les mêmes rôles que le <a
           href="../php/backend.html#mvc">MVC</a> vu côté PHP : routes (contrôleur), fonctions d'accès aux données
         (modèle), réponses JSON (pas de « vue » HTML pour une API).</p>
@@ -217,7 +217,7 @@ export async function afficher(req, res) {
 }
 </script></pre>
 
-      <h2 id="erreurs">Gestion des erreurs</h2>
+      <h2 id="erreurs" data-group="Projet">Gestion des erreurs</h2>
       <p>Un middleware à <strong>4 paramètres</strong> (avec <code>err</code> en premier) capte les erreurs — à déclarer
         en dernier, après toutes les routes.</p>
       <pre class="code" data-lang="javascript"><script type="text/plain">
@@ -238,7 +238,7 @@ app.use((err, req, res, next) => {
 });
 </script></pre>
 
-      <h2 id="securite">Sécurité de base</h2>
+      <h2 id="securite" data-group="Projet">Sécurité de base</h2>
       <pre class="code" data-lang="bash"><script type="text/plain">
 npm install helmet cors dotenv
 </script></pre>
@@ -281,7 +281,7 @@ app.use(cors({ origin: 'https://mon-site.com' }));
         </tbody>
       </table>
 
-      <h2 id="exemple">Exemple complet — API articles</h2>
+      <h2 id="exemple" data-group="Projet">Exemple complet — API articles</h2>
       <pre class="code" data-lang="javascript"><script type="text/plain">
 // index.js
 import 'dotenv/config';

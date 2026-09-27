@@ -85,7 +85,20 @@ code{font-family:var(--mono);font-size:.88em}
   border-right:1px solid var(--border);
   padding:24px 16px;position:sticky;top:57px;align-self:start;
   height:calc(100vh - 57px);overflow-y:auto;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+  /* Barre fine et discrète : invisible au repos, apparaît au survol */
+  scrollbar-width:thin;
+  scrollbar-color:transparent transparent;
+  transition:scrollbar-color .2s;
 }
+.side:hover{scrollbar-color:var(--border) transparent}
+/* Safari (pas de scrollbar-color) */
+.side::-webkit-scrollbar{width:6px}
+.side::-webkit-scrollbar-track{background:transparent}
+.side::-webkit-scrollbar-thumb{background:transparent;border-radius:999px}
+.side:hover::-webkit-scrollbar-thumb{background:var(--border)}
+.side::-webkit-scrollbar-thumb:hover{background:var(--muted)}
 .side h4{
   font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);
   margin:16px 0 6px;

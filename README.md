@@ -28,12 +28,17 @@ javascript/                        dossier du langage JavaScript (Node.js)
   index.html (Node, npm, modules), discord-bot.html, electron.html,
   backend.html (Express), animations.html (CSS + JS)
 blueprint/                         dossier Blueprint (Unreal Engine)
-  index.html (Blueprint en bref), personnage.html (Character, Enhanced Input),
+  index.html (Blueprint en bref, Branch/Switch, boucles, Timelines, Array/Set/Map,
+  events/fonctions/macros/collapsed, Event Dispatchers),
+  variables-types.html (chaque type de variable, Actor Tags & Gameplay Tags),
+  personnage.html (Character, caméra, Enhanced Input, collisions),
   animation-blueprint.html (Blend Space, ABP), levels-gamemode.html
-  (GameMode, GameInstance, niveaux & sublevels)
+  (GameMode, GameInstance, niveaux & sublevels, Level Blueprint),
+  ui-structures-interfaces.html (Widget Blueprint/UMG, structures, interfaces, enums)
 cpp/                                dossier du langage C++ (console)
   index.html (compilateur/linker, IDE, anatomie du premier programme),
-  procedural.html (variables, types, portée, opérateurs, décisions, boucles),
+  procedural.html (variables, const/constexpr, types, portée, opérateurs, ++/--, décisions, boucles,
+  procédures & fonctions),
   bit-manipulations.html (littéraux, masques, packing de nibbles)
 ```
 

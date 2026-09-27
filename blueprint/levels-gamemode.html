@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Codex — Blueprint · Levels & Game Framework</title>
-<meta name="description" content="Game Mode, Game Instance, et manipulation de niveaux (sublevels, streaming) dans Unreal Engine.">
+<meta name="description" content="Game Mode, Game Instance, et manipulation de niveaux (sublevels, streaming, Level Blueprint) dans Unreal Engine.">
 <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body data-lang="blueprint" data-page="levels">
@@ -15,7 +15,7 @@
 <aside class="side" id="side"></aside>
 
 <main>
-  <h1>3 · Levels & Game Framework</h1>
+  <h1>4 · Levels & Game Framework</h1>
   <p class="lead">Organiser un projet : quelles règles s'appliquent où (<strong>Game Mode</strong>), quelles données survivent aux changements de niveau (<strong>Game Instance</strong>), et comment découper le monde (<strong>niveaux & sublevels</strong>).</p>
 
   <h2 id="gamemode">Game Mode</h2>
@@ -100,7 +100,55 @@
     <tbody>
       <tr><td><code>Load Stream Level</code> / <code>Unload Stream Level</code></td><td>charge/décharge un sublevel depuis un Blueprint (ex. au passage d'un trigger)</td></tr>
       <tr><td><code>Level Streaming Volume</code></td><td>charge automatiquement un sublevel quand la caméra entre dans son volume</td></tr>
-      <tr><td>Level Blueprint</td><td>graphe d'évènements propre à <strong>un seul niveau</strong> — pratique pour un scénario ponctuel, à éviter pour de la logique réutilisable (préférer un Actor Blueprint dédié)</td></tr>
+      <tr><td>Level Blueprint</td><td>graphe d'évènements propre à <strong>un seul niveau</strong> — voir <a href="#levelbp">plus bas</a></td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="levelbp">Level Blueprint</h2>
+  <p>Chaque niveau (<code>.umap</code>) possède un <strong>Level Blueprint</strong> unique, ouvert depuis la barre d'outils (<em>Blueprints → Open Level Blueprint</em>). C'est un Event Graph attaché au niveau lui-même : il n'a pas de composants, n'est pas instanciable, et ne peut pas être réutilisé ailleurs. Chaque sublevel a le sien, en plus de celui du Persistent Level.</p>
+  <table>
+    <thead><tr><th>Ce qu'il sait faire</th><th>Comment</th></tr></thead>
+    <tbody>
+      <tr><td>Référencer un Actor posé dans le niveau</td><td>sélectionner l'Actor dans le viewport, puis clic droit dans le graphe → <em>Create a Reference to …</em> — sans <code>Get All Actors of Class</code></td></tr>
+      <tr><td>Réagir aux événements de cet Actor</td><td>Actor sélectionné → clic droit → <em>Add Event for …</em> (ex. <code>OnActorBeginOverlap</code> d'un <code>Trigger Box</code>)</td></tr>
+      <tr><td>Scénariser le niveau</td><td>lancer une cinématique (<code>Level Sequence</code>), ouvrir une porte, faire apparaître des ennemis, changer la musique</td></tr>
+      <tr><td>Gérer le streaming</td><td><code>Load Stream Level</code> / <code>Unload Stream Level</code> au passage d'un trigger</td></tr>
+    </tbody>
+  </table>
+  <figure>
+    <svg viewBox="0 0 620 130" role="img" aria-label="Exemple de script de Level Blueprint">
+      <defs><marker id="bplv-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+        <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
+      <rect class="svg-bg" x="0" y="0" width="620" height="130" rx="6"/>
+      <rect class="svg-box-w" x="15" y="35" width="140" height="60" rx="6"/>
+      <text class="svg-t" x="85" y="60" text-anchor="middle">OnActorBeginOverlap</text>
+      <text class="svg-tm" x="85" y="78" text-anchor="middle">TriggerBox_Salle</text>
+      <path d="M155 65 H173" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bplv-arr)"/>
+      <rect class="svg-box" x="175" y="35" width="130" height="60" rx="6"/>
+      <text class="svg-t" x="240" y="60" text-anchor="middle">Branch</text>
+      <text class="svg-tm" x="240" y="78" text-anchor="middle">c'est le joueur ?</text>
+      <path d="M305 65 H323" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bplv-arr)"/>
+      <rect class="svg-box-a" x="325" y="35" width="130" height="60" rx="6"/>
+      <text class="svg-t" x="390" y="60" text-anchor="middle">Do Once</text>
+      <text class="svg-tm" x="390" y="78" text-anchor="middle">une seule fois</text>
+      <path d="M455 65 H473" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bplv-arr)"/>
+      <rect class="svg-box-g" x="475" y="35" width="130" height="60" rx="6"/>
+      <text class="svg-t" x="540" y="60" text-anchor="middle">Play Sequence</text>
+      <text class="svg-tm" x="540" y="78" text-anchor="middle">+ spawn du boss</text>
+    </svg>
+    <figcaption>Un scénario typique : propre à ce niveau, il n'a aucune raison d'exister ailleurs.</figcaption>
+  </figure>
+  <div class="callout warn">
+    <span class="label">Les limites du Level Blueprint</span>
+    <p>Aucun autre Blueprint ne peut obtenir de référence vers lui : un personnage ou un widget <strong>ne peut pas l'appeler</strong> directement. La communication se fait dans l'autre sens — le Level Blueprint s'abonne aux <a href="index.html#dispatchers">Event Dispatchers</a> des Actors qu'il référence. Et toute logique qui pourrait servir dans deux niveaux (porte, interrupteur, coffre) doit vivre dans un <strong>Actor Blueprint</strong> réutilisable, pas dans le Level Blueprint.</p>
+  </div>
+  <table>
+    <thead><tr><th>Où mettre la logique ?</th><th></th></tr></thead>
+    <tbody>
+      <tr><td>Level Blueprint</td><td>événements uniques à <strong>ce</strong> niveau : cinématique d'intro, piège scripté, streaming</td></tr>
+      <tr><td>Actor Blueprint</td><td>tout objet qui se répète : porte, levier, ennemi, pickup</td></tr>
+      <tr><td>GameMode</td><td>règles de la partie : conditions de victoire, respawn</td></tr>
+      <tr><td>GameInstance</td><td>données qui traversent les niveaux</td></tr>
     </tbody>
   </table>
 
@@ -119,7 +167,7 @@
 
   <footer class="pg">
     <span><a href="animation-blueprint.html">← Animation Blueprint</a></span>
-    <span><a href="index.html">Retour à l'accueil Blueprint</a></span>
+    <span><a href="ui-structures-interfaces.html">Suivant : UI, Structs & Interfaces →</a></span>
   </footer>
 </main>
 </div>

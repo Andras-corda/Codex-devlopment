@@ -65,16 +65,19 @@
 
   <h2 id="hello">Anatomie du premier programme</h2>
   <pre class="code" data-lang="cpp"><script type="text/plain">
-#include <iostream>
+#include <iostream>                 // inclut la bibliothèque d'entrée/sortie (≈ using System; en C#)
 
 int main()
 {
-    int age;
-    std::cout << "How old are you? ";
-    std::cin >> age;
+    int age;                        // déclaration d'une variable entière
+
+    std::cout << "Hello World !\n"; // std:: = namespace standard, :: = « ce qu'il y a dedans »
+                                    // cout écrit dans la console (≈ Console.WriteLine)
+
+    std::cin >> age;                // cin lit ce que l'utilisateur tape et le range dans age
     std::cout << "Next year, you will be: " << age + 1 << '\n';
 
-    return 0;
+    return 0;                       // 0 = tout s'est bien passé
 }
 </script></pre>
   <table>
@@ -93,6 +96,27 @@ int main()
   <div class="callout info">
     <span class="label">Instructions & blocs</span>
     <p>Chaque instruction se termine par un point-virgule <code>;</code>. Les accolades <code>{ }</code> délimitent un bloc (une nouvelle portée). Les espaces et retours à la ligne sont ignorés par le compilateur — l'indentation n'est là que pour les humains.</p>
+  </div>
+
+  <h3>Fichier de départ</h3>
+  <p>Un modèle à copier pour chaque nouvel exercice : les trois en-têtes qui servent presque tout le temps en console.</p>
+  <pre class="code" data-lang="cpp"><script type="text/plain">
+#include <iostream>   // cout, cin
+#include <cstdint>    // uint8_t, uint32_t… (tailles fixes)
+#include <bitset>     // afficher une valeur en binaire
+
+using namespace std;
+
+int main()
+{
+    cout << "Hello World!";
+
+    return 0;
+}
+</script></pre>
+  <div class="callout warn">
+    <span class="label">using namespace std : mauvaise pratique ?</span>
+    <p>Ça dépend d'où. Dans un petit <code>.cpp</code> d'exercice, c'est acceptable : ça évite d'écrire <code>std::</code> partout. Mais ça importe <strong>tous</strong> les noms de la bibliothèque standard (<code>count</code>, <code>distance</code>, <code>max</code>…), qui peuvent entrer en conflit avec les tiens. À ne <strong>jamais</strong> mettre dans un <code>.h</code> : tous les fichiers qui l'incluent en héritent. Dans un vrai projet (et dans Unreal), on écrit <code>std::</code> explicitement.</p>
   </div>
 
   <h2 id="commentaires">Commentaires</h2>
@@ -115,7 +139,7 @@ std::cout << "Next year..."; // commentaire sur une seule ligne
     <tbody>
       <tr>
         <td><a href="procedural.html">1 · Procédural</a></td>
-        <td>variables, types, portée, opérateurs, décisions (if/switch/enum), boucles</td>
+        <td>variables, constantes (const/constexpr), types, portée, opérateurs, incrément/décrément, décisions (if/switch/enum), boucles, exemple complet (combat), procédures &amp; fonctions</td>
       </tr>
       <tr>
         <td><a href="bit-manipulations.html">2 · Manipulation de bits</a></td>

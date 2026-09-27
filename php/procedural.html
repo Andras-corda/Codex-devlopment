@@ -22,7 +22,7 @@
       <p class="lead">Le PHP « de base » : variables, tableaux, fonctions. C'est le style le plus courant pour un script
         ou une page, et le socle de tout le reste.</p>
 
-      <h2 id="idee">L'idée</h2>
+      <h2 id="idee" data-group="Bases">L'idée</h2>
       <p>Un script PHP s'exécute de haut en bas, comme une recette. Les balises <code>&lt;?php … ?&gt;</code> délimitent
         le code ; en dehors, tout est renvoyé tel quel (utile pour mélanger PHP et HTML, même si ce guide s'en tient au
         code).</p>
@@ -37,7 +37,7 @@ if ($temperature > 25) {
 }
 </script></pre>
 
-      <h2 id="variables">Variables & affectation</h2>
+      <h2 id="variables" data-group="Bases">Variables & affectation</h2>
       <p>Toute variable commence par <code>$</code>. Pas besoin de déclarer son type : PHP le déduit de la valeur, et il
         peut changer en cours de route (typage <em>dynamique</em>).</p>
       <pre class="code" data-lang="php"><script type="text/plain">
@@ -62,7 +62,7 @@ var_dump($compteur);      // string(4) "cinq"
             href="#fonctions">Fonctions</a>) : c'est là que <code>strict_types</code> protège vraiment.</p>
       </div>
 
-      <h2 id="const">Constantes</h2>
+      <h2 id="const" data-group="Bases">Constantes</h2>
       <pre class="code" data-lang="php"><script type="text/plain">
 const JOURS_PAR_SEMAINE = 7;         // au niveau du fichier / d'une classe
 define("TAUX_TVA", 0.20);            // équivalent dynamique (nom calculable)
@@ -89,7 +89,7 @@ echo JOURS_PAR_SEMAINE;              // pas de $ pour lire une constante
         </tbody>
       </table>
 
-      <h2 id="types">Types</h2>
+      <h2 id="types" data-group="Bases">Types</h2>
       <table>
         <thead>
           <tr>
@@ -135,7 +135,7 @@ $z = clone $x;        // clone : copie explicite d'un objet
           <code>gettype($x)</code> renvoie juste le type sous forme de texte.</p>
       </div>
 
-      <h2 id="operateurs">Opérateurs</h2>
+      <h2 id="operateurs" data-group="Bases">Opérateurs</h2>
       <pre class="code" data-lang="php"><script type="text/plain">
 7 % 2;             // 1  (modulo)
 2 ** 8;             // 256 (puissance)
@@ -152,7 +152,7 @@ $age >= 18 ? "majeur" : "mineur";   // ternaire
 $age ?: "0";                        // ternaire court : $age s'il est "truthy", sinon "0"
 </script></pre>
 
-      <h2 id="conditions">Conditions</h2>
+      <h2 id="conditions" data-group="Contrôle du flux">Conditions</h2>
       <pre class="code" data-lang="php"><script type="text/plain">
 $note = 14;
 
@@ -181,7 +181,7 @@ $categorie = match (true) {
 };
 </script></pre>
 
-      <h2 id="boucles">Boucles</h2>
+      <h2 id="boucles" data-group="Contrôle du flux">Boucles</h2>
       <pre class="code" data-lang="php"><script type="text/plain">
 for ($i = 0; $i < 5; $i++) {
     echo $i;                       // 01234
@@ -211,7 +211,7 @@ foreach (range(1, 20) as $n) {
 }
 </script></pre>
 
-      <h2 id="tableaux">Tableaux</h2>
+      <h2 id="tableaux" data-group="Données & fonctions">Tableaux</h2>
       <p>Le tableau (<code>array</code>) est <strong>LA</strong> structure de données de PHP : liste ordonnée, table
         associative, pile, file — tout passe par lui.</p>
       <pre class="code" data-lang="php"><script type="text/plain">
@@ -242,7 +242,7 @@ usort($fruits, fn($a, $b) => strcmp($a, $b));   // trie en place
           <code>array_values(...)</code> pour ré-indexer si besoin.</p>
       </div>
 
-      <h2 id="fonctions">Fonctions</h2>
+      <h2 id="fonctions" data-group="Données & fonctions">Fonctions</h2>
       <pre class="code" data-lang="php"><script type="text/plain">
 function addition(int $a, int $b): int
 {
@@ -278,7 +278,7 @@ function formater(int|string $valeur): string { return (string) $valeur; }
           pas une fonctionnalité du langage.</p>
       </div>
 
-      <h2 id="portee">Portée des variables</h2>
+      <h2 id="portee" data-group="Données & fonctions">Portée des variables</h2>
       <p>Différence importante avec C# : en PHP, la portée d'une variable est la <strong>fonction</strong>, pas le bloc.
         Une variable déclarée dans un <code>if</code> ou une boucle reste visible après.</p>
       <pre class="code" data-lang="php"><script type="text/plain">
@@ -306,7 +306,7 @@ function compteur(): int
 compteur(); compteur();   // 1, puis 2
 </script></pre>
 
-      <h2 id="erreurs">Gestion des erreurs</h2>
+      <h2 id="erreurs" data-group="En pratique">Gestion des erreurs</h2>
       <pre class="code" data-lang="php"><script type="text/plain">
 try {
     $resultat = 10 / 0;                     // DivisionByZeroError
@@ -327,7 +327,7 @@ function retirer(float $montant): float
 }
 </script></pre>
 
-      <h2 id="exemple">Exemple complet — FizzBuzz + stats</h2>
+      <h2 id="exemple" data-group="En pratique">Exemple complet — FizzBuzz + stats</h2>
       <pre class="code" data-lang="php"><script type="text/plain">
 $compteurs = ["fizz" => 0, "buzz" => 0, "autres" => 0];
 

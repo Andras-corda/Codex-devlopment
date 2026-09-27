@@ -2,7 +2,7 @@
 (function () {
   "use strict";
 
-  var KW = new Set(("int double float bool char void const if else switch case default break continue for while do " +
+  var KW = new Set(("int double float bool char void const constexpr if else switch case default break continue for while do " +
     "return enum class struct using namespace static unsigned signed short long true false nullptr sizeof new delete " +
     "this public private protected virtual override final friend template typename auto extern inline union typedef " +
     "goto try catch throw operator explicit mutable volatile register uint8_t uint16_t uint32_t uint64_t int8_t " +

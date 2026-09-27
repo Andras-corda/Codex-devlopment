@@ -22,7 +22,7 @@
       <p class="lead">On décrit <em>comment</em> faire : une séquence d'instructions, des décisions, des répétitions, le
         tout rangé dans des méthodes réutilisables.</p>
 
-      <h2 id="idee">L'idée</h2>
+      <h2 id="idee" data-group="Bases">L'idée</h2>
       <p>Un programme procédural, c'est une recette : les instructions s'exécutent de haut en bas, sauf quand une
         condition ou une boucle change le chemin.</p>
       <figure>
@@ -52,7 +52,7 @@
         </figcaption>
       </figure>
 
-      <h2 id="variables">Variables & affectation</h2>
+      <h2 id="variables" data-group="Bases">Variables & affectation</h2>
       <p>Une variable est un nom qui désigne une valeur en mémoire. En C#, on annonce son type (ou on laisse
         <code>var</code> le déduire), puis on peut réaffecter.</p>
       <pre class="code"><script type="text/plain">
@@ -75,7 +75,7 @@ int x = 10, y = 20;      // plusieurs d'un coup
           compile pas. C'est une sécurité, pas un défaut.</p>
       </div>
 
-      <h2 id="const">Constantes (<code>const</code>)</h2>
+      <h2 id="const" data-group="Bases">Constantes (<code>const</code>)</h2>
       <p>Une constante est une valeur nommée qui ne change jamais. <code>const</code> exige une valeur <strong>connue à
           la compilation</strong> (un littéral, ou un calcul de littéraux) : le compilateur remplace chaque usage par la
         valeur elle-même.</p>
@@ -132,7 +132,7 @@ if (j == Jour.Samedi || j == Jour.Dimanche)
 Console.WriteLine((int)Jour.Mercredi);   // 2  (numérotées à partir de 0)
 </script></pre>
 
-      <h2 id="types">Types : valeur vs référence</h2>
+      <h2 id="types" data-group="Bases">Types : valeur vs référence</h2>
       <p>C# distingue deux familles. Comprendre cette distinction évite 90 % des surprises.</p>
       <table>
         <thead>
@@ -239,7 +239,7 @@ u[0] = 99;
         </tbody>
       </table>
 
-      <h2 id="operateurs">Opérateurs</h2>
+      <h2 id="operateurs" data-group="Bases">Opérateurs</h2>
       <pre class="code"><script type="text/plain">
 // Arithmétique
 7 / 2        // 3   (division entière !)
@@ -261,7 +261,7 @@ int? len = s?.Length;          // ?. : n'appelle .Length que si s != null
 int note = x > 10 ? 1 : 0;     // ternaire : condition ? siVrai : siFaux
 </script></pre>
 
-      <h2 id="conditions">Conditions</h2>
+      <h2 id="conditions" data-group="Contrôle du flux">Conditions</h2>
       <pre class="code"><script type="text/plain">
 int temp = 18;
 
@@ -293,7 +293,7 @@ string categorie = temp switch
 };
 </script></pre>
 
-      <h2 id="boucles">Boucles</h2>
+      <h2 id="boucles" data-group="Contrôle du flux">Boucles</h2>
       <table>
         <thead>
           <tr>
@@ -346,7 +346,7 @@ foreach (int n in Enumerable.Range(1, 20))
 }
 </script></pre>
 
-      <h2 id="tableaux">Tableaux & collections</h2>
+      <h2 id="tableaux" data-group="Données & méthodes">Tableaux & collections</h2>
       <pre class="code"><script type="text/plain">
 // Tableau : taille fixe
 int[] scores = new int[3];       // { 0, 0, 0 }
@@ -371,7 +371,7 @@ var longs = courses.Where(c => c.Length > 3)
                    .ToList();
 </script></pre>
 
-      <h2 id="methodes">Méthodes</h2>
+      <h2 id="methodes" data-group="Données & méthodes">Méthodes</h2>
       <p>Une méthode nomme un bloc de code paramétrable. Signature = <em>type de retour + nom + paramètres</em>.</p>
       <pre class="code"><script type="text/plain">
 // Déclaration
@@ -422,7 +422,7 @@ Somme(1, 2, 3, 4);               // 10
           (<code>ValiderEtEnregistrer</code>), c'est souvent deux méthodes.</p>
       </div>
 
-      <h2 id="generiques">Génériques</h2>
+      <h2 id="generiques" data-group="Données & méthodes">Génériques</h2>
       <p>Un générique est un type ou une méthode <strong>paramétré par un type</strong>, noté <code>&lt;T&gt;</code>. On
         écrit le code une seule fois et il fonctionne pour n'importe quel type, sans perdre la vérification à la
         compilation et sans passer par <code>object</code>.</p>
@@ -500,7 +500,7 @@ scores.Add(10);
 int premier = scores[0];          // aucune conversion, aucun risque
 </script></pre>
 
-      <h2 id="delegues">Délégués, Func/Action & lambdas</h2>
+      <h2 id="delegues" data-group="Données & méthodes">Délégués, Func/Action & lambdas</h2>
       <p>Un <strong>délégué</strong> est un type qui représente une <em>signature de méthode</em> — une variable qui
         contient une fonction, pas une valeur ordinaire. Deux délégués génériques de la bibliothèque standard couvrent
         la grande majorité des cas : <code>Action</code> (ne retourne rien) et <code>Func</code> (retourne une valeur).
@@ -577,7 +577,7 @@ bouton.Presser();                                        // "Cliqué !"
           bouton <em>est</em> un événement auquel on s'abonne avec une lambda — voir <a href="wpf.html">5 · WPF</a>.</p>
       </div>
 
-      <h2 id="portee">Portée des variables</h2>
+      <h2 id="portee" data-group="Données & méthodes">Portée des variables</h2>
       <pre class="code"><script type="text/plain">
 int total = 0;                    // visible dans toute la méthode
 
@@ -593,7 +593,7 @@ Console.WriteLine(total);         // OK
       <p>Règle : une variable existe entre l'accolade <code>{</code> qui la déclare et l'accolade <code>}</code>
         correspondante. Déclare au plus près de l'usage.</p>
 
-      <h2 id="erreurs">Gestion des erreurs</h2>
+      <h2 id="erreurs" data-group="En pratique">Gestion des erreurs</h2>
       <pre class="code"><script type="text/plain">
 try
 {
@@ -627,7 +627,7 @@ int Retirer(int montant)
           seulement ce que tu sais traiter.</p>
       </div>
 
-      <h2 id="exemple">Exemple complet — FizzBuzz + stats</h2>
+      <h2 id="exemple" data-group="En pratique">Exemple complet — FizzBuzz + stats</h2>
       <p>Tout ce qui précède, dans un seul programme.</p>
       <pre class="code"><script type="text/plain">
 int fizz = 0, buzz = 0, autres = 0;

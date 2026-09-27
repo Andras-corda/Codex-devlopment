@@ -23,13 +23,13 @@
         on veut une bibliothèque que quelqu'un d'autre a déjà écrite — et là, on a besoin de <strong>Composer</strong>.
         Cette page couvre Composer seul, puis Symfony, le framework qui s'appuie dessus.</p>
 
-      <h2 id="idee">Composer, en bref</h2>
+      <h2 id="idee" data-group="Composer">Composer, en bref</h2>
       <p>Composer est le gestionnaire de paquets de PHP (l'équivalent de npm pour JavaScript) : il installe des
         bibliothèques, gère leurs versions et leurs dépendances entre elles, et génère un <strong>autoloader</strong>
         qui charge automatiquement les classes sans <code>require</code> manuel. Rien de tout ça n'exige un framework.
       </p>
 
-      <h2 id="installer">Installer Composer</h2>
+      <h2 id="installer" data-group="Composer">Installer Composer</h2>
       <pre class="code" data-lang="bash"><script type="text/plain">
 # macOS / Linux
 curl -sS https://getcomposer.org/installer | php
@@ -40,7 +40,7 @@ sudo mv composer.phar /usr/local/bin/composer
 composer --version
 </script></pre>
 
-      <h2 id="composer-json">composer.json & autoload</h2>
+      <h2 id="composer-json" data-group="Composer">composer.json & autoload</h2>
       <p>Un fichier <code>composer.json</code> décrit le projet : version de PHP requise, dépendances, et comment
         trouver ses propres classes (<em>autoload</em>).</p>
       <pre class="code" data-lang="json"><script type="text/plain">
@@ -68,7 +68,7 @@ $modele = new ArticleModel($pdo);
           d'écrire un <code>require</code> par fichier comme dans le reste de ce guide.</p>
       </div>
 
-      <h2 id="requerir">Installer une bibliothèque</h2>
+      <h2 id="requerir" data-group="Composer">Installer une bibliothèque</h2>
       <pre class="code" data-lang="bash"><script type="text/plain">
 composer require monolog/monolog          # dépendance de production
 composer require --dev phpunit/phpunit    # dépendance de développement UNIQUEMENT (tests, outils)
@@ -83,7 +83,7 @@ composer update      # recalcule et met à jour les versions selon composer.json
           n'a pas sa place dans le dépôt : à lister dans <code>.gitignore</code>.</p>
       </div>
 
-      <h2 id="faker">Exemple : générer de fausses données avec Faker</h2>
+      <h2 id="faker" data-group="Composer">Exemple : générer de fausses données avec Faker</h2>
       <p><a href="https://fakerphp.github.io/" target="_blank" rel="noopener">Faker</a> génère des données réalistes
         (noms, emails, textes, dates…) — utile pour peupler une base de test sans tout saisir à la main.</p>
       <pre class="code" data-lang="bash"><script type="text/plain">
@@ -124,7 +124,7 @@ echo "50 articles générés.\n";
           installé quand on déploie avec <code>composer install --no-dev</code>.</p>
       </div>
 
-      <h2 id="symfony">Passer à Symfony</h2>
+      <h2 id="symfony" data-group="Symfony">Passer à Symfony</h2>
       <p>Composer seul suffit pour ajouter des bibliothèques ponctuelles. Quand le projet a besoin de
         <strong>routage</strong>, d'un <strong>ORM</strong>, de <strong>formulaires</strong>,
         d'<strong>authentification</strong> et de tout faire cohabiter proprement, réécrire chaque brique à la main
@@ -142,7 +142,7 @@ cd mon-projet
 composer require webapp   # ajoute Twig, formulaires, sécurité, validation...
 </script></pre>
 
-      <h2 id="structure">Anatomie d'un projet Symfony</h2>
+      <h2 id="structure" data-group="Symfony">Anatomie d'un projet Symfony</h2>
       <pre class="code" data-lang="text"><script type="text/plain">
 mon-projet/
 ├── bin/console              # outil en ligne de commande (génère du code, lance les migrations...)
@@ -176,7 +176,7 @@ class ArticleController extends AbstractController
 }
 </script></pre>
 
-      <h2 id="equivalences">Ce que Symfony automatise</h2>
+      <h2 id="equivalences" data-group="Symfony">Ce que Symfony automatise</h2>
       <p>Même idée que le <a href="backend.html#mvc-styles">MVC procédural vs objet</a> vu au chapitre précédent :
         Symfony ne change pas les concepts, il fournit une version outillée et conventionnelle de ce qu'on a construit à
         la main.</p>
@@ -215,7 +215,7 @@ class ArticleController extends AbstractController
         </tbody>
       </table>
 
-      <h2 id="quand">Quand basculer</h2>
+      <h2 id="quand" data-group="Symfony">Quand basculer</h2>
       <div class="callout tip">
         <span class="label">Pas un jugement de valeur</span>
         <p>Pour un script, une API minuscule ou pour <strong>comprendre</strong> ce qui se passe sous un framework, le

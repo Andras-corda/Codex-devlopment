@@ -22,7 +22,7 @@
       <p class="lead">PHP n'est <strong>pas</strong> asynchrone par défaut, contrairement à C# ou JavaScript. Comprendre
         pourquoi, et ce que le langage offre quand même pour paralléliser.</p>
 
-      <h2 id="probleme">Le modèle par défaut : bloquant, une requête = un script</h2>
+      <h2 id="probleme" data-group="Point de départ">Le modèle par défaut : bloquant, une requête = un script</h2>
       <p>Historiquement, chaque requête HTTP lance (ou réutilise via PHP-FPM) un processus qui exécute le script
         <strong>du début à la fin, séquentiellement</strong>. Un appel réseau (<code>file_get_contents</code>, une
         requête SQL) bloque ce processus jusqu'à la réponse — il n'y a pas d'event loop intégré comme dans Node.js ou de
@@ -50,7 +50,7 @@
           après l'autre reste séquentiel, sauf à utiliser explicitement l'un des outils ci-dessous.</p>
       </div>
 
-      <h2 id="curl-multi">Paralléliser des appels réseau : curl_multi</h2>
+      <h2 id="curl-multi" data-group="Outils">Paralléliser des appels réseau : curl_multi</h2>
       <p>Sans bibliothèque tierce, l'extension <code>curl</code> (native) permet de lancer plusieurs requêtes HTTP
         <strong>en parallèle</strong> et d'attendre l'ensemble.</p>
       <pre class="code" data-lang="php"><script type="text/plain">
@@ -91,7 +91,7 @@ curl_multi_close($mh);
           réponses » sans dépendance externe.</p>
       </div>
 
-      <h2 id="generateurs">Générateurs — itération paresseuse</h2>
+      <h2 id="generateurs" data-group="Outils">Générateurs — itération paresseuse</h2>
       <p>Un générateur (<code>yield</code>) produit ses valeurs <strong>une à la fois, à la demande</strong>, sans tout
         charger en mémoire — l'équivalent PHP du <code>yield return</code> / <code>IEnumerable</code> de C#. Ce n'est
         pas du parallélisme, mais c'est la brique qui permet d'écrire du code coopératif.</p>
@@ -122,7 +122,7 @@ $gen->send(10);      // total = 10
 $gen->send(5);        // total = 15
 </script></pre>
 
-      <h2 id="fibers">Fibers (PHP 8.1) — suspendre une fonction en cours</h2>
+      <h2 id="fibers" data-group="Outils">Fibers (PHP 8.1) — suspendre une fonction en cours</h2>
       <p>Une <code>Fiber</code> permet de <strong>suspendre</strong> l'exécution d'une fonction n'importe où (pas
         seulement à un <code>yield</code> de premier niveau) et de la reprendre plus tard — la brique bas niveau sur
         laquelle les bibliothèques asynchrones (ReactPHP, Amp) construisent leur <code>async</code>/<code>await</code>.
@@ -147,7 +147,7 @@ $fiber->resume("bonjour");               // reprend l'exécution, transmet une v
           utilisé directement dans du code applicatif.</p>
       </div>
 
-      <h2 id="pieges">Pièges & idées reçues</h2>
+      <h2 id="pieges" data-group="En pratique">Pièges & idées reçues</h2>
       <table>
         <thead>
           <tr>
@@ -179,7 +179,7 @@ $fiber->resume("bonjour");               // reprend l'exécution, transmet une v
         </tbody>
       </table>
 
-      <h2 id="aller-plus-loin">Pour aller plus loin (hors de ce guide)</h2>
+      <h2 id="aller-plus-loin" data-group="En pratique">Pour aller plus loin (hors de ce guide)</h2>
       <p>Sans sortir du PHP « pur », ce guide s'arrête aux outils natifs ci-dessus. Pour une vraie boucle d'événements
         et un <code>async</code>/<code>await</code> proche de celui de C#, l'écosystème propose des bibliothèques
         dédiées — <strong>aucune n'est requise</strong> pour le reste du site :</p>
@@ -190,7 +190,7 @@ $fiber->resume("bonjour");               // reprend l'exécution, transmet une v
           asynchrone</li>
       </ul>
 
-      <h2 id="exemple">Exemple complet — mesurer plusieurs pages en parallèle</h2>
+      <h2 id="exemple" data-group="En pratique">Exemple complet — mesurer plusieurs pages en parallèle</h2>
       <pre class="code" data-lang="php"><script type="text/plain">
 function telechargerEnParallele(array $urls, int $timeoutSecondes = 10): array
 {

@@ -22,7 +22,7 @@
       <p class="lead">On modélise le problème avec des <strong>objets</strong> : chacun réunit un état (des données) et
         un comportement (des méthodes) cohérents.</p>
 
-      <h2 id="idee">Classe & objet</h2>
+      <h2 id="idee" data-group="Bases">Classe & objet</h2>
       <p>Une <strong>classe</strong> est un plan. Un <strong>objet</strong> est une réalisation concrète de ce plan,
         créée avec <code>new</code>. Une classe, mille objets.</p>
       <figure>
@@ -63,7 +63,7 @@ Console.WriteLine(a.Vitesse);   // 30
 Console.WriteLine(b.Vitesse);   // 0  → objets indépendants
 </script></pre>
 
-      <h2 id="uml">Lire un diagramme de classes UML</h2>
+      <h2 id="uml" data-group="Bases">Lire un diagramme de classes UML</h2>
       <p>Un diagramme de classes montre les types et leurs relations, sans détail d'implémentation. Chaque classe est
         une boîte à trois compartiments : <strong>nom</strong>, <strong>attributs</strong>, <strong>opérations</strong>.
       </p>
@@ -126,7 +126,7 @@ Console.WriteLine(b.Vitesse);   // 0  → objets indépendants
         </tbody>
       </table>
 
-      <h2 id="membres">Champs, propriétés et accesseurs <code>get</code> / <code>set</code></h2>
+      <h2 id="membres" data-group="Membres d'une classe">Champs, propriétés et accesseurs <code>get</code> / <code>set</code></h2>
       <p>Un <strong>champ</strong> (<em>field</em>) est une variable stockée dans l'objet. Une
         <strong>propriété</strong> (<em>property</em>) est une paire d'accesseurs — <code>get</code> pour lire,
         <code>set</code> pour écrire — qui s'utilise comme un champ mais laisse ajouter validation, calcul ou
@@ -214,7 +214,7 @@ public int Capacite
 }
 </script></pre>
 
-      <h2 id="constructeurs">Constructeurs</h2>
+      <h2 id="constructeurs" data-group="Membres d'une classe">Constructeurs</h2>
       <pre class="code"><script type="text/plain">
 class CompteBancaire
 {
@@ -250,7 +250,7 @@ Console.WriteLine(c.Solde);   // 150
           <code>class Point(int X, int Y) { public int Norme() =&gt; X*X + Y*Y; }</code>.</p>
       </div>
 
-      <h2 id="readonly">Champs <code>readonly</code> &amp; constantes</h2>
+      <h2 id="readonly" data-group="Membres d'une classe">Champs <code>readonly</code> &amp; constantes</h2>
       <p>Trois façons de figer une valeur, de la plus stricte à la plus souple :</p>
       <table>
         <thead>
@@ -307,7 +307,7 @@ class Cercle
       <p>Sur un type valeur : <code>readonly struct</code> gèle tout le type, et <code>readonly</code> sur une méthode
         de <code>struct</code> garantit qu'elle ne modifie pas l'instance. Voir <a href="#struct">Structures</a>.</p>
 
-      <h2 id="encapsulation">Encapsulation &amp; modificateurs d'accès</h2>
+      <h2 id="encapsulation" data-group="Membres d'une classe">Encapsulation &amp; modificateurs d'accès</h2>
       <p>Cacher l'état interne, n'exposer que des opérations sûres. Le compilateur fait respecter les frontières.</p>
       <table>
         <thead>
@@ -344,7 +344,7 @@ class Cercle
         </tbody>
       </table>
 
-      <h2 id="statique">Membres statiques</h2>
+      <h2 id="statique" data-group="Membres d'une classe">Membres statiques</h2>
       <p>Un membre <code>static</code> appartient au <strong>type</strong>, pas à une instance : il existe en un seul
         exemplaire, partagé, et s'appelle via le nom du type. Un membre d'instance appartient à chaque objet.</p>
       <pre class="code"><script type="text/plain">
@@ -381,7 +381,7 @@ Console.WriteLine(Geo.Circonference(Geo.RayonTerre));
           (<code>Math.Sqrt</code>) et aux fabriques.</p>
       </div>
 
-      <h2 id="heritage">Héritage</h2>
+      <h2 id="heritage" data-group="Héritage & abstraction">Héritage</h2>
       <p>Une classe dérivée <em>est un</em> cas particulier de sa classe de base : elle hérite de ses membres et peut en
         ajouter ou en redéfinir.</p>
       <figure>
@@ -456,7 +456,7 @@ e.Pointer();                             // méthode héritée
           Sans <code>virtual</code> (ou <code>abstract</code>) sur le parent, pas d'<code>override</code> possible.</p>
       </div>
 
-      <h2 id="polymorphisme">Polymorphisme</h2>
+      <h2 id="polymorphisme" data-group="Héritage & abstraction">Polymorphisme</h2>
       <p>Un même appel, exécuté différemment selon le <em>type réel</em> de l'objet — décidé à l'exécution.</p>
       <pre class="code"><script type="text/plain">
 Employe[] equipe =
@@ -483,7 +483,7 @@ foreach (Employe emp in equipe)
 }
 </script></pre>
 
-      <h2 id="abstrait-interface">Classe abstraite vs interface</h2>
+      <h2 id="abstrait-interface" data-group="Héritage & abstraction">Classe abstraite vs interface</h2>
       <table>
         <thead>
           <tr>
@@ -579,7 +579,7 @@ IExportable doc = new Facture { Montant = 42m };
 Console.WriteLine(doc.EnCsv());
 </script></pre>
 
-      <h2 id="interfaces">Interfaces en détail</h2>
+      <h2 id="interfaces" data-group="Héritage & abstraction">Interfaces en détail</h2>
       <p>Une interface est un <strong>contrat</strong> : la liste des membres qu'un type s'engage à fournir. Elle dit ce
         qu'un objet <em>sait faire</em>, jamais comment. Convention : le nom commence par <code>I</code>. Ses membres
         sont implicitement <code>public</code> et elle ne contient pas d'état d'instance.</p>
@@ -650,7 +650,7 @@ var g = new Greeter();
 ((IEnglish)g).Hello();        // Hello
 </script></pre>
 
-      <h2 id="struct">Structures (<code>struct</code>)</h2>
+      <h2 id="struct" data-group="Types, collections & namespaces">Structures (<code>struct</code>)</h2>
       <p>Un <code>struct</code> est un <strong>type valeur</strong> : il contient directement ses données (pas de
         référence), il est <strong>copié</strong> à chaque affectation ou passage en paramètre, et il vit en général sur
         la pile ou à l'intérieur de l'objet qui le contient. À réserver aux petites valeurs sans identité : un point,
@@ -718,7 +718,7 @@ Console.WriteLine(a.Distance(new Point2D { X = 3, Y = 4 }));   // 5
           aucune surprise.</p>
       </div>
 
-      <h2 id="records">record — données par valeur</h2>
+      <h2 id="records" data-group="Types, collections & namespaces">record — données par valeur</h2>
       <p>Un <code>record</code> est une classe que le compilateur outille pour représenter une <strong>donnée</strong> :
         égalité par valeur, <code>ToString()</code> lisible, copie non destructive avec <code>with</code>, immuabilité
         par défaut.</p>
@@ -759,7 +759,7 @@ Console.WriteLine(p3);             // Point { X = 1, Y = 9 }  (ToString auto)
         </tbody>
       </table>
 
-      <h2 id="collections">Listes & dictionnaires</h2>
+      <h2 id="collections" data-group="Types, collections & namespaces">Listes & dictionnaires</h2>
       <p>Deux collections génériques omniprésentes, dans <code>System.Collections.Generic</code> (importé par défaut).
         Le <code>&lt;T&gt;</code> précise le type des éléments — vérifié à la compilation.</p>
 
@@ -849,7 +849,7 @@ foreach (var (fruit, quantite) in stock)
           égalité stable (<code>string</code> et types valeur conviennent).</p>
       </div>
 
-      <h2 id="global"><code>global using</code> &amp; <code>global::</code></h2>
+      <h2 id="global" data-group="Types, collections & namespaces"><code>global using</code> &amp; <code>global::</code></h2>
       <p>Deux usages distincts du mot-clé <code>global</code>.</p>
 
       <h3><code>global using</code> — importer un espace de noms dans tout le projet</h3>
@@ -892,7 +892,7 @@ namespace Mon.App
 }
 </script></pre>
 
-      <h2 id="composition">Composition plutôt qu'héritage</h2>
+      <h2 id="composition" data-group="Conception">Composition plutôt qu'héritage</h2>
       <p>Souvent, « a un » vaut mieux que « est un » : au lieu d'hériter, on <em>contient</em> un objet qui fait le
         travail. Plus souple, moins fragile.</p>
       <figure>
@@ -958,7 +958,7 @@ class Voiture
 new Voiture(new MoteurElectrique()).Rouler();  // on branche l'implémentation voulue
 </script></pre>
 
-      <h2 id="exemple">Exemple complet — formes & rendu</h2>
+      <h2 id="exemple" data-group="Conception">Exemple complet — formes & rendu</h2>
       <figure>
         <svg viewBox="0 0 620 300" role="img" aria-label="Diagramme UML — exemple formes">
           <defs>
@@ -1050,7 +1050,7 @@ toile.Ajouter(new Cercle { R = 2 });
 toile.Rapport();
 </script></pre>
 
-      <h2 id="solid">SOLID en une phrase chacun</h2>
+      <h2 id="solid" data-group="Conception">SOLID en une phrase chacun</h2>
       <table>
         <tbody>
           <tr>

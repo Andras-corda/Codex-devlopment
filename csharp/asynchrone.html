@@ -21,7 +21,7 @@
       <p class="lead">Gérer les opérations qui <em>attendent</em> — réseau, disque, base de données — sans bloquer le
         thread ni figer l'application.</p>
 
-      <h2 id="probleme">Le problème</h2>
+      <h2 id="probleme" data-group="Les bases">Le problème</h2>
       <p>Un appel réseau prend 200&nbsp;ms. En synchrone, le thread reste immobilisé pendant ce temps : il ne peut ni
         traiter une autre requête, ni redessiner l'interface. L'asynchrone <strong>rend le thread</strong> pendant
         l'attente et le reprend quand la réponse arrive.</p>
@@ -53,7 +53,7 @@ Thread.Sleep(2000);
 Console.WriteLine("fini");
 </script></pre>
 
-      <h2 id="task">Task & Task&lt;T&gt;</h2>
+      <h2 id="task" data-group="Les bases">Task & Task&lt;T&gt;</h2>
       <p>Une <code>Task</code> représente une opération <em>en cours ou à venir</em>. <code>Task</code> = « ça finira »
         ; <code>Task&lt;T&gt;</code> = « ça produira un <code>T</code> ». C'est l'équivalent de la <em>Promise</em>
         d'autres langages.</p>
@@ -84,7 +84,7 @@ Console.WriteLine("fini");
         </tbody>
       </table>
 
-      <h2 id="asyncawait">async / await</h2>
+      <h2 id="asyncawait" data-group="Les bases">async / await</h2>
       <ol class="steps">
         <li><strong><code>async</code></strong> sur une méthode = « elle contient des <code>await</code> ». Elle renvoie
           <code>Task</code>, <code>Task&lt;T&gt;</code> (ou <code>ValueTask</code>).</li>
@@ -111,7 +111,7 @@ Console.WriteLine(n);               // 42
           <code>async</code> peut l'utiliser. Convention : suffixe <code>Async</code> pour ces méthodes.</p>
       </div>
 
-      <h2 id="cpu-io">CPU-bound vs I/O-bound</h2>
+      <h2 id="cpu-io" data-group="Les bases">CPU-bound vs I/O-bound</h2>
       <table>
         <thead>
           <tr>
@@ -146,7 +146,7 @@ string page = await httpClient.GetStringAsync(url);
 int hash = await Task.Run(() => CalculLourd(donnees));
 </script></pre>
 
-      <h2 id="parallele">Lancer plusieurs tâches en parallèle</h2>
+      <h2 id="parallele" data-group="Aller plus loin">Lancer plusieurs tâches en parallèle</h2>
       <p>Ne pas <code>await</code> tout de suite : on démarre plusieurs Tasks, puis on attend le lot.</p>
       <figure>
         <svg viewBox="0 0 560 170" role="img" aria-label="Séquentiel vs parallèle">
@@ -190,7 +190,7 @@ string[] tout = await Task.WhenAll(urls.Select(u => httpClient.GetStringAsync(u)
           <code>System.Threading.Channels</code>.</p>
       </div>
 
-      <h2 id="annulation">Annulation & timeout</h2>
+      <h2 id="annulation" data-group="Aller plus loin">Annulation & timeout</h2>
       <pre class="code"><script type="text/plain">
 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3)); // timeout auto
 
@@ -215,7 +215,7 @@ async Task TraiterAsync(CancellationToken ct)
 }
 </script></pre>
 
-      <h2 id="exceptions">Exceptions dans du code async</h2>
+      <h2 id="exceptions" data-group="Aller plus loin">Exceptions dans du code async</h2>
       <pre class="code"><script type="text/plain">
 try
 {
@@ -238,7 +238,7 @@ catch
 }
 </script></pre>
 
-      <h2 id="stream">Flux asynchrones — IAsyncEnumerable</h2>
+      <h2 id="stream" data-group="Aller plus loin">Flux asynchrones — IAsyncEnumerable</h2>
       <p>Pour consommer des résultats <em>au fil de l'eau</em> (pagination d'API, lignes d'un gros fichier).</p>
       <pre class="code"><script type="text/plain">
 async IAsyncEnumerable<int> LirePagesAsync()
@@ -254,7 +254,7 @@ await foreach (int valeur in LirePagesAsync())
     Console.WriteLine(valeur);   // 10, 20, 30… affichés dès qu'ils arrivent
 </script></pre>
 
-      <h2 id="pieges">Pièges classiques</h2>
+      <h2 id="pieges" data-group="En pratique">Pièges classiques</h2>
       <table>
         <thead>
           <tr>
@@ -297,7 +297,7 @@ await foreach (int valeur in LirePagesAsync())
           jamais du synchrone avec <code>.Result</code>.</p>
       </div>
 
-      <h2 id="exemple">Exemple complet — téléchargement parallèle avec timeout</h2>
+      <h2 id="exemple" data-group="En pratique">Exemple complet — téléchargement parallèle avec timeout</h2>
       <pre class="code"><script type="text/plain">
 using System.Diagnostics;
 

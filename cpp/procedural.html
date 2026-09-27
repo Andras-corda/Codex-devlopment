@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Codex — C++ · Procédural</title>
-<meta name="description" content="C++ procédural : variables, constantes, types de base, portée, opérateurs, décisions (if/switch/enum), boucles.">
+<meta name="description" content="C++ procédural : variables, constantes (const, constexpr, pointeurs const), types de base, portée, opérateurs, incrément/décrément, opérateurs composés, décisions (if/switch/enum), boucles, procédures &amp; fonctions.">
 <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body data-lang="cpp" data-page="procedural">
@@ -16,9 +16,9 @@
 
 <main>
   <h1>1 · Procédural</h1>
-  <p class="lead">Variables, types, portée, opérateurs, décisions et boucles — la base de tout programme C++ console.</p>
+  <p class="lead">Variables, types, portée, opérateurs, décisions, boucles, procédures et fonctions — la base de tout programme C++ console.</p>
 
-  <h2 id="variables">Variables & constantes</h2>
+  <h2 id="variables" data-group="Données">Variables</h2>
   <pre class="code" data-lang="cpp"><script type="text/plain">
 int a = 5;         // déclaration + initialisation
 const int b = 12;  // constante : doit être initialisée, ne change plus jamais
@@ -31,7 +31,79 @@ int c;             // déclarée mais pas initialisée
     <p>Contrairement à d'autres langages, déclarer <code>int c;</code> sans lui donner de valeur laisse un contenu <strong>indéterminé</strong> (ce qui se trouvait déjà à cet endroit en mémoire). Lire cette variable avant de l'avoir assignée est un bug classique — toujours initialiser à la déclaration par réflexe.</p>
   </div>
 
-  <h2 id="types">Types de base</h2>
+  <h2 id="const" data-group="Données">Constantes : const & constexpr</h2>
+  <p>Une variable <code>const</code> ne peut plus être modifiée après son initialisation : toute tentative est une <strong>erreur de compilation</strong>, pas un bug découvert en jeu. C'est une promesse vérifiée par le compilateur — et une information pour le lecteur (« cette valeur ne bouge pas »).</p>
+  <pre class="code" data-lang="cpp"><script type="text/plain">
+const int maxHealth = 100;
+maxHealth = 150;          // ERREUR de compilation : maxHealth est en lecture seule
+
+const int b;              // ERREUR : une constante doit être initialisée
+
+int input;
+std::cin >> input;
+const int difficulty = input;   // OK : const accepte une valeur connue à l'exécution
+</script></pre>
+
+  <h3>constexpr : connue à la compilation</h3>
+  <p><code>constexpr</code> va plus loin : la valeur doit être calculable <strong>pendant la compilation</strong>. Elle peut alors servir là où le compilateur exige une constante — taille d'un tableau, étiquette de <code>case</code>, paramètre de template.</p>
+  <pre class="code" data-lang="cpp"><script type="text/plain">
+constexpr int TILE_SIZE = 32;             // taille d'une case en pixels
+constexpr int GRID_W = 20, GRID_H = 15;
+constexpr int SCREEN_W = GRID_W * TILE_SIZE;   // 640, calculé par le compilateur
+
+int grid[GRID_H][GRID_W];                 // OK : tailles connues à la compilation
+
+constexpr int square(int x) { return x * x; }  // fonction évaluable à la compilation
+constexpr int area = square(TILE_SIZE);        // 1024
+
+constexpr int bad = input;                // ERREUR : input n'est connu qu'à l'exécution
+</script></pre>
+  <table>
+    <thead><tr><th></th><th>Modifiable ?</th><th>Valeur connue</th><th>Usage</th></tr></thead>
+    <tbody>
+      <tr><td>variable normale</td><td>oui</td><td>à l'exécution</td><td>état qui évolue (vie, position)</td></tr>
+      <tr><td><code>const</code></td><td>non</td><td>à l'exécution ou à la compilation</td><td>valeur figée une fois calculée (réglage lu au démarrage, paramètre)</td></tr>
+      <tr><td><code>constexpr</code></td><td>non</td><td><strong>à la compilation</strong></td><td>constantes du jeu (tailles, limites, vitesses de base)</td></tr>
+    </tbody>
+  </table>
+  <div class="callout tip">
+    <span class="label">Chasser les « nombres magiques »</span>
+    <p><code>if (speed &gt; 600.0)</code> ne dit pas ce que vaut 600. <code>constexpr double MAX_SPEED = 600.0;</code> donne un nom à la valeur, et un seul endroit à changer. Préférer aussi <code>constexpr</code> à <code>#define MAX_SPEED 600.0</code> : une macro n'a ni type, ni portée — c'est un simple remplacement de texte avant la compilation.</p>
+  </div>
+
+  <h3>const, pointeurs et références</h3>
+  <p>Avec un pointeur, <code>const</code> peut protéger <strong>la valeur pointée</strong>, <strong>le pointeur lui-même</strong>, ou les deux. Astuce : lire la déclaration de <strong>droite à gauche</strong>.</p>
+  <pre class="code" data-lang="cpp"><script type="text/plain">
+int hp = 50, mana = 20;
+
+const int* p1 = &hp;        // « pointeur vers un int constant »
+// *p1 = 60;                // ERREUR : la valeur pointée est protégée
+p1 = &mana;                 // OK : le pointeur peut viser autre chose
+
+int* const p2 = &hp;        // « pointeur constant vers un int »
+*p2 = 60;                   // OK : on peut modifier hp
+// p2 = &mana;              // ERREUR : le pointeur est figé
+
+const int* const p3 = &hp;  // les deux sont protégés
+
+const int& ref = hp;        // référence en lecture seule (voir les paramètres plus bas)
+// ref = 70;                // ERREUR
+</script></pre>
+  <table>
+    <thead><tr><th>Déclaration</th><th>Changer la valeur ?</th><th>Changer la cible ?</th></tr></thead>
+    <tbody>
+      <tr><td><code>int* p</code></td><td>oui</td><td>oui</td></tr>
+      <tr><td><code>const int* p</code></td><td>non</td><td>oui</td></tr>
+      <tr><td><code>int* const p</code></td><td>oui</td><td>non</td></tr>
+      <tr><td><code>const int* const p</code></td><td>non</td><td>non</td></tr>
+    </tbody>
+  </table>
+  <div class="callout info">
+    <span class="label">const partout où c'est possible</span>
+    <p>Réflexe de <em>const-correctness</em> : tout ce qui n'a pas à changer est marqué <code>const</code> — variables locales, paramètres passés par référence (<code>const std::string&amp;</code>, voir <a href="#fonctions">Procédures &amp; fonctions</a>), et plus tard les méthodes de classe qui ne modifient pas l'objet (<code>int GetHealth() const</code>, omniprésent dans le code C++ d'Unreal Engine).</p>
+  </div>
+
+  <h2 id="types" data-group="Données">Types de base</h2>
   <table>
     <thead><tr><th>Type</th><th>Description</th></tr></thead>
     <tbody>
@@ -47,7 +119,7 @@ int c;             // déclarée mais pas initialisée
     <p>Pour un contrôle précis de la taille (flags, couleurs, id de texture), C++ propose aussi <code>uint8_t</code>, <code>uint16_t</code>, <code>uint32_t</code>… (bibliothèque <code>&lt;cstdint&gt;</code>) — voir <a href="bit-manipulations.html">2 · Manipulation de bits</a>.</p>
   </div>
 
-  <h2 id="scope">Portée (scope)</h2>
+  <h2 id="scope" data-group="Données">Portée (scope)</h2>
   <p>Les accolades <code>{ }</code> délimitent une portée. Une variable déclarée dans une portée interne peut <strong>masquer</strong> (shadow) une variable de même nom d'une portée externe — l'inverse n'est pas possible.</p>
   <figure>
     <svg viewBox="0 0 540 260" role="img" aria-label="Portées imbriquées">
@@ -66,13 +138,14 @@ int c;             // déclarée mais pas initialisée
     <figcaption>En sortant d'une portée, toutes ses variables locales sont détruites. Une portée externe (main) ne voit jamais les variables d'une portée interne.</figcaption>
   </figure>
 
-  <h2 id="operateurs">Opérateurs arithmétiques</h2>
+  <h2 id="operateurs" data-group="Opérateurs">Opérateurs arithmétiques</h2>
   <table>
     <thead><tr><th>Opérateur</th><th>Rôle</th></tr></thead>
     <tbody>
       <tr><td><code>+ - * /</code></td><td>addition, soustraction, multiplication, division</td></tr>
       <tr><td><code>%</code></td><td>modulo — reste de la division entière</td></tr>
-      <tr><td><code>++ / --</code></td><td>incrémente/décrémente (pré ou post)</td></tr>
+      <tr><td><code>++ / --</code></td><td>incrémente/décrémente de 1 (pré ou post) — voir <a href="#increment">plus bas</a></td></tr>
+      <tr><td><code>+= -= *= /= %=</code></td><td>opérateurs composés — voir <a href="#composes">plus bas</a></td></tr>
     </tbody>
   </table>
   <pre class="code" data-lang="cpp"><script type="text/plain">
@@ -82,12 +155,113 @@ int rem = a % b;   // 5  — le reste
 
 // Utile pour une grille de tuiles : position en pixels -> case + offset dans la case
 </script></pre>
-  <div class="callout info">
-    <span class="label">Pré vs post incrément</span>
-    <p><code>a++</code> (post) utilise la valeur <strong>puis</strong> incrémente ; <code>++a</code> (pré) incrémente <strong>puis</strong> utilise la valeur. <code>int b = a++ + 10;</code> n'est donc pas équivalent à <code>int c = 10 + ++a;</code>. Voir <a href="https://en.cppreference.com/w/cpp/language/operator_precedence" target="_blank" rel="noopener">l'ordre de précédence des opérateurs</a>.</p>
+
+  <h2 id="increment" data-group="Opérateurs">Incrément & décrément</h2>
+  <p><code>++</code> ajoute 1 à une variable, <code>--</code> retire 1. Seuls, <code>hp++;</code> et <code>++hp;</code> font exactement la même chose. La différence n'apparaît que quand l'opération est <strong>utilisée dans une expression</strong> : faut-il lire la valeur avant ou après le changement ?</p>
+  <table>
+    <thead><tr><th>Forme</th><th>Nom</th><th>Modifie la variable</th><th>Valeur renvoyée à l'expression</th></tr></thead>
+    <tbody>
+      <tr><td><code>++a</code></td><td>pré-incrément</td><td>+1</td><td>la <strong>nouvelle</strong> valeur</td></tr>
+      <tr><td><code>a++</code></td><td>post-incrément</td><td>+1</td><td>l'<strong>ancienne</strong> valeur</td></tr>
+      <tr><td><code>--a</code></td><td>pré-décrément</td><td>-1</td><td>la <strong>nouvelle</strong> valeur</td></tr>
+      <tr><td><code>a--</code></td><td>post-décrément</td><td>-1</td><td>l'<strong>ancienne</strong> valeur</td></tr>
+    </tbody>
+  </table>
+  <pre class="code" data-lang="cpp"><script type="text/plain">
+#include <iostream>
+
+int main()
+{
+    int a = 5;
+
+    int b = a++ + 10;   // lit a (5) PUIS incrémente -> b = 15, a = 6
+    int c = 10 + ++a;   // incrémente a (7) PUIS lit    -> c = 17, a = 7
+
+    int d = a--;        // d = 7, a = 6
+    int e = --a;        // a = 5, e = 5
+
+    std::cout << a << ' ' << b << ' ' << c << ' ' << d << ' ' << e << '\n';   // 5 15 17 7 5
+    return 0;
+}
+</script></pre>
+  <figure>
+    <svg viewBox="0 0 620 150" role="img" aria-label="Pré-incrément contre post-incrément">
+      <rect class="svg-bg" x="0" y="0" width="620" height="150" rx="6"/>
+      <text class="svg-t" x="155" y="26" text-anchor="middle">b = a++ + 10   (a vaut 5)</text>
+      <rect class="svg-box-w" x="25" y="45" width="120" height="44" rx="6"/>
+      <text class="svg-t" x="85" y="65" text-anchor="middle">① lire a</text>
+      <text class="svg-tm" x="85" y="81" text-anchor="middle">→ 5</text>
+      <rect class="svg-box" x="165" y="45" width="120" height="44" rx="6"/>
+      <text class="svg-t" x="225" y="65" text-anchor="middle">② a + 1</text>
+      <text class="svg-tm" x="225" y="81" text-anchor="middle">a = 6</text>
+      <text class="svg-tm" x="155" y="120" text-anchor="middle">b = 5 + 10 = 15</text>
+
+      <text class="svg-t" x="465" y="26" text-anchor="middle">c = 10 + ++a   (a vaut 6)</text>
+      <rect class="svg-box" x="335" y="45" width="120" height="44" rx="6"/>
+      <text class="svg-t" x="395" y="65" text-anchor="middle">① a + 1</text>
+      <text class="svg-tm" x="395" y="81" text-anchor="middle">a = 7</text>
+      <rect class="svg-box-g" x="475" y="45" width="120" height="44" rx="6"/>
+      <text class="svg-t" x="535" y="65" text-anchor="middle">② lire a</text>
+      <text class="svg-tm" x="535" y="81" text-anchor="middle">→ 7</text>
+      <text class="svg-tm" x="465" y="120" text-anchor="middle">c = 10 + 7 = 17</text>
+    </svg>
+    <figcaption>Post (<code>a++</code>) : on lit, puis on change. Pré (<code>++a</code>) : on change, puis on lit.</figcaption>
+  </figure>
+
+  <h3>Dans les boucles</h3>
+  <pre class="code" data-lang="cpp"><script type="text/plain">
+for (int i = 0; i < 5; i++)      // 0 1 2 3 4 — i++ ou ++i : même résultat ici
+    std::cout << i << ' ';
+
+for (int i = 3; i > 0; i--)      // compte à rebours : 3 2 1
+    std::cout << i << "...\n";
+std::cout << "GO!\n";
+
+int numPotions = 3;
+while (numPotions > 0)
+{
+    numPotions--;                // une potion utilisée par tour
+}
+</script></pre>
+  <div class="callout tip">
+    <span class="label">i++ ou ++i dans un for ?</span>
+    <p>Pour un <code>int</code>, aucune différence : la valeur renvoyée n'est lue par personne, le compilateur produit le même code. Beaucoup de développeurs C++ prennent quand même l'habitude de <code>++i</code> : sur des objets plus lourds (les <em>itérateurs</em> des conteneurs), le post-incrément doit fabriquer une copie de l'ancienne valeur pour la renvoyer.</p>
+  </div>
+  <div class="callout danger">
+    <span class="label">Pièges</span>
+    <p><strong>Ne pas modifier et relire la même variable dans une seule expression</strong> : <code>a++ + a++</code> ou <code>arr[i] = i++</code> ont un résultat indéfini ou peu lisible — faire l'incrément sur sa propre ligne. <strong>Attention aux non-signés</strong> : un <code>uint8_t ammo = 0;</code> auquel on fait <code>ammo--</code> ne devient pas -1 mais <strong>255</strong> (il « fait le tour ») — toujours tester <code>if (ammo &gt; 0)</code> avant de décrémenter. Et un <code>int</code> incrémenté au-delà de sa valeur maximale est un comportement indéfini.</p>
   </div>
 
-  <h2 id="relationnels">Opérateurs relationnels & logiques</h2>
+  <h2 id="composes" data-group="Opérateurs">Opérateurs composés</h2>
+  <p>Un opérateur composé combine un calcul et une affectation : <code>x op= y</code> équivaut à <code>x = x op y</code>. Plus court, et la variable n'est écrite qu'une fois (moins de risque de faute de frappe entre les deux côtés).</p>
+  <table>
+    <thead><tr><th>Composé</th><th>Équivaut à</th><th>Exemple de jeu</th></tr></thead>
+    <tbody>
+      <tr><td><code>hp += 10</code></td><td><code>hp = hp + 10</code></td><td>soin</td></tr>
+      <tr><td><code>hp -= damage</code></td><td><code>hp = hp - damage</code></td><td>dégâts subis</td></tr>
+      <tr><td><code>speed *= 2</code></td><td><code>speed = speed * 2</code></td><td>boost</td></tr>
+      <tr><td><code>damage /= 2</code></td><td><code>damage = damage / 2</code></td><td>bouclier (division entière si <code>int</code>)</td></tr>
+      <tr><td><code>frame %= 8</code></td><td><code>frame = frame % 8</code></td><td>boucler sur 8 images d'animation</td></tr>
+      <tr><td><code>|= &amp;= ^= &lt;&lt;= &gt;&gt;=</code></td><td>versions bit à bit</td><td>activer / éteindre des flags — voir <a href="bit-manipulations.html#masques">Manipulation de bits</a></td></tr>
+    </tbody>
+  </table>
+  <pre class="code" data-lang="cpp"><script type="text/plain">
+int heroHealth = 50;
+int damageTaken = 20;
+bool heroHasShield = true;
+
+if (heroHasShield)
+    damageTaken /= 2;          // 10
+
+heroHealth -= damageTaken;     // 40
+heroHealth += 30;              // 70 — une potion
+
+int frame = 7;
+frame++;                       // 8
+frame %= 8;                    // 0 — retour à la première image
+</script></pre>
+
+  <h2 id="relationnels" data-group="Opérateurs">Opérateurs relationnels & logiques</h2>
   <table>
     <thead><tr><th>Opérateur</th><th>Sens</th></tr></thead>
     <tbody>
@@ -97,19 +271,36 @@ int rem = a % b;   // 5  — le reste
     </tbody>
   </table>
   <pre class="code" data-lang="cpp"><script type="text/plain">
-std::cout << std::boolalpha;   // affiche "true"/"false" au lieu de 1/0
+#include <iostream>
 
-bool hasKey = true, doorLocked = true;
-double maxDistance = 1.0, doorDistance = 0.5;
+int main()
+{
+    std::cout << std::boolalpha;    // affiche les booléens en texte : true / false
 
-bool canOpenDoor = doorDistance < maxDistance && (!doorLocked || hasKey);
+    bool a = true;                  // sans boolalpha, un bool s'affiche 1 / 0
+    bool b = false;
+
+    // Expression booléenne : relationnel (!=) + logiques (&&, ||)
+    bool c = 1 != 2 && (a || b);    // évaluation paresseuse (court-circuit)
+
+    if (c)
+        std::cout << "Vrai";
+    else
+        std::cout << "Faux";
+
+    return 0;
+}
 </script></pre>
+  <div class="callout info">
+    <span class="label">Évaluation paresseuse (court-circuit)</span>
+    <p><code>&amp;&amp;</code> et <code>||</code> s'arrêtent dès que le résultat est connu : dans <code>A &amp;&amp; B</code>, si <code>A</code> est faux, <code>B</code> n'est <strong>jamais évalué</strong> ; dans <code>A || B</code>, si <code>A</code> est vrai non plus. C'est ce qui rend sûr <code>ptr != nullptr &amp;&amp; ptr-&gt;isAlive()</code>. Un exemple de jeu : <code>bool canOpenDoor = doorDistance &lt; maxDistance &amp;&amp; (!doorLocked || hasKey);</code></p>
+  </div>
   <div class="callout warn">
     <span class="label">Ne jamais comparer des flottants avec ==</span>
     <p><code>0.1 + 0.2 == 0.3</code> vaut <strong>false</strong> : la représentation binaire des flottants introduit de minuscules erreurs d'arrondi. Teste plutôt que l'écart est suffisamment petit (<code>std::abs(a - b) &lt; epsilon</code>).</p>
   </div>
 
-  <h2 id="decisions">Prise de décision</h2>
+  <h2 id="decisions" data-group="Contrôle du flux">Prise de décision</h2>
   <pre class="code" data-lang="cpp"><script type="text/plain">
 if (canOpenDoor)
     std::cout << "You open the door!\n";
@@ -125,36 +316,77 @@ if (boost)
 }
 </script></pre>
   <pre class="code" data-lang="cpp"><script type="text/plain">
-// Opérateur ternaire : condition ? si_vrai : si_faux
-double maxSpeed = health > 50 ? 3.5 : 2.0;
+#include <iostream>
+
+int main()
+{
+    int health = 75;
+
+    // Opérateur ternaire : condition ? si_vrai : si_faux
+    double maxSpeed = health > 50 ? 3.5 : 2.0;   // 75 > 50 est vrai -> 3.5
+
+    std::cout << "Maximum speed: " << maxSpeed;
+}
 </script></pre>
   <pre class="code" data-lang="cpp"><script type="text/plain">
-switch (command)
+#include <iostream>
+
+int main()
 {
-    case 'n': std::cout << "Move north\n"; break;
-    case 's': std::cout << "Move south\n"; break;
-    default:  std::cout << "Unknown command\n"; break;
+    char command;   // un seul caractère
+    std::cout << "Where do you want to go next? ";
+    std::cin >> command;
+
+    // Une branche par valeur possible de command (touches ZQSD)
+    switch (command)
+    {
+        case 'z': std::cout << "Move forward";      break;
+        case 'q': std::cout << "Move to the left";  break;
+        case 's': std::cout << "Move backward";     break;
+        case 'd': std::cout << "Move to the right"; break;
+        default:  std::cout << "Idling 'cause whatever you did, it was wrong"; break;
+    }
+
+    return 0;
 }
 </script></pre>
   <div class="callout tip">
     <span class="label">if vs switch</span>
-    <p><code>if</code> pour évaluer des conditions ; <code>switch</code> pour choisir parmi plusieurs valeurs discrètes connues. Le <code>break</code> arrête la comparaison — l'oublier fait « tomber » l'exécution dans le <code>case</code> suivant (<em>fallthrough</em>), parfois volontaire (cases groupés).</p>
+    <p><code>if</code> pour évaluer des conditions ; <code>switch</code> pour choisir parmi plusieurs valeurs discrètes connues (entiers, <code>char</code>, <code>enum</code> — pas de <code>std::string</code>). Le gain est surtout en <strong>lisibilité</strong> : le compilateur peut en faire une table de saut, mais il optimise souvent une chaîne de <code>if</code> tout aussi bien. Le <code>break</code> arrête la comparaison — l'oublier fait « tomber » l'exécution dans le <code>case</code> suivant (<em>fallthrough</em>), parfois volontaire (cases groupés).</p>
   </div>
   <pre class="code" data-lang="cpp"><script type="text/plain">
-enum class Item : uint8_t { NONE, SWORD, RED_KEY, BLUE_KEY };
+#include <iostream>
+#include <cstdint>
 
-Item item = Item::SWORD;
-switch (item)
+// enum class + taille imposée : ": uint8_t" = entier non signé sur 8 bits
+enum class Item : uint8_t
 {
-    case Item::SWORD: std::cout << "Something glints on the floor.\n"; break;
-    case Item::RED_KEY:
-    case Item::BLUE_KEY: std::cout << "It looks like there's a key on the floor.\n"; break;
-    case Item::NONE: std::cout << "The room is empty.\n"; break;
+    NONE,    // 0
+    SWORD,   // 1
+    KEY      // 2
+};
+
+int main()
+{
+    Item item = Item::SWORD;
+
+    switch (item)
+    {
+        case Item::SWORD: std::cout << "A sword";        break;
+        case Item::KEY:   std::cout << "A key";          break;
+        case Item::NONE:  std::cout << "Nothing to see"; break;
+        default:          std::cout << "Time to start a life of crime"; break;
+    }
+    return 0;
 }
 </script></pre>
-  <p><code>enum class</code> crée un ensemble nommé de valeurs commençant à 0 par défaut — plus sûr qu'un simple <code>enum</code> (pas de conversion implicite en entier, les noms restent qualifiés par <code>Item::</code>).</p>
+  <p><code>enum class</code> crée un ensemble nommé de valeurs commençant à 0 par défaut — plus sûr qu'un simple <code>enum</code> (pas de conversion implicite en entier, les noms restent qualifiés par <code>Item::</code>). Le <code>: uint8_t</code> fixe la taille sur un octet : c'est exactement ce que fait Unreal pour les enums Blueprint (<code>UENUM(BlueprintType) enum class … : uint8</code>).</p>
+  <div class="callout tip">
+    <span class="label">Plusieurs cases, un seul traitement</span>
+    <p>Sans <code>break</code>, l'exécution « tombe » dans le <code>case</code> suivant : <code>case Item::RED_KEY: case Item::BLUE_KEY: std::cout &lt;&lt; "A key"; break;</code> traite les deux clés pareil.</p>
+  </div>
 
-  <h2 id="boucles">Boucles</h2>
+  <h2 id="boucles" data-group="Contrôle du flux">Boucles</h2>
   <table>
     <thead><tr><th></th><th>Condition testée</th><th>Bon pour</th></tr></thead>
     <tbody>
@@ -198,17 +430,193 @@ for (int i = 0; i < 10; i++)
     <p>Une boucle interne s'exécute en entier à chaque itération de la boucle externe — utile pour parcourir une grille 2D (<code>for (y) { for (x) { ... } }</code>).</p>
   </div>
 
-  <h2 id="exercices">Exercices classiques</h2>
+  <h2 id="exemple-combat" data-group="Contrôle du flux">Exemple complet : survivre à un combat</h2>
+  <p>Tout ce qui précède dans un seul programme : une <code>const</code>, des booléens, des <code>if</code>, des opérateurs composés et une boucle <code>while</code>. Le héros encaisse une attaque par tour ; son bouclier divise les dégâts par deux, et une potion le sauve automatiquement s'il tombe à 0.</p>
+  <pre class="code" data-lang="cpp"><script type="text/plain">
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+    int heroHealth = 5;
+    int numPotions = 3;
+    const int potionHealing = 30;    // ne change jamais : const
+    int enemyAttackDamage = 20;
+    bool heroHasShield = true;
+
+    int turn = 1;                    // compteur de tours
+
+    while (heroHealth > 0)
+    {
+        cout << "Round " << turn << " \n";
+        cout << "The enemy attacks !\n";
+
+        int damageTaken = enemyAttackDamage;
+        if (heroHasShield)
+        {
+            damageTaken /= 2;        // le bouclier divise les dégâts par deux
+        }
+        cout << "Damage taken : " << damageTaken << " HP\n";
+        heroHealth -= damageTaken;
+
+        bool potionUsed = false;
+        if (heroHealth <= 0 && numPotions > 0)   // mort ET il reste une potion
+        {
+            heroHealth += potionHealing;
+            numPotions--;
+            potionUsed = true;
+        }
+        if (potionUsed)
+            cout << "A potion was automatically used to save the player !\n";
+        else
+            cout << "No potion was used.\n";
+
+        cout << "Potions left : " << numPotions << "\n";
+        cout << "Health status after the attack : " << heroHealth << " HP\n";
+
+        if (heroHealth > 0)
+            cout << "Player Status : ALIVE\n\n";
+        else
+            cout << "Player Status : DEAD\n\n";
+
+        turn++;
+    }
+
+    cout << "You can't expect to win them all ! The hero has survived " << turn - 2 << " rounds !" << endl;
+
+    return 0;
+}
+</script></pre>
+  <div class="callout info">
+    <span class="label">Pourquoi turn - 2 ?</span>
+    <p>À la sortie du <code>while</code>, <code>turn</code> a été incrémenté une fois de trop (après le dernier tour), et ce dernier tour est celui où le héros meurt : il n'a donc <strong>survécu</strong> qu'à <code>turn - 2</code> tours. Avec ces valeurs : 9 tours survécus, mort au 10<sup>e</sup>. Ce genre de décalage d'un (<em>off-by-one</em>) est l'erreur de boucle la plus courante — toujours dérouler le premier et le dernier tour à la main.</p>
+  </div>
+
+  <h2 id="fonctions" data-group="Fonctions">Procédures & fonctions</h2>
+  <p>Une <strong>fonction</strong> regroupe des instructions sous un nom réutilisable. Elle reçoit des <strong>paramètres</strong> et peut <strong>retourner</strong> une valeur. En C++ il n'y a pas de mot-clé séparé pour une <strong>procédure</strong> : c'est simplement une fonction de type <code>void</code>, qui agit (affiche, modifie un état) sans rien renvoyer.</p>
   <table>
-    <thead><tr><th>Exercice</th><th>Ce qu'il travaille</th></tr></thead>
+    <thead><tr><th></th><th>Type de retour</th><th>Appel</th><th>Bon pour</th></tr></thead>
     <tbody>
-      <tr><td>Celsius → Fahrenheit</td><td>lecture au clavier, expression arithmétique simple</td></tr>
-      <tr><td>Affichage heures:minutes:secondes</td><td>divisions et modulos enchaînés (décomposition d'un problème)</td></tr>
-      <tr><td>Survivre à une attaque</td><td>booléens combinés, conditions imbriquées, cas limites</td></tr>
-      <tr><td>Factorielle, Fibonacci</td><td>boucle <code>for</code>, accumulation d'un résultat</td></tr>
-      <tr><td>Triangle en <code>#</code></td><td>boucles imbriquées pour un motif 2D en console</td></tr>
+      <tr><td>Procédure</td><td><code>void</code></td><td>instruction seule : <code>printHealth(hp);</code></td><td>une action — afficher, modifier, sauvegarder</td></tr>
+      <tr><td>Fonction</td><td><code>int</code>, <code>double</code>, <code>bool</code>…</td><td>dans une expression : <code>int d = damage(10, 2);</code></td><td>calculer et renvoyer un résultat</td></tr>
     </tbody>
   </table>
+  <pre class="code" data-lang="cpp"><script type="text/plain">
+// Procédure : ne retourne rien
+void printHealth(int health)
+{
+    std::cout << "Health: " << health << '\n';
+}
+
+// Fonction : retourne une valeur du type annoncé
+int damage(int attack, int multiplier)
+{
+    return attack * multiplier;   // return renvoie la valeur ET quitte la fonction
+}
+
+int main()
+{
+    int hit = damage(10, 2);      // 20
+    printHealth(100 - hit);       // Health: 80
+}
+</script></pre>
+  <div class="callout warn">
+    <span class="label">Toujours retourner une valeur</span>
+    <p>Une fonction non-<code>void</code> doit atteindre un <code>return</code> sur <strong>tous</strong> les chemins (chaque branche d'un <code>if</code>). Sinon le comportement est indéfini — le compilateur ne fait qu'avertir. Dans une procédure, <code>return;</code> (sans valeur) permet de sortir plus tôt.</p>
+  </div>
+
+  <h3>Déclaration (prototype) & définition</h3>
+  <p>Le compilateur lit le fichier de haut en bas : une fonction doit être <strong>connue avant d'être appelée</strong>. Soit on la définit au-dessus de <code>main()</code>, soit on écrit son <strong>prototype</strong> (signature terminée par <code>;</code>) en haut — typiquement dans un <code>.h</code> — et le corps plus loin.</p>
+  <pre class="code" data-lang="cpp"><script type="text/plain">
+double average(int a, int b);     // prototype : promet que la fonction existe
+
+int main()
+{
+    std::cout << average(3, 4) << '\n';   // 3.5 — OK, déjà déclarée
+}
+
+double average(int a, int b)      // définition : le corps
+{
+    return (a + b) / 2.0;         // 2.0 force une division flottante
+}
+</script></pre>
+
+  <h3>Passage par valeur, par référence, par référence constante</h3>
+  <p>Par défaut, un paramètre est une <strong>copie</strong> : modifier le paramètre ne change pas la variable de l'appelant. Avec <code>&amp;</code>, le paramètre devient un <strong>alias</strong> de la variable d'origine.</p>
+  <figure>
+    <svg viewBox="0 0 620 170" role="img" aria-label="Passage par valeur contre passage par référence">
+      <rect class="svg-bg" x="0" y="0" width="620" height="170" rx="6"/>
+      <text class="svg-t" x="155" y="24" text-anchor="middle">Par valeur — void heal(int hp)</text>
+      <rect class="svg-box" x="30" y="45" width="100" height="50" rx="6"/>
+      <text class="svg-t" x="80" y="68" text-anchor="middle">main : hp</text>
+      <text class="svg-tm" x="80" y="85" text-anchor="middle">50</text>
+      <rect class="svg-box-w" x="180" y="45" width="100" height="50" rx="6"/>
+      <text class="svg-t" x="230" y="68" text-anchor="middle">heal : hp</text>
+      <text class="svg-tm" x="230" y="85" text-anchor="middle">copie → 60</text>
+      <path class="svg-arrow" d="M130 70 H178"/>
+      <text class="svg-tm" x="155" y="130" text-anchor="middle">main voit toujours 50</text>
+
+      <text class="svg-t" x="465" y="24" text-anchor="middle">Par référence — void heal(int&amp; hp)</text>
+      <rect class="svg-box-g" x="370" y="45" width="190" height="50" rx="6"/>
+      <text class="svg-t" x="465" y="68" text-anchor="middle">main : hp = heal : hp</text>
+      <text class="svg-tm" x="465" y="85" text-anchor="middle">même case mémoire → 60</text>
+      <text class="svg-tm" x="465" y="130" text-anchor="middle">main voit 60</text>
+    </svg>
+    <figcaption>Une référence n'est pas une copie : c'est un second nom pour la même variable.</figcaption>
+  </figure>
+  <pre class="code" data-lang="cpp"><script type="text/plain">
+void healCopy(int hp)       { hp += 10; }   // modifie une copie — sans effet dehors
+void heal(int& hp)          { hp += 10; }   // modifie la variable de l'appelant
+
+void printName(const std::string& name)     // pas de copie, mais lecture seule
+{
+    std::cout << name << '\n';
+}
+
+int hp = 50;
+healCopy(hp);   // hp vaut toujours 50
+heal(hp);       // hp vaut 60
+</script></pre>
+  <table>
+    <thead><tr><th>Forme</th><th>Copie ?</th><th>Modifiable ?</th><th>Quand l'utiliser</th></tr></thead>
+    <tbody>
+      <tr><td><code>int x</code></td><td>oui</td><td>seulement la copie</td><td>petits types (<code>int</code>, <code>double</code>, <code>bool</code>, <code>char</code>)</td></tr>
+      <tr><td><code>int&amp; x</code></td><td>non</td><td>oui, l'original</td><td>la fonction doit modifier la variable de l'appelant</td></tr>
+      <tr><td><code>const std::string&amp; x</code></td><td>non</td><td>non</td><td>gros objets en lecture (<code>std::string</code>, <code>std::vector</code>…)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Paramètres par défaut & surcharge</h3>
+  <pre class="code" data-lang="cpp"><script type="text/plain">
+// Paramètre par défaut : toujours en fin de liste
+void attack(int power, int times = 1)
+{
+    for (int i = 0; i < times; i++)
+        std::cout << "Hit for " << power << '\n';
+}
+
+attack(5);      // times = 1
+attack(5, 3);   // times = 3
+
+// Surcharge : même nom, paramètres différents -> le compilateur choisit
+int    maxOf(int a, int b)       { return a > b ? a : b; }
+double maxOf(double a, double b) { return a > b ? a : b; }
+</script></pre>
+  <div class="callout info">
+    <span class="label">Le type de retour ne suffit pas</span>
+    <p>Deux surcharges doivent différer par leurs <strong>paramètres</strong> (nombre ou types). Deux fonctions qui ne diffèrent que par le type de retour ne compilent pas.</p>
+  </div>
+
+  <h3>Récursivité</h3>
+  <p>Une fonction peut s'appeler elle-même, à condition d'avoir un <strong>cas de base</strong> qui arrête les appels. Chaque appel empile ses propres variables locales sur la pile (<em>stack</em>) ; sans cas de base, on obtient un <em>stack overflow</em>.</p>
+  <pre class="code" data-lang="cpp"><script type="text/plain">
+int factorial(int n)
+{
+    if (n <= 1) return 1;          // cas de base
+    return n * factorial(n - 1);   // appel récursif sur un problème plus petit
+}
+</script></pre>
 
   <footer class="pg">
     <span><a href="index.html">← Accueil C++</a></span>

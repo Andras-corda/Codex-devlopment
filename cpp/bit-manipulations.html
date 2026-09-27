@@ -94,9 +94,55 @@ flags |= (1 << bitToTest);
 // Inverser un ou plusieurs bits : XOR avec le masque
 flags ^= 0x0f;   // inverse les 4 bits de poids faible
 </script></pre>
-  <div class="callout tip">
-    <span class="label">Et pour désactiver (clear) un bit ?</span>
-    <p>AND avec le complément du masque : <code>flags &amp;= ~(1 &lt;&lt; position)</code> — <code>~</code> inverse le masque (un seul 0 à la position voulue, des 1 partout ailleurs), donc le AND ne touche qu'à ce bit et laisse les autres intacts.</p>
+  <h3>Désactiver (clear) un bit</h3>
+  <p>AND avec le complément du masque : <code>~</code> inverse le masque (un seul 0 à la position voulue, des 1 partout ailleurs), donc le AND ne touche qu'à ce bit et laisse les autres intacts.</p>
+  <pre class="code" data-lang="cpp"><script type="text/plain">
+#include <iostream>
+#include <cstdint>
+#include <bitset>
+
+using namespace std;
+
+int main()
+{
+    uint32_t bitArray = ~0U;   // 32 bits, tous à 1 (NOT de 0)
+
+    cout << "Original value : \n" << bitset<32>(bitArray) << "\n\n";
+
+    int pos1 = 0;
+    bitArray &= ~(1U << pos1);   // éteint le bit 0 (le plus à droite)
+    cout << "After clearing bit at position " << pos1 << ":\n"
+         << bitset<32>(bitArray) << "\n\n";
+
+    int pos2 = 5;
+    bitArray &= ~(1U << pos2);
+    cout << "After clearing bit at position " << pos2 << ":\n"
+         << bitset<32>(bitArray) << "\n\n";
+
+    int pos3 = 31;
+    bitArray &= ~(1U << pos3);   // le bit de poids fort : 1U obligatoire
+    cout << "After clearing bit at position " << pos3 << ":\n"
+         << bitset<32>(bitArray) << "\n";
+
+    return 0;
+}
+</script></pre>
+  <pre class="code" data-lang="text"><script type="text/plain">
+Original value :
+11111111111111111111111111111111
+
+After clearing bit at position 0:
+11111111111111111111111111111110
+
+After clearing bit at position 5:
+11111111111111111111111111011110
+
+After clearing bit at position 31:
+01111111111111111111111111011110
+</script></pre>
+  <div class="callout warn">
+    <span class="label">Pourquoi 1U et pas 1 ?</span>
+    <p><code>1</code> est un <code>int</code> <strong>signé</strong> : <code>1 &lt;&lt; 31</code> touche le bit de signe (comportement indéfini avant C++20). Avec <code>1U</code> (unsigned), le décalage est bien défini sur toute la largeur d'un <code>uint32_t</code>. Même logique pour <code>~0U</code> : « tous les bits à 1 » sur un entier non signé.</p>
   </div>
 
   <h2 id="nibbles">Empaqueter des données : nibbles</h2>

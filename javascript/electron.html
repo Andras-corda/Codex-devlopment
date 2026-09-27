@@ -23,7 +23,7 @@
         le système) ensemble : une application de bureau écrite en HTML/CSS/JS, qui tourne sur Windows, macOS et Linux
         depuis un seul code.</p>
 
-      <h2 id="idee">Deux processus, un rôle chacun</h2>
+      <h2 id="idee" data-group="Démarrer">Deux processus, un rôle chacun</h2>
       <p>C'est <strong>le</strong> concept à comprendre en Electron : le code ne tourne jamais dans un seul contexte.
       </p>
       <figure>
@@ -89,7 +89,7 @@
         </tbody>
       </table>
 
-      <h2 id="installer">Installer & premier projet</h2>
+      <h2 id="installer" data-group="Démarrer">Installer & premier projet</h2>
       <pre class="code" data-lang="bash"><script type="text/plain">
 mkdir mon-app && cd mon-app
 npm init -y
@@ -106,7 +106,7 @@ npm install --save-dev electron
 }
 </script></pre>
 
-      <h2 id="main">Le processus principal</h2>
+      <h2 id="main" data-group="Processus & communication">Le processus principal</h2>
       <pre class="code" data-lang="javascript"><script type="text/plain">
 // main.js
 import { app, BrowserWindow } from 'electron';
@@ -133,7 +133,7 @@ app.on('window-all-closed', () => {
 });
 </script></pre>
 
-      <h2 id="renderer">Le renderer</h2>
+      <h2 id="renderer" data-group="Processus & communication">Le renderer</h2>
       <p>Une page HTML tout à fait ordinaire — elle ne peut pas faire <code>require('fs')</code> ni <code>import</code>
         de module Node directement, seulement ce que <code>preload.js</code> lui expose.</p>
       <pre class="code" data-lang="html"><script type="text/plain">
@@ -148,7 +148,7 @@ app.on('window-all-closed', () => {
 </html>
 </script></pre>
 
-      <h2 id="preload">preload.js & contextBridge</h2>
+      <h2 id="preload" data-group="Processus & communication">preload.js & contextBridge</h2>
       <p>Le pont sécurisé : <code>preload.js</code> tourne avec un accès limité à Node, et n'expose au renderer
         <strong>que</strong> ce qu'on choisit explicitement via <code>contextBridge</code> — jamais Node.js en entier.
       </p>
@@ -168,7 +168,7 @@ document.getElementById('ouvrir').addEventListener('click', async () => {
 });
 </script></pre>
 
-      <h2 id="ipc">Communication IPC</h2>
+      <h2 id="ipc" data-group="Processus & communication">Communication IPC</h2>
       <p><code>ipcRenderer.invoke</code> (renderer → main, avec réponse) se traite côté main par
         <code>ipcMain.handle</code> ; pour un envoi sans réponse attendue, <code>ipcRenderer.send</code> /
         <code>ipcMain.on</code>.</p>
@@ -182,7 +182,7 @@ ipcMain.handle('dialogue:ouvrir', async () => {
 });
 </script></pre>
 
-      <h2 id="natif">Dialogues & menus natifs</h2>
+      <h2 id="natif" data-group="Application">Dialogues & menus natifs</h2>
       <pre class="code" data-lang="javascript"><script type="text/plain">
 import { dialog, Menu } from 'electron';
 
@@ -197,7 +197,7 @@ const menu = Menu.buildFromTemplate([
 Menu.setApplicationMenu(menu);
 </script></pre>
 
-      <h2 id="packaging">Empaqueter & distribuer</h2>
+      <h2 id="packaging" data-group="Application">Empaqueter & distribuer</h2>
       <pre class="code" data-lang="bash"><script type="text/plain">
 npm install --save-dev electron-builder
 </script></pre>
@@ -215,7 +215,7 @@ npm install --save-dev electron-builder
       <p><code>npm run build</code> génère un installeur natif par plateforme (<code>.exe</code>, <code>.dmg</code>,
         <code>.AppImage</code>).</p>
 
-      <h2 id="exemple">Exemple complet — arborescence</h2>
+      <h2 id="exemple" data-group="Application">Exemple complet — arborescence</h2>
       <pre class="code" data-lang="text"><script type="text/plain">
 mon-app/
 ├── main.js         # processus principal : fenêtre + gestion des dialogues

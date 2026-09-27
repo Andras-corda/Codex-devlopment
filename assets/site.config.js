@@ -43,12 +43,14 @@ window.SITE_CONFIG = {
     {
       id: "blueprint",
       label: "Blueprint",
-      tagline: "Visual scripting Unreal Engine — personnage 3e personne, Blend Space, niveaux & sublevels, Game Instance/GameMode.",
+      tagline: "Visual scripting Unreal Engine — personnage 3e personne et caméra, Blend Space, niveaux & sublevels, Game Instance/GameMode, UI, structures, interfaces.",
       home: "index.html",
       pages: [
-        { id: "personnage", title: "1 · Personnage & Input",        href: "personnage.html" },
-        { id: "animbp",     title: "2 · Animation Blueprint",       href: "animation-blueprint.html" },
-        { id: "levels",     title: "3 · Levels & Game Framework",   href: "levels-gamemode.html" }
+        { id: "variables",  title: "1 · Variables & types",         href: "variables-types.html" },
+        { id: "personnage", title: "2 · Personnage & Input",        href: "personnage.html" },
+        { id: "animbp",     title: "3 · Animation Blueprint",       href: "animation-blueprint.html" },
+        { id: "levels",     title: "4 · Levels & Game Framework",   href: "levels-gamemode.html" },
+        { id: "ui",         title: "5 · UI, Structs & Interfaces",  href: "ui-structures-interfaces.html" }
       ]
     },
     {
