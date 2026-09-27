@@ -33,8 +33,11 @@ blueprint/                         dossier Blueprint (Unreal Engine)
   variables-types.html (chaque type de variable, Actor Tags & Gameplay Tags),
   personnage.html (Character, caméra, Enhanced Input, collisions),
   animation-blueprint.html (Blend Space, ABP), levels-gamemode.html
-  (GameMode, GameInstance, niveaux & sublevels, Level Blueprint),
-  ui-structures-interfaces.html (Widget Blueprint/UMG, structures, interfaces, enums)
+  (GameMode/GameState/PlayerState, GameInstance, SaveGame, Open Level,
+  niveaux & sublevels, Level Blueprint),
+  ui-structures-interfaces.html (Widget Blueprint/UMG, structures, interfaces, enums),
+  oop.html (héritage, polymorphisme, classes abstraites, hiérarchie des acteurs),
+  feedback.html (Dynamic Material Instance, SFX, VFX Niagara/Cascade)
 cpp/                                dossier du langage C++ (console)
   index.html (compilateur/linker, IDE, anatomie du premier programme),
   procedural.html (variables, const/constexpr, types, portée, opérateurs, ++/--, décisions, boucles,

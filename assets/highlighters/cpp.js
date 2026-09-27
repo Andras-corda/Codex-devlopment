@@ -35,15 +35,17 @@
   }
 
   function highlight(src) {
-    // comment | chaîne/caractère | directive préprocesseur (#include, #define...) | en-tête <iostream>
-    var re = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)')|(#[A-Za-z_]+)|(<[A-Za-z_][A-Za-z0-9_]*>)/g;
+    // comment | chaîne/caractère | #include <en-tête> (les deux coloriés séparément) | directive préprocesseur seule
+    var re = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)')|(#include\s*<[^>\n]*>)|(#[A-Za-z_]+)/g;
     var out = "", last = 0, m;
     while ((m = re.exec(src))) {
       out += highlightPlain(src.slice(last, m.index));
       if (m[1]) out += '<span class="tok-com">' + esc(m[1]) + "</span>";
       else if (m[2]) out += '<span class="tok-str">' + esc(m[2]) + "</span>";
-      else if (m[3]) out += '<span class="tok-kw">' + esc(m[3]) + "</span>";
-      else out += '<span class="tok-str">' + esc(m[4]) + "</span>";
+      else if (m[3]) {
+        var lt = m[3].indexOf("<");
+        out += '<span class="tok-kw">' + esc(m[3].slice(0, lt)) + '</span><span class="tok-str">' + esc(m[3].slice(lt)) + "</span>";
+      } else out += '<span class="tok-kw">' + esc(m[4]) + "</span>";
       last = m.index + m[0].length;
     }
     out += highlightPlain(src.slice(last));

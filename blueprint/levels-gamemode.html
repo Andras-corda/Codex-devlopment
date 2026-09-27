@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Codex — Blueprint · Levels & Game Framework</title>
-<meta name="description" content="Game Mode, Game Instance, et manipulation de niveaux (sublevels, streaming, Level Blueprint) dans Unreal Engine.">
+<meta name="description" content="Game Mode (classes par défaut), Game State/Player State, Game Instance, SaveGame, et manipulation de niveaux (Open Level, sublevels, streaming, Level Blueprint) dans Unreal Engine.">
 <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body data-lang="blueprint" data-page="levels">
@@ -29,9 +29,41 @@
       <tr><td><code>Pawn</code> / <code>Character</code></td><td>l'avatar physique contrôlé dans le monde</td></tr>
     </tbody>
   </table>
+  <p>Un Blueprint dérivé de <code>GameModeBase</code> fixe les classes par défaut utilisées pour <strong>chaque joueur</strong> qui rejoint la partie :</p>
+  <table>
+    <thead><tr><th>Classe par défaut</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>Default Pawn Class</code></td><td>le Pawn/Character spawné pour le joueur</td></tr>
+      <tr><td><code>HUD Class</code></td><td>l'interface affichée à l'écran</td></tr>
+      <tr><td><code>PlayerController Class</code></td><td>le contrôleur qui reçoit l'input du joueur</td></tr>
+      <tr><td><code>Spectator Class</code></td><td>Pawn utilisé en mode spectateur</td></tr>
+      <tr><td><code>Game State Class</code> / <code>Player State Class</code></td><td>voir <a href="#gamestate">Game State</a> ci-dessous</td></tr>
+    </tbody>
+  </table>
+  <table>
+    <thead><tr><th>Assigner le GameMode</th><th>Où</th></tr></thead>
+    <tbody>
+      <tr><td>à un seul niveau</td><td><em>World Settings → Game Mode → GameMode Override</em></td></tr>
+      <tr><td>à tout le projet</td><td><em>Edit → Project Settings → Maps & Modes → Default GameMode</em></td></tr>
+    </tbody>
+  </table>
   <div class="callout tip">
     <span class="label">Un GameMode par niveau</span>
-    <p>Chaque niveau peut définir son propre GameMode (World Settings → GameMode Override) — utile pour un menu (pas de personnage) vs un niveau de jeu (personnage 3e personne).</p>
+    <p>L'override par niveau prend le pas sur le défaut du projet — utile pour un menu (pas de personnage) vs un niveau de jeu (personnage 3e personne).</p>
+  </div>
+
+  <h3 id="gamestate">Game State (& Player State)</h3>
+  <p>Le <code>GameMode</code> n'existe que sur le serveur ; le <code>GameState</code>, lui, existe sur le serveur <strong>et</strong> est répliqué à tous les clients — c'est l'endroit pour tout ce que <strong>tous les joueurs doivent voir</strong> : liste des joueurs connectés, score d'équipe, temps de jeu écoulé, la partie a-t-elle commencé.</p>
+  <table>
+    <thead><tr><th></th><th>Portée</th><th>Exemple</th></tr></thead>
+    <tbody>
+      <tr><td><code>GameState</code></td><td>un par partie, visible de tous</td><td>score de l'équipe, chrono, missions accomplies</td></tr>
+      <tr><td><code>PlayerState</code></td><td>un par joueur, visible de tous</td><td>nom du joueur, son propre score/kills</td></tr>
+    </tbody>
+  </table>
+  <div class="callout info">
+    <span class="label">GameState vs PlayerState</span>
+    <p>Une donnée qui appartient à <strong>un</strong> joueur en particulier (mais que les autres doivent quand même voir, ex. le score individuel dans un match en équipe) va dans <code>PlayerState</code>, pas dans <code>GameState</code> — ce dernier ne suit que ce qui est global à la partie. Ces deux notions n'ont vraiment d'importance qu'en multijoueur (répliqué réseau) ; en solo, une variable de <a href="#gameinstance">GameInstance</a> suffit souvent.</p>
   </div>
 
   <h2 id="gameinstance">Game Instance</h2>
@@ -67,6 +99,26 @@
     </tbody>
   </table>
 
+  <h2 id="savegame">Sauvegarder la partie (SaveGame)</h2>
+  <p>Une <code>GameInstance</code> vit le temps d'une session — elle ne survit pas à la fermeture du jeu. Pour persister des données <strong>entre deux sessions</strong> (sur le disque), Unreal fournit les <code>SaveGame</code> : une classe Blueprint dérivée de <code>SaveGameObject</code>, qui ne contient que des <strong>données</strong> (comme une <a href="ui-structures-interfaces.html#structures">Structure</a>), sérialisées automatiquement.</p>
+  <table>
+    <thead><tr><th>Étape</th><th>Nœud / élément</th></tr></thead>
+    <tbody>
+      <tr><td>1. Définir le contenu</td><td>créer un Blueprint <code>BP_SaveGame</code> (parent <code>SaveGame</code>) avec les variables à conserver (score, position, inventaire…)</td></tr>
+      <tr><td>2. Créer une sauvegarde</td><td><code>Create Save Game Object</code> (classe = <code>BP_SaveGame</code>), remplir ses variables, puis <code>Save Game to Slot</code> (nom de slot + index utilisateur)</td></tr>
+      <tr><td>3. Charger</td><td><code>Does Save Game Exist</code> (le slot existe-t-il ?) puis <code>Load Game from Slot</code> → cast vers <code>BP_SaveGame</code> pour relire ses variables</td></tr>
+      <tr><td>4. Supprimer</td><td><code>Delete Game in Slot</code></td></tr>
+    </tbody>
+  </table>
+  <div class="callout warn">
+    <span class="label">Que mettre dans un SaveGame</span>
+    <p>Uniquement des <strong>données</strong> (nombres, texte, structures, tableaux) — jamais une référence directe à un Actor du niveau (il n'existera plus au prochain lancement). Pour restaurer une position ou un inventaire, sauvegarder les <strong>valeurs</strong> puis reconstruire/repositionner les Actors correspondants au chargement.</p>
+  </div>
+  <div class="callout tip">
+    <span class="label">Où garder la référence</span>
+    <p>La <code>GameInstance</code> est l'endroit naturel pour garder l'objet <code>SaveGame</code> chargé en mémoire : elle survit aux changements de niveau, contrairement au GameMode.</p>
+  </div>
+
   <h2 id="levels">Levels & Sublevels</h2>
   <p>Un projet Unreal découpe son monde en <strong>niveaux</strong> (fichiers <code>.umap</code>). Un <strong>Persistent Level</strong> peut charger d'autres niveaux comme <strong>sublevels</strong>, chargés/déchargés à la volée (streaming) — utile pour un monde ouvert ou pour séparer l'éclairage/l'architecture du gameplay.</p>
   <figure>
@@ -101,6 +153,25 @@
       <tr><td><code>Load Stream Level</code> / <code>Unload Stream Level</code></td><td>charge/décharge un sublevel depuis un Blueprint (ex. au passage d'un trigger)</td></tr>
       <tr><td><code>Level Streaming Volume</code></td><td>charge automatiquement un sublevel quand la caméra entre dans son volume</td></tr>
       <tr><td>Level Blueprint</td><td>graphe d'évènements propre à <strong>un seul niveau</strong> — voir <a href="#levelbp">plus bas</a></td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="openlevel">Changer complètement de niveau : Open Level</h3>
+  <p>Le streaming ci-dessus <strong>ajoute</strong> des sublevels par-dessus le Persistent Level. Pour tout remplacer (quitter un niveau de jeu vers le menu principal, passer au niveau suivant), <code>Open Level</code> décharge tout et charge un niveau entièrement neuf.</p>
+  <table>
+    <thead><tr><th>Nœud</th><th>Entrée</th></tr></thead>
+    <tbody>
+      <tr><td><code>Open Level (by Name)</code></td><td>le nom exact du niveau (texte)</td></tr>
+      <tr><td><code>Open Level</code></td><td>une référence directe à l'asset niveau</td></tr>
+    </tbody>
+  </table>
+  <table>
+    <thead><tr><th></th><th>Open Level</th><th>Level Streaming</th></tr></thead>
+    <tbody>
+      <tr><td>Effet</td><td>décharge tout, recharge un niveau neuf</td><td>ajoute/retire des sublevels sur le Persistent Level en cours</td></tr>
+      <tr><td>GameMode</td><td>recréé</td><td>inchangé</td></tr>
+      <tr><td>Transition</td><td>un court écran de chargement (sauf <em>Seamless Travel</em>)</td><td>invisible si anticipé à l'avance</td></tr>
+      <tr><td>Bon pour</td><td>menu ↔ niveau de jeu, niveau suivant</td><td>monde ouvert, zones d'un même niveau</td></tr>
     </tbody>
   </table>
 

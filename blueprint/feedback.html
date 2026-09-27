@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Codex — Blueprint · Materials, SFX & VFX</title>
+<meta name="description" content="Dynamic Material Instance (MID) pour modifier un matériau en jeu, intégrer des SFX (Play Sound at Location / 2D) et des VFX (Niagara/Cascade) depuis un Blueprint.">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-lang="blueprint" data-page="feedback">
+
+<div class="topbar" id="topbar"></div>
+
+<div class="wrap">
+<aside class="side" id="side"></aside>
+
+<main>
+  <h1>7 · Materials, SFX & VFX</h1>
+  <p class="lead">Faire <strong>sentir</strong> une action sans toucher au gameplay : changer l'apparence d'une surface en jeu, jouer un son, faire apparaître des particules — trois outils indépendants, souvent utilisés ensemble sur un même événement.</p>
+
+  <h2 id="mid">Dynamic Material Instance (MID)</h2>
+  <p>Un <strong>Material Instance</strong> normal a des paramètres fixés une fois pour toutes dans l'éditeur. Une <strong>Dynamic Material Instance</strong> (MID) est la même chose, mais <strong>modifiable pendant le jeu</strong> par un Blueprint — dégâts qui s'affichent sur une texture, couleur d'équipe, jauge de recharge sur une arme…</p>
+  <table>
+    <thead><tr><th>Étape</th><th>Comment</th></tr></thead>
+    <tbody>
+      <tr><td>1. Préparer le Material</td><td>exposer les valeurs à piloter comme <strong>paramètres</strong> (clic droit sur un nœud constant → <em>Convert to Parameter</em>) : un <code>Vector</code> pour une couleur, un <code>Scalar</code> pour une valeur (roughness, intensité…)</td></tr>
+      <tr><td>2. Assigner</td><td>appliquer le Material (ou un Material Instance classique) au composant (mesh, cube…)</td></tr>
+      <tr><td>3. Créer le MID</td><td>au <code>BeginPlay</code> : <code>Create Dynamic Material Instance</code>, en entrée le Material actuel du composant (<code>Get Material</code>), puis <code>Set Material</code> avec le résultat sur ce même composant</td></tr>
+      <tr><td>4. Modifier</td><td><code>Set Vector Parameter Value</code> / <code>Set Scalar Parameter Value</code> sur la variable MID, avec le nom exact du paramètre</td></tr>
+    </tbody>
+  </table>
+  <div class="callout danger">
+    <span class="label">Le nom doit correspondre au caractère près</span>
+    <p><code>Parameter Name</code> (dans le nœud <code>Set … Parameter Value</code>) doit être <strong>identique</strong> au nom du paramètre créé dans le Material — une faute de frappe ne donne aucune erreur visible, le nœud ne fait simplement rien.</p>
+  </div>
+  <div class="callout tip">
+    <span class="label">Où stocker la MID</span>
+    <p>Toujours garder une référence à la MID créée dans une <a href="variables-types.html#object">variable</a> (<em>Promote to Variable</em> sur la sortie de <code>Create Dynamic Material Instance</code>) : la recréer à chaque appel gaspille de la mémoire et perd les valeurs déjà modifiées.</p>
+  </div>
+
+  <h2 id="sfx">Intégrer des SFX</h2>
+  <table>
+    <thead><tr><th>Nœud</th><th>Atténuation avec la distance</th><th>Bon pour</th></tr></thead>
+    <tbody>
+      <tr><td><code>Play Sound at Location</code></td><td>oui — positionné dans le monde 3D</td><td>pas, impacts, explosions, ambiance</td></tr>
+      <tr><td><code>Play Sound 2D</code></td><td>non — toujours au même volume</td><td>clics d'interface, musique, voix off</td></tr>
+      <tr><td><code>Spawn Sound Attached</code></td><td>oui — suit un composant qui bouge</td><td>moteur d'un véhicule, pas d'un PNJ qui marche</td></tr>
+    </tbody>
+  </table>
+  <div class="callout info">
+    <span class="label">Attenuation & Concurrency</span>
+    <p>L'atténuation précise (distance min/max, forme du volume) se règle sur l'asset <em>Sound Attenuation</em> référencé par le son, pas sur le nœud. Un réglage de <em>Concurrency</em> limite le nombre d'instances du même son jouées en même temps (éviter qu'une rafale d'impacts sature l'audio).</p>
+  </div>
+
+  <h2 id="vfx">Intégrer des VFX</h2>
+  <p>Deux systèmes de particules coexistent dans Unreal : <strong>Niagara</strong> (actuel) et <strong>Cascade</strong> (legacy, toujours présent dans d'anciens projets). Les nœuds Blueprint distinguent les deux par leur nom.</p>
+  <table>
+    <thead><tr><th>Besoin</th><th>Niagara</th><th>Cascade (legacy)</th></tr></thead>
+    <tbody>
+      <tr><td>Faire apparaître une fois, à un endroit</td><td><code>Spawn System at Location</code></td><td><code>Spawn Emitter at Location</code></td></tr>
+      <tr><td>Attacher à un composant (suit ses mouvements)</td><td><code>Spawn System Attached</code></td><td><code>Spawn Emitter Attached</code></td></tr>
+    </tbody>
+  </table>
+  <div class="callout tip">
+    <span class="label">At Location vs Attached — même logique que pour le son</span>
+    <p>« At Location » fige la position au moment du spawn (une explosion ne suit pas la caisse détruite). « Attached » suit un composant en temps réel (des étincelles sur une épée qui bouge). Même distinction pour <code>Play Sound at Location</code> vs <code>Spawn Sound Attached</code> ci-dessus.</p>
+  </div>
+
+  <h2 id="exemple">Combiner les trois</h2>
+  <p>Un exemple typique — un coffre qui s'ouvre :</p>
+  <table>
+    <thead><tr><th>Étape</th><th>Outil</th></tr></thead>
+    <tbody>
+      <tr><td>Le couvercle change d'apparence (usure, lueur magique)</td><td>Dynamic Material Instance</td></tr>
+      <tr><td>Un grincement se joue à l'ouverture</td><td><code>Play Sound at Location</code></td></tr>
+      <tr><td>Un nuage de poussière s'échappe</td><td><code>Spawn System at Location</code> (Niagara)</td></tr>
+    </tbody>
+  </table>
+
+  <footer class="pg">
+    <span><a href="oop.html">← Orienté objet</a></span>
+    <span><a href="index.html">Retour à l'accueil Blueprint</a></span>
+  </footer>
+</main>
+</div>
+
+<script src="../assets/site.config.js"></script>
+<script src="../assets/nav.js"></script>
+</body>
+</html>
