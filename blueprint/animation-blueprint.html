@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Codex — Blueprint · Animation Blueprint</title>
+<meta name="description" content="Blend Space (1D/2D) et Animation Blueprint : Event Graph vs AnimGraph, State Machine Idle/Run vs Chute.">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-lang="blueprint" data-page="animbp">
+
+<div class="topbar" id="topbar"></div>
+
+<div class="wrap">
+<aside class="side" id="side"></aside>
+
+<main>
+  <h1>2 · Animation Blueprint</h1>
+  <p class="lead">Faire correspondre le mouvement du personnage (<a href="personnage.html">page précédente</a>) à une animation cohérente : <strong>Blend Space</strong> pour mélanger, <strong>Animation Blueprint (ABP)</strong> pour piloter le tout.</p>
+
+  <h2 id="blendspace">Blend Space</h2>
+  <p>Un <strong>Blend Space</strong> mélange plusieurs animations selon un ou deux paramètres continus (ex. la vitesse) — au lieu de choisir « soit Idle, soit Walk, soit Run », on obtient un mélange progressif entre elles.</p>
+  <figure>
+    <svg viewBox="0 0 460 260" role="img" aria-label="Blend Space 2D : vitesse et direction">
+      <rect class="svg-bg" x="0" y="0" width="460" height="260" rx="6"/>
+      <path d="M70 220 V40" stroke="var(--muted)" stroke-width="1.5" fill="none"/>
+      <path d="M70 220 H420" stroke="var(--muted)" stroke-width="1.5" fill="none"/>
+      <text class="svg-tm" x="70" y="26" text-anchor="middle">Speed</text>
+      <text class="svg-tm" x="420" y="240" text-anchor="middle">Direction</text>
+
+      <circle cx="70" cy="220" r="5" fill="var(--muted)"/>
+      <text class="svg-t" x="70" y="245" text-anchor="middle">Idle</text>
+
+      <circle cx="70" cy="120" r="5" fill="var(--link)"/>
+      <text class="svg-t" x="130" y="124" text-anchor="middle">Walk (avant)</text>
+
+      <circle cx="70" cy="55" r="5" fill="var(--green)"/>
+      <text class="svg-t" x="125" y="59" text-anchor="middle">Run (avant)</text>
+
+      <circle cx="230" cy="120" r="5" fill="var(--link)"/>
+      <text class="svg-t" x="230" y="105" text-anchor="middle">Walk (droite)</text>
+
+      <circle cx="350" cy="120" r="5" fill="var(--warn)"/>
+      <text class="svg-t" x="350" y="105" text-anchor="middle">Walk (arrière)</text>
+    </svg>
+    <figcaption>Chaque point est une animation posée sur la grille. L'Animation Blueprint fournit Speed/Direction chaque frame ; le Blend Space renvoie une pose mélangée entre les animations les plus proches de ce point.</figcaption>
+  </figure>
+  <table>
+    <thead><tr><th></th><th>1D</th><th>2D</th></tr></thead>
+    <tbody>
+      <tr><td>Paramètres</td><td>un seul (ex. Speed)</td><td>deux (ex. Speed + Direction)</td></tr>
+      <tr><td>Bon pour</td><td>Idle → Walk → Run en ligne droite</td><td>ajouter le strafe (déplacement latéral/arrière)</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="animbp">Animation Blueprint</h2>
+  <p>Un Animation Blueprint pilote le <code>SkeletalMeshComponent</code> et se divise en deux graphes : l'<strong>Event Graph</strong> calcule des variables chaque frame, l'<strong>AnimGraph</strong> les utilise pour produire la pose finale.</p>
+  <figure>
+    <svg viewBox="0 0 620 220" role="img" aria-label="Pipeline de l'Animation Blueprint">
+      <defs><marker id="bp2-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+        <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
+      <rect class="svg-bg" x="0" y="0" width="620" height="220" rx="6"/>
+      <rect class="svg-box" x="20" y="30" width="170" height="60" rx="6"/>
+      <text class="svg-t" x="105" y="55" text-anchor="middle">Event Graph</text>
+      <text class="svg-tm" x="105" y="73" text-anchor="middle">Speed, Direction, IsInAir</text>
+
+      <path class="svg-arrow" d="M190 60 H228" style="marker-end:url(#bp2-arr)"/>
+
+      <rect class="svg-box-a" x="230" y="30" width="170" height="60" rx="6"/>
+      <text class="svg-t" x="315" y="55" text-anchor="middle">AnimGraph</text>
+      <text class="svg-tm" x="315" y="73" text-anchor="middle">State Machine + Blend Space</text>
+
+      <path class="svg-arrow" d="M400 60 H438" style="marker-end:url(#bp2-arr)"/>
+
+      <rect class="svg-box-g" x="440" y="30" width="160" height="60" rx="6"/>
+      <text class="svg-t" x="520" y="55" text-anchor="middle">Output Pose</text>
+      <text class="svg-tm" x="520" y="73" text-anchor="middle">appliquée au mesh</text>
+
+      <circle cx="200" cy="160" r="34" class="svg-box" fill="var(--panel)"/>
+      <text class="svg-t" x="200" y="164" text-anchor="middle">Idle/Run</text>
+
+      <circle cx="380" cy="160" r="34" class="svg-box-w" fill="var(--warn-soft)"/>
+      <text class="svg-t" x="380" y="164" text-anchor="middle">Chute</text>
+
+      <path d="M234 150 C 280 130, 320 130, 346 145" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bp2-arr)"/>
+      <text class="svg-tm" x="290" y="122" text-anchor="middle">IsInAir == true</text>
+      <path d="M346 175 C 320 195, 280 195, 234 172" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bp2-arr)"/>
+      <text class="svg-tm" x="290" y="205" text-anchor="middle">IsInAir == false</text>
+    </svg>
+    <figcaption>La State Machine choisit l'état (Idle/Run vs Chute) ; l'état actif interroge le Blend Space avec Speed/Direction pour la pose détaillée.</figcaption>
+  </figure>
+  <div class="callout warn">
+    <span class="label">Ne pas confondre les deux graphes</span>
+    <p>L'Event Graph tourne comme un Blueprint classique (nœuds d'exécution). L'AnimGraph est <strong>évalué en continu</strong> pour produire une pose — pas de notion d'ordre séquentiel, chaque nœud décrit « quelle pose produire à partir de ces entrées ».</p>
+  </div>
+
+  <footer class="pg">
+    <span><a href="personnage.html">← Personnage & Input</a></span>
+    <span><a href="levels-gamemode.html">Suivant : Levels & Game Framework →</a></span>
+  </footer>
+</main>
+</div>
+
+<script src="../assets/site.config.js"></script>
+<script src="../assets/nav.js"></script>
+</body>
+</html>

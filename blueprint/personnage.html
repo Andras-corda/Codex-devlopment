@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Codex — Blueprint · Personnage & Input</title>
+<meta name="description" content="Composants d'un Character 3e personne (Capsule, SkeletalMesh, CharacterMovement, SpringArm) et Enhanced Input (Input Actions & Mapping Context).">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-lang="blueprint" data-page="personnage">
+
+<div class="topbar" id="topbar"></div>
+
+<div class="wrap">
+<aside class="side" id="side"></aside>
+
+<main>
+  <h1>1 · Personnage & Input</h1>
+  <p class="lead">Le point de départ classique : un <strong>Character</strong> à la troisième personne, capable de se déplacer via l'<strong>Enhanced Input</strong>.</p>
+
+  <h2 id="personnage">Personnage à la troisième personne</h2>
+  <p>Un <code>Character</code> (sous-classe de <code>Pawn</code> déjà équipée pour se déplacer) s'organise en une hiérarchie de composants : un seul se charge de la collision et sert de racine, les autres s'y accrochent.</p>
+  <figure>
+    <svg viewBox="0 0 620 230" role="img" aria-label="Hiérarchie de composants d'un Character">
+      <defs><marker id="bp1-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+        <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
+      <rect class="svg-bg" x="0" y="0" width="620" height="230" rx="6"/>
+      <rect class="svg-box-a" x="220" y="20" width="180" height="50" rx="6"/>
+      <text class="svg-t" x="310" y="42" text-anchor="middle">CapsuleComponent</text>
+      <text class="svg-tm" x="310" y="59" text-anchor="middle">racine — collision</text>
+
+      <path class="svg-arrow" d="M310 70 V95 M310 95 H100 V115 M310 95 H310 V115 M310 95 H520 V115" style="marker-end:none" fill="none" stroke="var(--muted)" stroke-width="1.5"/>
+      <path d="M100 115 L100 108" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bp1-arr)"/>
+      <path d="M310 115 L310 108" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bp1-arr)"/>
+      <path d="M520 115 L520 108" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bp1-arr)"/>
+
+      <rect class="svg-box" x="20" y="120" width="160" height="60" rx="6"/>
+      <text class="svg-t" x="100" y="145" text-anchor="middle">SkeletalMesh</text>
+      <text class="svg-tm" x="100" y="163" text-anchor="middle">le maillage visible</text>
+
+      <rect class="svg-box-g" x="230" y="120" width="160" height="60" rx="6"/>
+      <text class="svg-t" x="310" y="142" text-anchor="middle">CharacterMovement</text>
+      <text class="svg-tm" x="310" y="160" text-anchor="middle">vitesse, gravité,</text>
+      <text class="svg-tm" x="310" y="174" text-anchor="middle">saut</text>
+
+      <rect class="svg-box-w" x="440" y="120" width="160" height="60" rx="6"/>
+      <text class="svg-t" x="520" y="142" text-anchor="middle">SpringArm + Caméra</text>
+      <text class="svg-tm" x="520" y="160" text-anchor="middle">bras de caméra,</text>
+      <text class="svg-tm" x="520" y="174" text-anchor="middle">évite le clipping</text>
+    </svg>
+    <figcaption>Trois rôles distincts accrochés à la capsule : afficher, déplacer, filmer.</figcaption>
+  </figure>
+  <table>
+    <thead><tr><th>Composant</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>CapsuleComponent</code></td><td>volume de collision simplifié — racine du personnage</td></tr>
+      <tr><td><code>SkeletalMeshComponent</code></td><td>le modèle 3D + son squelette, animé par l'Animation Blueprint</td></tr>
+      <tr><td><code>CharacterMovementComponent</code></td><td>marche, chute, saut, natation — déjà fourni par <code>Character</code></td></tr>
+      <tr><td><code>SpringArm</code> (Camera Boom)</td><td>maintient la caméra à distance, la ramène si un mur s'interpose</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="input">Enhanced Input : Input Actions & Mapping Context</h2>
+  <p>Le système moderne (Unreal 5+) sépare la <strong>touche physique</strong> de <strong>l'action logique</strong> : un <code>Input Mapping Context</code> associe des touches à des <code>Input Actions</code> (<code>IA_Move</code>, <code>IA_Look</code>, <code>IA_Jump</code>) ; le Blueprint du personnage ne réagit qu'aux actions, jamais aux touches directement.</p>
+  <table>
+    <thead><tr><th>Élément</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>Input Action</code> (asset)</td><td>nomme une intention (« se déplacer »), avec son type de valeur (Axis2D pour <code>IA_Move</code>, bouton pour <code>IA_Jump</code>)</td></tr>
+      <tr><td><code>Input Mapping Context</code></td><td>fait le lien touches ↔ actions ; plusieurs contextes peuvent être ajoutés/retirés (ex. un contexte « en véhicule » différent)</td></tr>
+      <tr><td>Nœud <code>Enhanced Input Action</code></td><td>dans l'Event Graph du personnage, se déclenche quand l'action est déclenchée (<em>Triggered</em>) — sort la valeur (ex. un <code>Vector2D</code> pour le déplacement)</td></tr>
+      <tr><td><code>Add Movement Input</code></td><td>applique la valeur reçue dans une direction (avant/droite du contrôleur), consommé chaque frame par le <code>CharacterMovementComponent</code></td></tr>
+    </tbody>
+  </table>
+  <div class="callout info">
+    <span class="label">Ajouter le contexte au bon moment</span>
+    <p>Le Mapping Context s'ajoute typiquement dans <code>BeginPlay</code> du <code>PlayerController</code> (ou du personnage), via <code>Add Mapping Context</code> sur le sous-système <code>Enhanced Input Local Player Subsystem</code> — sans ça, les Input Actions restent silencieuses.</p>
+  </div>
+
+  <footer class="pg">
+    <span><a href="index.html">← Accueil Blueprint</a></span>
+    <span><a href="animation-blueprint.html">Suivant : Animation Blueprint →</a></span>
+  </footer>
+</main>
+</div>
+
+<script src="../assets/site.config.js"></script>
+<script src="../assets/nav.js"></script>
+</body>
+</html>

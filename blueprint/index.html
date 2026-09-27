@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Codex — Blueprint · Accueil</title>
+<meta name="description" content="Blueprint (Unreal Engine) : personnage 3e personne (Input, Blend Space, Animation Blueprint), niveaux & sublevels, Game Instance et GameMode.">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-lang="blueprint">
+
+<div class="topbar" id="topbar"></div>
+
+<div class="wrap">
+<aside class="side" id="side"></aside>
+
+<main>
+  <h1>Blueprint (Unreal Engine)</h1>
+  <p class="lead">Pas un cours complet d'Unreal : ce qu'il faut pour monter un <strong>personnage à la troisième personne</strong> animé, et organiser un projet avec des <strong>niveaux</strong>, une <strong>Game Instance</strong> et un <strong>Game Mode</strong>.</p>
+
+  <h2 id="idee">Blueprint, en bref</h2>
+  <p>Blueprint est le langage de <strong>script visuel</strong> d'Unreal Engine : au lieu d'écrire du texte, on relie des <strong>nœuds</strong> dans un graphe. Chaque nœud a des <strong>pins d'exécution</strong> (le fil blanc — l'ordre dans lequel les choses se produisent) et des <strong>pins de données</strong> (colorés selon le type — la valeur qui circule). Sous le capot, Blueprint reste du C++ compilé ; c'est une couche visuelle par-dessus, pas un langage séparé.</p>
+  <table>
+    <thead><tr><th>Type de pin</th><th>Couleur (approximative)</th></tr></thead>
+    <tbody>
+      <tr><td>Exécution (exec)</td><td><span style="display:inline-block;width:28px;height:3px;background:#e6edf3;vertical-align:middle;margin-right:8px"></span>fil blanc, pas une valeur — juste « et ensuite »</td></tr>
+      <tr><td>Boolean</td><td><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#8f2d2d;vertical-align:middle;margin-right:8px"></span>rouge sombre</td></tr>
+      <tr><td>Integer</td><td><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#1faaa4;vertical-align:middle;margin-right:8px"></span>cyan / turquoise</td></tr>
+      <tr><td>Float</td><td><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#7ec699;vertical-align:middle;margin-right:8px"></span>vert pâle</td></tr>
+      <tr><td>Vector</td><td><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#e8c547;vertical-align:middle;margin-right:8px"></span>jaune / or</td></tr>
+      <tr><td>Object reference</td><td><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#1f6feb;vertical-align:middle;margin-right:8px"></span>bleu</td></tr>
+      <tr><td>String / Name</td><td><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#b06fe0;vertical-align:middle;margin-right:8px"></span>rose / magenta</td></tr>
+    </tbody>
+  </table>
+  <div class="callout tip">
+    <span class="label">Le réflexe pour lire un graphe inconnu</span>
+    <p>Suis d'abord les <strong>fils blancs</strong> (l'ordre d'exécution) de gauche à droite, puis reviens sur les pins colorés pour voir quelles valeurs alimentent chaque nœud.</p>
+  </div>
+
+  <h2 id="pages">Les pages couvertes</h2>
+  <table>
+    <thead><tr><th>Page</th><th>Sert à</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><a href="personnage.html">1 · Personnage & Input</a></td>
+        <td>composants d'un Character 3e personne, Enhanced Input (Input Actions & Mapping Context)</td>
+      </tr>
+      <tr>
+        <td><a href="animation-blueprint.html">2 · Animation Blueprint</a></td>
+        <td>Blend Space, Event Graph vs AnimGraph, State Machine</td>
+      </tr>
+      <tr>
+        <td><a href="levels-gamemode.html">3 · Levels & Game Framework</a></td>
+        <td>Game Mode, Game Instance, niveaux & sublevels (streaming)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <footer class="pg">
+    <span>Site statique · 100 % HTML/CSS/JS · prêt pour GitHub Pages</span>
+    <span><a href="personnage.html">Suivant : Personnage & Input →</a></span>
+  </footer>
+</main>
+</div>
+
+<script src="../assets/site.config.js"></script>
+<script src="../assets/nav.js"></script>
+</body>
+</html>

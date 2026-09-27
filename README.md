@@ -16,6 +16,7 @@ assets/
     csharp.js                     coloration syntaxique C#, enregistrée dans le registre de main.js
     php.js                        coloration syntaxique PHP (mêmes principes, $variables en plus)
     javascript.js                  coloration syntaxique JS (idem, + template literals)
+    cpp.js                        coloration syntaxique C++ (idem, + directives préprocesseur #include)
 csharp/                           dossier du langage C#
   index.html, procedural.html, oriente-objet.html, asynchrone.html,
   types-collections-uml.html, wpf.html (XAML, binding, MVVM)
@@ -26,6 +27,14 @@ php/                               dossier du langage PHP (pur, sans framework)
 javascript/                        dossier du langage JavaScript (Node.js)
   index.html (Node, npm, modules), discord-bot.html, electron.html,
   backend.html (Express), animations.html (CSS + JS)
+blueprint/                         dossier Blueprint (Unreal Engine)
+  index.html (Blueprint en bref), personnage.html (Character, Enhanced Input),
+  animation-blueprint.html (Blend Space, ABP), levels-gamemode.html
+  (GameMode, GameInstance, niveaux & sublevels)
+cpp/                                dossier du langage C++ (console)
+  index.html (compilateur/linker, IDE, anatomie du premier programme),
+  procedural.html (variables, types, portée, opérateurs, décisions, boucles),
+  bit-manipulations.html (littéraux, masques, packing de nibbles)
 ```
 
 Tableau à ajouter

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Codex — C++ · Accueil</title>
+<meta name="description" content="C++ console : compilateur & linker, IDE, anatomie du premier programme, commentaires.">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-lang="cpp">
+
+<div class="topbar" id="topbar"></div>
+
+<div class="wrap">
+<aside class="side" id="side"></aside>
+
+<main>
+  <h1>C++</h1>
+  <p class="lead">Pas un cours complet du langage : ce qu'il faut pour écrire, compiler et lire un programme <strong>C++ console</strong> — variables, décisions, boucles, et la <strong>manipulation de bits</strong> (flags, couleurs, textures — le pain quotidien du jeu vidéo).</p>
+
+  <h2 id="idee">C++, en bref</h2>
+  <p>C++ est un langage <strong>compilé</strong> : le code source (texte lisible) doit être traduit en code machine (binaire) par un compilateur avant de pouvoir s'exécuter. Créé par Bjarne Stroustrup en 1979 comme extension du langage C, il donne un contrôle très fin sur la mémoire et les ressources système — ce qui en fait un choix de prédilection pour le développement de jeux vidéo.</p>
+  <figure>
+    <svg viewBox="0 0 620 160" role="img" aria-label="Du code source à l'exécutable">
+      <defs><marker id="cpp1-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+        <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
+      <rect class="svg-bg" x="0" y="0" width="620" height="160" rx="6"/>
+      <rect class="svg-box" x="10" y="50" width="130" height="60" rx="6"/>
+      <text class="svg-t" x="75" y="76" text-anchor="middle">Code source</text>
+      <text class="svg-tm" x="75" y="94" text-anchor="middle">.cpp / .h</text>
+
+      <path class="svg-arrow" d="M140 80 H178" style="marker-end:url(#cpp1-arr)"/>
+
+      <rect class="svg-box-a" x="180" y="50" width="130" height="60" rx="6"/>
+      <text class="svg-t" x="245" y="76" text-anchor="middle">Compilateur</text>
+      <text class="svg-tm" x="245" y="94" text-anchor="middle">par fichier</text>
+
+      <path class="svg-arrow" d="M310 80 H348" style="marker-end:url(#cpp1-arr)"/>
+
+      <rect class="svg-box-w" x="350" y="50" width="130" height="60" rx="6"/>
+      <text class="svg-t" x="415" y="76" text-anchor="middle">Fichiers objets</text>
+      <text class="svg-tm" x="415" y="94" text-anchor="middle">.o / .obj</text>
+
+      <path class="svg-arrow" d="M480 80 H518" style="marker-end:url(#cpp1-arr)"/>
+
+      <rect class="svg-box-g" x="520" y="50" width="90" height="60" rx="6"/>
+      <text class="svg-t" x="565" y="76" text-anchor="middle">Linker</text>
+      <text class="svg-tm" x="565" y="94" text-anchor="middle">.exe</text>
+    </svg>
+    <figcaption>Chaque fichier source est compilé séparément (unité de traduction) ; le linker assemble ensuite tous les fichiers objets en un seul exécutable.</figcaption>
+  </figure>
+
+  <h2 id="ide">Compilateur, linker & IDE</h2>
+  <p>Un IDE (<em>Integrated Development Environment</em>) regroupe l'éditeur de texte, le compilateur, le linker et le débogueur dans un seul outil.</p>
+  <table>
+    <thead><tr><th>Outil</th><th>Usage</th></tr></thead>
+    <tbody>
+      <tr><td><a href="https://www.onlinegdb.com/online_c++_compiler" target="_blank" rel="noopener">OnlineGDB</a></td><td>tester rapidement un petit programme, sans rien installer</td></tr>
+      <tr><td><a href="https://www.codeblocks.org/" target="_blank" rel="noopener">CodeBlocks</a></td><td>léger, gratuit (FOSS) — pour les exercices et projets d'exercice</td></tr>
+      <tr><td>Visual Studio</td><td>standard de l'industrie, développement de jeux sous Windows</td></tr>
+      <tr><td>JetBrains Rider / CLion</td><td>Unreal Engine, projets CMake, multiplateforme (payant, gratuit étudiants)</td></tr>
+      <tr><td>Visual Studio Code</td><td>léger, configurations personnalisées (Godot C++, petits moteurs)</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="hello">Anatomie du premier programme</h2>
+  <pre class="code" data-lang="cpp"><script type="text/plain">
+#include <iostream>
+
+int main()
+{
+    int age;
+    std::cout << "How old are you? ";
+    std::cin >> age;
+    std::cout << "Next year, you will be: " << age + 1 << '\n';
+
+    return 0;
+}
+</script></pre>
+  <table>
+    <thead><tr><th>Élément</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>#include &lt;iostream&gt;</code></td><td>directive préprocesseur — inclut la bibliothèque d'entrée/sortie standard (les bibliothèques standard s'incluent entre chevrons)</td></tr>
+      <tr><td><code>int main()</code></td><td>point d'entrée du programme ; son type de retour est un entier</td></tr>
+      <tr><td><code>int age;</code></td><td>déclaration d'une variable — C++ est un langage <strong>typé</strong>, chaque variable a un type précis</td></tr>
+      <tr><td><code>std::</code></td><td>espace de noms (<em>namespace</em>) de la bibliothèque standard, suivi de l'opérateur de résolution de portée <code>::</code></td></tr>
+      <tr><td><code>std::cout &lt;&lt;</code></td><td>insère une valeur dans le flux de sortie console (opérateur d'insertion)</td></tr>
+      <tr><td><code>std::cin &gt;&gt;</code></td><td>extrait une valeur du flux d'entrée console vers une variable</td></tr>
+      <tr><td><code>'\n'</code></td><td>littéral caractère (guillemets simples) ; <code>\n</code> est une séquence d'échappement pour le retour à la ligne</td></tr>
+      <tr><td><code>return 0;</code></td><td>code de statut renvoyé par <code>main</code> — 0 signifie que tout s'est bien passé</td></tr>
+    </tbody>
+  </table>
+  <div class="callout info">
+    <span class="label">Instructions & blocs</span>
+    <p>Chaque instruction se termine par un point-virgule <code>;</code>. Les accolades <code>{ }</code> délimitent un bloc (une nouvelle portée). Les espaces et retours à la ligne sont ignorés par le compilateur — l'indentation n'est là que pour les humains.</p>
+  </div>
+
+  <h2 id="commentaires">Commentaires</h2>
+  <pre class="code" data-lang="cpp"><script type="text/plain">
+std::cout << "Next year..."; // commentaire sur une seule ligne
+
+/*
+   Commentaire sur plusieurs lignes.
+   Tout ce texte est ignoré par le compilateur.
+*/
+</script></pre>
+  <div class="callout warn">
+    <span class="label">Les commentaires ne s'imbriquent pas</span>
+    <p>Le premier <code>*/</code> rencontré referme le commentaire en cours, même si un <code>/*</code> apparaît entre-temps — inutile d'essayer d'imbriquer des blocs <code>/* */</code>.</p>
+  </div>
+
+  <h2 id="pages">Les pages couvertes</h2>
+  <table>
+    <thead><tr><th>Page</th><th>Sert à</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><a href="procedural.html">1 · Procédural</a></td>
+        <td>variables, types, portée, opérateurs, décisions (if/switch/enum), boucles</td>
+      </tr>
+      <tr>
+        <td><a href="bit-manipulations.html">2 · Manipulation de bits</a></td>
+        <td>littéraux binaires/hexadécimaux, opérateurs bit à bit, masques, packing</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <footer class="pg">
+    <span>Site statique · 100 % HTML/CSS/JS · prêt pour GitHub Pages</span>
+    <span><a href="procedural.html">Suivant : Procédural →</a></span>
+  </footer>
+</main>
+</div>
+
+<script src="../assets/site.config.js"></script>
+<script src="../assets/highlighters/cpp.js"></script>
+<script src="../assets/main.js"></script>
+<script src="../assets/nav.js"></script>
+</body>
+</html>

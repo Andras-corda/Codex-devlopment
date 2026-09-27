@@ -39,14 +39,34 @@ window.SITE_CONFIG = {
         { id: "backend",   title: "3 · Backend de sites web",  href: "backend.html" },
         { id: "animations", title: "4 · Animations & style",   href: "animations.html" }
       ]
+    },
+    {
+      id: "blueprint",
+      label: "Blueprint",
+      tagline: "Visual scripting Unreal Engine — personnage 3e personne, Blend Space, niveaux & sublevels, Game Instance/GameMode.",
+      home: "index.html",
+      pages: [
+        { id: "personnage", title: "1 · Personnage & Input",        href: "personnage.html" },
+        { id: "animbp",     title: "2 · Animation Blueprint",       href: "animation-blueprint.html" },
+        { id: "levels",     title: "3 · Levels & Game Framework",   href: "levels-gamemode.html" }
+      ]
+    },
+    {
+      id: "cpp",
+      label: "C++",
+      tagline: "Programmation console — variables, décisions, boucles, manipulation de bits.",
+      home: "index.html",
+      pages: [
+        { id: "procedural", title: "1 · Procédural",           href: "procedural.html" },
+        { id: "bits",        title: "2 · Manipulation de bits", href: "bit-manipulations.html" }
+      ]
     }
-  
+
   ],
-  // Langages prévus mais pas encore écrits 
+  // Langages prévus mais pas encore écrits
   planned: [
     { id: "lua", label: "Lua" },
     { id: "python", label: "Python" },
-    { id: "java", label: "Java" },
-    { id: "cpp", label: "C++" }
+    { id: "java", label: "Java" }
   ]
 };

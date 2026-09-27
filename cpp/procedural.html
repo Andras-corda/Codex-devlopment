@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Codex — C++ · Procédural</title>
+<meta name="description" content="C++ procédural : variables, constantes, types de base, portée, opérateurs, décisions (if/switch/enum), boucles.">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-lang="cpp" data-page="procedural">
+
+<div class="topbar" id="topbar"></div>
+
+<div class="wrap">
+<aside class="side" id="side"></aside>
+
+<main>
+  <h1>1 · Procédural</h1>
+  <p class="lead">Variables, types, portée, opérateurs, décisions et boucles — la base de tout programme C++ console.</p>
+
+  <h2 id="variables">Variables & constantes</h2>
+  <pre class="code" data-lang="cpp"><script type="text/plain">
+int a = 5;         // déclaration + initialisation
+const int b = 12;  // constante : doit être initialisée, ne change plus jamais
+
+int c;             // déclarée mais pas initialisée
+</script></pre>
+  <p>Une variable est un espace de stockage en mémoire ; son type détermine la valeur qu'elle peut contenir. Le qualificateur <code>const</code> rend un identifiant en lecture seule — utile pour protéger une valeur d'un changement accidentel, ou pour donner un nom symbolique à une valeur fixe.</p>
+  <div class="callout danger">
+    <span class="label">Les variables ne sont PAS initialisées par défaut</span>
+    <p>Contrairement à d'autres langages, déclarer <code>int c;</code> sans lui donner de valeur laisse un contenu <strong>indéterminé</strong> (ce qui se trouvait déjà à cet endroit en mémoire). Lire cette variable avant de l'avoir assignée est un bug classique — toujours initialiser à la déclaration par réflexe.</p>
+  </div>
+
+  <h2 id="types">Types de base</h2>
+  <table>
+    <thead><tr><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><code>int</code></td><td>entier, généralement stocké sur 32 bits signés (-2 147 483 648 à 2 147 483 647)</td></tr>
+      <tr><td><code>double</code></td><td>nombre à virgule flottante double précision (IEEE-754 binary64)</td></tr>
+      <tr><td><code>bool</code></td><td>booléen, <code>true</code> ou <code>false</code>, stocké sur un octet</td></tr>
+      <tr><td><code>char</code></td><td>un caractère ASCII (ou une valeur 8 bits), sur un octet — plage 0 à 255</td></tr>
+      <tr><td><code>void</code></td><td>« pas de valeur » — pour une fonction qui ne retourne rien</td></tr>
+    </tbody>
+  </table>
+  <div class="callout tip">
+    <span class="label">Types à largeur fixe</span>
+    <p>Pour un contrôle précis de la taille (flags, couleurs, id de texture), C++ propose aussi <code>uint8_t</code>, <code>uint16_t</code>, <code>uint32_t</code>… (bibliothèque <code>&lt;cstdint&gt;</code>) — voir <a href="bit-manipulations.html">2 · Manipulation de bits</a>.</p>
+  </div>
+
+  <h2 id="scope">Portée (scope)</h2>
+  <p>Les accolades <code>{ }</code> délimitent une portée. Une variable déclarée dans une portée interne peut <strong>masquer</strong> (shadow) une variable de même nom d'une portée externe — l'inverse n'est pas possible.</p>
+  <figure>
+    <svg viewBox="0 0 540 260" role="img" aria-label="Portées imbriquées">
+      <rect class="svg-bg" x="0" y="0" width="540" height="260" rx="6"/>
+      <rect class="svg-box-w" x="20" y="20" width="500" height="220" rx="6"/>
+      <text class="svg-t" x="270" y="42" text-anchor="middle">Portée globale — int g = 10;</text>
+
+      <rect class="svg-box-a" x="55" y="65" width="430" height="150" rx="6"/>
+      <text class="svg-t" x="270" y="87" text-anchor="middle">main() — int a = 5;</text>
+
+      <rect class="svg-box-g" x="95" y="110" width="350" height="80" rx="6"/>
+      <text class="svg-t" x="270" y="135" text-anchor="middle">bloc interne</text>
+      <text class="svg-tm" x="270" y="153" text-anchor="middle">int b = 10; int a = 20; — ce a masque celui de main()</text>
+      <text class="svg-tm" x="270" y="170" text-anchor="middle">g reste accessible (portée globale)</text>
+    </svg>
+    <figcaption>En sortant d'une portée, toutes ses variables locales sont détruites. Une portée externe (main) ne voit jamais les variables d'une portée interne.</figcaption>
+  </figure>
+
+  <h2 id="operateurs">Opérateurs arithmétiques</h2>
+  <table>
+    <thead><tr><th>Opérateur</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>+ - * /</code></td><td>addition, soustraction, multiplication, division</td></tr>
+      <tr><td><code>%</code></td><td>modulo — reste de la division entière</td></tr>
+      <tr><td><code>++ / --</code></td><td>incrémente/décrémente (pré ou post)</td></tr>
+    </tbody>
+  </table>
+  <pre class="code" data-lang="cpp"><script type="text/plain">
+int a = 125, b = 6;
+int num = a / b;   // 20 — division entière, tronquée
+int rem = a % b;   // 5  — le reste
+
+// Utile pour une grille de tuiles : position en pixels -> case + offset dans la case
+</script></pre>
+  <div class="callout info">
+    <span class="label">Pré vs post incrément</span>
+    <p><code>a++</code> (post) utilise la valeur <strong>puis</strong> incrémente ; <code>++a</code> (pré) incrémente <strong>puis</strong> utilise la valeur. <code>int b = a++ + 10;</code> n'est donc pas équivalent à <code>int c = 10 + ++a;</code>. Voir <a href="https://en.cppreference.com/w/cpp/language/operator_precedence" target="_blank" rel="noopener">l'ordre de précédence des opérateurs</a>.</p>
+  </div>
+
+  <h2 id="relationnels">Opérateurs relationnels & logiques</h2>
+  <table>
+    <thead><tr><th>Opérateur</th><th>Sens</th></tr></thead>
+    <tbody>
+      <tr><td><code>== !=</code></td><td>égal, différent</td></tr>
+      <tr><td><code>&gt; &lt; &gt;= &lt;=</code></td><td>plus grand, plus petit, plus grand ou égal, plus petit ou égal</td></tr>
+      <tr><td><code>&& || !</code></td><td>ET logique, OU logique, NON logique</td></tr>
+    </tbody>
+  </table>
+  <pre class="code" data-lang="cpp"><script type="text/plain">
+std::cout << std::boolalpha;   // affiche "true"/"false" au lieu de 1/0
+
+bool hasKey = true, doorLocked = true;
+double maxDistance = 1.0, doorDistance = 0.5;
+
+bool canOpenDoor = doorDistance < maxDistance && (!doorLocked || hasKey);
+</script></pre>
+  <div class="callout warn">
+    <span class="label">Ne jamais comparer des flottants avec ==</span>
+    <p><code>0.1 + 0.2 == 0.3</code> vaut <strong>false</strong> : la représentation binaire des flottants introduit de minuscules erreurs d'arrondi. Teste plutôt que l'écart est suffisamment petit (<code>std::abs(a - b) &lt; epsilon</code>).</p>
+  </div>
+
+  <h2 id="decisions">Prise de décision</h2>
+  <pre class="code" data-lang="cpp"><script type="text/plain">
+if (canOpenDoor)
+    std::cout << "You open the door!\n";
+else
+    std::cout << "The door won't open.\n";
+</script></pre>
+  <p>Un <code>if</code> ne choisit pas forcément une branche d'affichage : il peut aussi modifier l'état du programme.</p>
+  <pre class="code" data-lang="cpp"><script type="text/plain">
+if (boost)
+{
+    speed *= 2;      // opérateur composé — équivalent à speed = speed * 2
+    health += 10;
+}
+</script></pre>
+  <pre class="code" data-lang="cpp"><script type="text/plain">
+// Opérateur ternaire : condition ? si_vrai : si_faux
+double maxSpeed = health > 50 ? 3.5 : 2.0;
+</script></pre>
+  <pre class="code" data-lang="cpp"><script type="text/plain">
+switch (command)
+{
+    case 'n': std::cout << "Move north\n"; break;
+    case 's': std::cout << "Move south\n"; break;
+    default:  std::cout << "Unknown command\n"; break;
+}
+</script></pre>
+  <div class="callout tip">
+    <span class="label">if vs switch</span>
+    <p><code>if</code> pour évaluer des conditions ; <code>switch</code> pour choisir parmi plusieurs valeurs discrètes connues. Le <code>break</code> arrête la comparaison — l'oublier fait « tomber » l'exécution dans le <code>case</code> suivant (<em>fallthrough</em>), parfois volontaire (cases groupés).</p>
+  </div>
+  <pre class="code" data-lang="cpp"><script type="text/plain">
+enum class Item : uint8_t { NONE, SWORD, RED_KEY, BLUE_KEY };
+
+Item item = Item::SWORD;
+switch (item)
+{
+    case Item::SWORD: std::cout << "Something glints on the floor.\n"; break;
+    case Item::RED_KEY:
+    case Item::BLUE_KEY: std::cout << "It looks like there's a key on the floor.\n"; break;
+    case Item::NONE: std::cout << "The room is empty.\n"; break;
+}
+</script></pre>
+  <p><code>enum class</code> crée un ensemble nommé de valeurs commençant à 0 par défaut — plus sûr qu'un simple <code>enum</code> (pas de conversion implicite en entier, les noms restent qualifiés par <code>Item::</code>).</p>
+
+  <h2 id="boucles">Boucles</h2>
+  <table>
+    <thead><tr><th></th><th>Condition testée</th><th>Bon pour</th></tr></thead>
+    <tbody>
+      <tr><td><code>while</code></td><td>avant chaque itération</td><td>répéter tant qu'une condition tient — peut ne jamais s'exécuter</td></tr>
+      <tr><td><code>do...while</code></td><td>après chaque itération</td><td>exécuter au moins une fois (ex. un menu)</td></tr>
+      <tr><td><code>for</code></td><td>avant chaque itération, avec init + pas</td><td>on connaît à l'avance le nombre d'itérations</td></tr>
+    </tbody>
+  </table>
+  <pre class="code" data-lang="cpp"><script type="text/plain">
+double dist = 100.0;
+while (dist > 10.0)
+{
+    std::cout << "Currently at: " << dist << '\n';
+    dist /= 2;
+}
+</script></pre>
+  <pre class="code" data-lang="cpp"><script type="text/plain">
+char command;
+do
+{
+    std::cout << "Type Q to quit! ";
+    std::cin >> command;
+} while (command != 'Q');
+</script></pre>
+  <pre class="code" data-lang="cpp"><script type="text/plain">
+for (int i = 0; i < duration; i++)
+{
+    balance += balance * (interest / 100.0);
+}
+</script></pre>
+  <pre class="code" data-lang="cpp"><script type="text/plain">
+for (int i = 0; i < 10; i++)
+{
+    if (i == 5) break;      // sort immédiatement de la boucle
+    if (i % 2 == 0) continue; // saute directement à i++, sans exécuter la suite
+    std::cout << i << '\n';
+}
+</script></pre>
+  <div class="callout info">
+    <span class="label">Boucles imbriquées</span>
+    <p>Une boucle interne s'exécute en entier à chaque itération de la boucle externe — utile pour parcourir une grille 2D (<code>for (y) { for (x) { ... } }</code>).</p>
+  </div>
+
+  <h2 id="exercices">Exercices classiques</h2>
+  <table>
+    <thead><tr><th>Exercice</th><th>Ce qu'il travaille</th></tr></thead>
+    <tbody>
+      <tr><td>Celsius → Fahrenheit</td><td>lecture au clavier, expression arithmétique simple</td></tr>
+      <tr><td>Affichage heures:minutes:secondes</td><td>divisions et modulos enchaînés (décomposition d'un problème)</td></tr>
+      <tr><td>Survivre à une attaque</td><td>booléens combinés, conditions imbriquées, cas limites</td></tr>
+      <tr><td>Factorielle, Fibonacci</td><td>boucle <code>for</code>, accumulation d'un résultat</td></tr>
+      <tr><td>Triangle en <code>#</code></td><td>boucles imbriquées pour un motif 2D en console</td></tr>
+    </tbody>
+  </table>
+
+  <footer class="pg">
+    <span><a href="index.html">← Accueil C++</a></span>
+    <span><a href="bit-manipulations.html">Suivant : Manipulation de bits →</a></span>
+  </footer>
+</main>
+</div>
+
+<script src="../assets/site.config.js"></script>
+<script src="../assets/highlighters/cpp.js"></script>
+<script src="../assets/main.js"></script>
+<script src="../assets/nav.js"></script>
+</body>
+</html>

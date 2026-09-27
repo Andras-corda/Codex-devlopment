@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Codex — C++ · Manipulation de bits</title>
+<meta name="description" content="Littéraux binaires/hexadécimaux, affichage avec std::bitset, opérateurs bit à bit, masques (test/set/clear/toggle), packing de nibbles.">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-lang="cpp" data-page="bits">
+
+<div class="topbar" id="topbar"></div>
+
+<div class="wrap">
+<aside class="side" id="side"></aside>
+
+<main>
+  <h1>2 · Manipulation de bits</h1>
+  <p class="lead">Au lieu de stocker un booléen par drapeau, on peut réserver un <strong>bit</strong> par drapeau dans une seule valeur — flags de jeu, id de texture, couleur RGBA packée : le pain quotidien du développement bas niveau.</p>
+
+  <h2 id="litteraux">Littéraux binaires & hexadécimaux</h2>
+  <pre class="code" data-lang="cpp"><script type="text/plain">
+uint8_t flags = 0b10101010;      // préfixe 0b : littéral binaire
+uint16_t textureID = 345;         // jusqu'à 65536 textures différentes
+uint32_t color = 0xff00ffff;      // préfixe 0x : littéral hexadécimal (RGBA)
+</script></pre>
+  <figure>
+    <svg viewBox="0 0 460 130" role="img" aria-label="Les 8 bits d'un octet, numérotés de 7 à 0">
+      <rect class="svg-bg" x="0" y="0" width="460" height="130" rx="6"/>
+      <text class="svg-tm" x="20" y="26" text-anchor="start">uint8_t flags = 0b10101010;</text>
+      <g>
+        <rect class="svg-box" x="20" y="45" width="45" height="40" rx="4"/>
+        <text class="svg-t" x="42" y="70" text-anchor="middle">1</text>
+        <rect class="svg-box" x="65" y="45" width="45" height="40" rx="4"/>
+        <text class="svg-t" x="87" y="70" text-anchor="middle">0</text>
+        <rect class="svg-box" x="110" y="45" width="45" height="40" rx="4"/>
+        <text class="svg-t" x="132" y="70" text-anchor="middle">1</text>
+        <rect class="svg-box-a" x="155" y="45" width="45" height="40" rx="4"/>
+        <text class="svg-t" x="177" y="70" text-anchor="middle">0</text>
+        <rect class="svg-box" x="200" y="45" width="45" height="40" rx="4"/>
+        <text class="svg-t" x="222" y="70" text-anchor="middle">1</text>
+        <rect class="svg-box" x="245" y="45" width="45" height="40" rx="4"/>
+        <text class="svg-t" x="267" y="70" text-anchor="middle">0</text>
+        <rect class="svg-box" x="290" y="45" width="45" height="40" rx="4"/>
+        <text class="svg-t" x="312" y="70" text-anchor="middle">1</text>
+        <rect class="svg-box" x="335" y="45" width="45" height="40" rx="4"/>
+        <text class="svg-t" x="357" y="70" text-anchor="middle">0</text>
+      </g>
+      <text class="svg-tm" x="42" y="100" text-anchor="middle">bit 7</text>
+      <text class="svg-tm" x="177" y="100" text-anchor="middle">bit 3</text>
+      <text class="svg-tm" x="357" y="100" text-anchor="middle">bit 0</text>
+      <text class="svg-tm" x="177" y="118" text-anchor="middle">(en évidence : celui qu'on va tester plus bas)</text>
+    </svg>
+    <figcaption>Un octet (<code>uint8_t</code>) contient 8 bits numérotés de 7 (le plus significatif) à 0 (le moins significatif).</figcaption>
+  </figure>
+
+  <h2 id="affichage">Afficher une valeur dans différentes bases</h2>
+  <pre class="code" data-lang="cpp"><script type="text/plain">
+uint8_t value = 42;
+
+std::cout << "Decimal:     " << std::dec << static_cast<int>(value) << '\n';
+std::cout << "Hexadecimal: " << std::hex << static_cast<int>(value) << '\n';
+std::cout << "Binary:      " << std::bitset<8>(value) << '\n';
+</script></pre>
+  <div class="callout warn">
+    <span class="label">Pourquoi caster en int avant d'afficher</span>
+    <p>La console traite un <code>uint8_t</code> comme un <strong>caractère</strong> : l'afficher tel quel montre le caractère ASCII correspondant, pas le nombre. Il faut le convertir (<code>static_cast&lt;int&gt;</code>) pour voir sa valeur numérique. <code>std::bitset&lt;8&gt;</code> (bibliothèque <code>&lt;bitset&gt;</code>) affiche directement une représentation binaire, ce que la console ne sait pas faire nativement.</p>
+  </div>
+
+  <h2 id="operateurs">Opérateurs bit à bit</h2>
+  <table>
+    <thead><tr><th>Opérateur</th><th>Effet</th></tr></thead>
+    <tbody>
+      <tr><td><code>~</code> NOT</td><td>inverse tous les bits de l'opérande</td></tr>
+      <tr><td><code>|</code> OR</td><td>bit à 1 si au moins un des deux opérandes l'a</td></tr>
+      <tr><td><code>^</code> XOR</td><td>bit à 1 si un seul des deux opérandes l'a (pas les deux)</td></tr>
+      <tr><td><code>&amp;</code> AND</td><td>bit à 1 seulement si les deux opérandes l'ont</td></tr>
+      <tr><td><code>&lt;&lt;</code> / <code>&gt;&gt;</code></td><td>décale les bits vers la gauche / la droite</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="masques">Tester, activer, inverser un bit (masques)</h2>
+  <p>Un masque se construit en décalant un <code>1</code> jusqu'à la position voulue (<code>1 &lt;&lt; position</code>), puis en le combinant avec la valeur via l'opérateur adapté.</p>
+  <pre class="code" data-lang="cpp"><script type="text/plain">
+uint8_t flags = 0b10101010;
+uint8_t bitToTest = 3;
+
+// Tester : AND avec le masque -> non nul si le bit était à 1
+bool isFlagSet = flags & (1 << bitToTest);
+
+// Activer : OR avec le masque -> force le bit à 1, sans toucher aux autres
+flags |= (1 << bitToTest);
+
+// Inverser un ou plusieurs bits : XOR avec le masque
+flags ^= 0x0f;   // inverse les 4 bits de poids faible
+</script></pre>
+  <div class="callout tip">
+    <span class="label">Et pour désactiver (clear) un bit ?</span>
+    <p>AND avec le complément du masque : <code>flags &amp;= ~(1 &lt;&lt; position)</code> — <code>~</code> inverse le masque (un seul 0 à la position voulue, des 1 partout ailleurs), donc le AND ne touche qu'à ce bit et laisse les autres intacts.</p>
+  </div>
+
+  <h2 id="nibbles">Empaqueter des données : nibbles</h2>
+  <p>C++ n'a pas de type dédié pour un <em>nibble</em> (4 bits) — on restreint simplement une variable à des valeurs de 0 à 15, puis on empaquette deux nibbles dans un seul octet.</p>
+  <pre class="code" data-lang="cpp"><script type="text/plain">
+uint8_t a = 13;   // 4 bits : 0..15
+uint8_t b = 10;   // 4 bits : 0..15
+
+uint8_t packed = (a << 4) | b;   // a dans les 4 bits hauts, b dans les 4 bits bas
+
+uint8_t unpacked_a = packed >> 4;     // récupère les 4 bits hauts
+uint8_t unpacked_b = packed & 0x0f;   // récupère les 4 bits bas (masque)
+</script></pre>
+
+  <h2 id="exemple">Aide-mémoire</h2>
+  <table>
+    <thead><tr><th>Opération</th><th>Formule</th></tr></thead>
+    <tbody>
+      <tr><td>Tester le bit n</td><td><code>valeur &amp; (1 &lt;&lt; n)</code></td></tr>
+      <tr><td>Activer (set) le bit n</td><td><code>valeur |= (1 &lt;&lt; n)</code></td></tr>
+      <tr><td>Désactiver (clear) le bit n</td><td><code>valeur &amp;= ~(1 &lt;&lt; n)</code></td></tr>
+      <tr><td>Inverser (toggle) le bit n</td><td><code>valeur ^= (1 &lt;&lt; n)</code></td></tr>
+      <tr><td>Empaqueter deux nibbles</td><td><code>(haut &lt;&lt; 4) | bas</code></td></tr>
+    </tbody>
+  </table>
+
+  <footer class="pg">
+    <span><a href="procedural.html">← Procédural</a></span>
+    <span><a href="index.html">Retour à l'accueil C++</a></span>
+  </footer>
+</main>
+</div>
+
+<script src="../assets/site.config.js"></script>
+<script src="../assets/highlighters/cpp.js"></script>
+<script src="../assets/main.js"></script>
+<script src="../assets/nav.js"></script>
+</body>
+</html>
