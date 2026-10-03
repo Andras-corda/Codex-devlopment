@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Codex — Blueprint · Collisions & physique</title>
+<meta name="description" content="Collisions et physique dans Unreal : Object Type, canaux et presets personnalisés, collision des meshes, traces, simulation, forces, contraintes, ragdoll, Physical Material et surfaces, débogage.">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-lang="blueprint" data-page="physics">
+
+<div class="topbar" id="topbar"></div>
+
+<div class="wrap">
+<aside class="side" id="side"></aside>
+
+<main>
+  <h1>8 · Collisions & physique</h1>
+  <p class="lead">Ce qui touche quoi, ce qui est détecté, ce qui tombe et rebondit. Deux moteurs distincts à ne pas confondre : le système de <strong>collision</strong> (qui répond aux requêtes et aux événements) et la <strong>simulation physique</strong> (Chaos, qui fait bouger les corps).</p>
+
+  <h2 id="modele" data-group="Collision">Object Type, canal & réponse</h2>
+  <p>Les bases — formes de collision, Ignore / Overlap / Block, événements Begin Overlap et Hit — sont dans <a href="personnage.html#collisions">2 · Personnage & Input</a>. Voici le modèle complet, celui qu'il faut comprendre dès qu'on sort des réglages par défaut.</p>
+  <table>
+    <thead><tr><th>Notion</th><th>Se règle dans</th><th>Question à laquelle elle répond</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Object Type</strong></td><td><em>Collision → Object Type</em></td><td>« Qu'est-ce que je suis ? » — <code>WorldStatic</code> (décor fixe), <code>WorldDynamic</code> (décor mobile ou scripté), <code>Pawn</code>, <code>PhysicsBody</code> (corps simulé), <code>Vehicle</code>, <code>Destructible</code>, ou un type personnalisé</td></tr>
+      <tr><td>Réponse à un <strong>Object Type</strong></td><td><em>Collision → Object Responses</em></td><td>« Comment je réagis à un objet de ce type ? » — Ignore, Overlap ou Block</td></tr>
+      <tr><td>Réponse à un <strong>Trace Channel</strong></td><td><em>Collision → Trace Responses</em></td><td>« Comment je réagis à une requête sur ce canal ? » — <code>Visibility</code>, <code>Camera</code>, ou un canal personnalisé</td></tr>
+    </tbody>
+  </table>
+  <table>
+    <thead><tr><th>Collision Enabled</th><th>Active</th><th>Pour</th></tr></thead>
+    <tbody>
+      <tr><td><code>No Collision</code></td><td>rien</td><td>décoration pure, ragdoll pas encore activé</td></tr>
+      <tr><td><code>Query Only</code></td><td>overlaps, traces, mouvement bloqué (sweep)</td><td>triggers, zones de détection, la plupart des objets de décor</td></tr>
+      <tr><td><code>Physics Only</code></td><td>simulation seule</td><td>corps physiques que l'on ne veut pas interroger</td></tr>
+      <tr><td><code>Query and Physics</code></td><td>les deux</td><td>le cas général d'un objet solide et interrogeable</td></tr>
+    </tbody>
+  </table>
+  <div class="callout info">
+    <span class="label">Deux façons d'interroger le monde</span>
+    <p>Une trace <strong>par canal</strong> demande « quels composants répondent <em>Block</em> au canal X ? » ; une trace <strong>par type d'objet</strong> demande « quels composants <em>sont</em> de type Y ? ». Les overlaps et le mouvement (sweep) utilisent, eux, les <em>Object Responses</em> du composant qui bouge. Dans tous les cas, c'est la réponse <strong>la plus faible</strong> des deux côtés qui l'emporte (voir le tableau de <a href="personnage.html#collisions">Personnage & Input</a>).</p>
+  </div>
+  <div class="callout warn">
+    <span class="label">Mobility</span>
+    <p>Un composant en <em>Static</em> ne peut ni bouger ni simuler la physique ; il lui faut <em>Movable</em>. Placer un objet en <em>Stationary</em> ou <em>Static</em> puis essayer de le déplacer (<code>Set Actor Location</code>, <code>Simulate Physics</code>) est l'une des premières causes de « ça ne marche pas ».</p>
+  </div>
+
+  <h2 id="custom" data-group="Collision">Collision custom : canaux & presets</h2>
+  <p>Les types et canaux par défaut ne suffisent vite plus : un projectile ne doit pas se comporter comme un décor, un rayon d'interaction ne doit toucher que les objets interactifs. On les déclare dans <em>Edit → Project Settings → Engine → Collision</em>.</p>
+  <table>
+    <thead><tr><th>Élément</th><th>Création</th><th>Exemple</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Object Channel</strong></td><td><em>New Object Channel…</em> : un nom + la réponse par défaut (Ignore / Overlap / Block)</td><td><code>Projectile</code></td></tr>
+      <tr><td><strong>Trace Channel</strong></td><td><em>New Trace Channel…</em> : un nom + la réponse par défaut</td><td><code>Interact</code>, <code>Weapon</code></td></tr>
+      <tr><td><strong>Preset (profil)</strong></td><td><em>Preset → New…</em> : nom, Collision Enabled, Object Type, une réponse pour <em>chaque</em> Object Type et Trace Channel</td><td><code>Projectile</code>, <code>InteractTrigger</code></td></tr>
+    </tbody>
+  </table>
+  <table>
+    <thead><tr><th>Preset</th><th>Object Type</th><th>Enabled</th><th>Réponses</th></tr></thead>
+    <tbody>
+      <tr><td><code>Projectile</code></td><td>Projectile</td><td>Query Only</td><td>Block : WorldStatic, WorldDynamic, Pawn · Ignore : Projectile</td></tr>
+      <tr><td><code>InteractTrigger</code></td><td>WorldDynamic</td><td>Query Only</td><td>Overlap : Pawn · Block : canal <code>Interact</code> · Ignore : le reste</td></tr>
+      <tr><td><code>Ragdoll</code> (fourni)</td><td>PhysicsBody</td><td>Query and Physics</td><td>Block : décor et corps physiques</td></tr>
+    </tbody>
+  </table>
+  <p>Un composant choisit un preset dans <em>Collision → Collision Presets</em> ; modifier une seule réponse à la main le fait passer en <code>Custom…</code>. Depuis un Blueprint, ces nœuds agissent sur un <em>Primitive Component</em> :</p>
+  <table>
+    <thead><tr><th>Nœud</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>Set Collision Profile Name</code></td><td>applique un preset par son nom (<code>NoCollision</code>, <code>Ragdoll</code>, <code>Projectile</code>…) — le plus pratique</td></tr>
+      <tr><td><code>Set Collision Enabled</code></td><td>bascule entre No Collision, Query Only, Physics Only, Query and Physics</td></tr>
+      <tr><td><code>Set Collision Response to Channel</code> / <code>…to All Channels</code></td><td>change la réponse (Ignore / Overlap / Block) pour un canal, ou pour tous, <strong>sur ce composant seulement</strong></td></tr>
+      <tr><td><code>Set Collision Object Type</code></td><td>change ce que le composant « est »</td></tr>
+      <tr><td><code>Set Generate Overlap Events</code></td><td>active ou coupe les événements d'overlap</td></tr>
+      <tr><td><code>Ignore Actor When Moving</code> / <code>Ignore Component When Moving</code></td><td>le composant traverse cet Actor quand il bouge — pour qu'un projectile ne se bloque pas sur celui qui l'a tiré</td></tr>
+    </tbody>
+  </table>
+  <div class="callout tip">
+    <span class="label">Projectile qui ignore son tireur</span>
+    <p>À l'apparition du projectile : <code>Ignore Actor When Moving</code> avec comme cible sa sphère de collision et comme Actor son <em>Instigator</em> (<code>Get Instigator</code>, renseigné au <code>Spawn Actor from Class</code>). Sans cela, le projectile explose dans la capsule du joueur dès sa première frame.</p>
+  </div>
+  <div class="callout warn">
+    <span class="label">Limites et stockage</span>
+    <p>Le moteur n'offre que <strong>18 canaux personnalisés</strong>, objets et traces confondus — les réserver avec soin. Les canaux et presets sont écrits dans <code>Config/DefaultEngine.ini</code> : ce fichier doit être versionné, sinon un coéquipier voit tous ses presets « Custom ».</p>
+  </div>
+
+  <h2 id="meshes" data-group="Collision">Collision des Static Meshes</h2>
+  <p>La collision d'un mesh est un asset à part entière, éditée dans l'éditeur de Static Mesh (menu <em>Collision</em>) : on y ajoute des formes simplifiées (boîte, sphère, capsule, <em>10DOP</em>) ou une décomposition convexe automatique (<em>Auto Convex Collision</em>).</p>
+  <table>
+    <thead><tr><th>Collision Complexity</th><th>Effet</th></tr></thead>
+    <tbody>
+      <tr><td><code>Project Default</code></td><td>suit le réglage du projet</td></tr>
+      <tr><td><code>Simple And Complex</code></td><td>deux collisions : la simple (formes convexes, rapide) pour le mouvement et la physique, la complexe (chaque triangle) pour les traces avec <em>Trace Complex</em></td></tr>
+      <tr><td><code>Use Simple Collision As Complex</code></td><td>tout passe par les formes simples</td></tr>
+      <tr><td><code>Use Complex Collision As Simple</code></td><td>le mesh entier sert de collision, y compris au mouvement — réservé aux décors <strong>fixes</strong></td></tr>
+    </tbody>
+  </table>
+  <table>
+    <thead><tr><th>Préfixe dans le FBX</th><th>Forme créée à l'import</th></tr></thead>
+    <tbody>
+      <tr><td><code>UBX_</code></td><td>boîte</td></tr>
+      <tr><td><code>USP_</code></td><td>sphère</td></tr>
+      <tr><td><code>UCP_</code></td><td>capsule</td></tr>
+      <tr><td><code>UCX_</code></td><td>enveloppe convexe</td></tr>
+    </tbody>
+  </table>
+  <p>Un mesh additionnel nommé <code>UBX_SM_Crate_00</code> dans le fichier de <code>SM_Crate</code> devient automatiquement sa boîte de collision ; plusieurs formes se numérotent (<code>_00</code>, <code>_01</code>…).</p>
+  <div class="callout info">
+    <span class="label">Simple pour bouger, complexe pour viser</span>
+    <p>Un corps qui <em>simule</em> la physique doit avoir une collision simple convexe : une collision par triangles ne s'utilise pas pour un corps mobile. Le mode complexe sert aux <strong>traces</strong> précises sur du décor (viser un trou dans un mur) et à lire le Physical Material <em>par face</em> (voir plus bas).</p>
+  </div>
+
+  <h2 id="traces" data-group="Collision">Traces & requêtes de collision</h2>
+  <p>Une <strong>trace</strong> lance un volume (ou un rayon) dans le monde et renvoie ce qu'il touche — sans que rien n'ait à bouger. C'est l'outil de l'interaction, de la visée, du test de sol et de la vision d'une IA.</p>
+  <figure>
+    <svg viewBox="0 0 640 220" role="img" aria-label="Un Line Trace : Start, Impact Point, Impact Normal et End">
+      <defs><marker id="bpcol1-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+        <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--green)" stroke-width="1.5"/></marker></defs>
+      <rect class="svg-bg" x="0" y="0" width="640" height="220" rx="6"/>
+      <rect class="svg-box-a" x="20" y="130" width="100" height="70" rx="6"/>
+      <text class="svg-t" x="70" y="160" text-anchor="middle">Joueur</text>
+      <text class="svg-tm" x="70" y="178" text-anchor="middle">Start (caméra)</text>
+
+      <rect class="svg-box-w" x="426" y="88" width="8" height="110" rx="2"/>
+      <path d="M120 170 L426 100" stroke="var(--link)" stroke-width="2.5" fill="none"/>
+      <path d="M434 98 L580 66" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3" fill="none"/>
+      <circle cx="426" cy="100" r="5" fill="var(--warn)"/>
+      <circle cx="580" cy="66" r="4" fill="var(--muted)"/>
+      <text class="svg-tm" x="580" y="52" text-anchor="middle">End</text>
+      <text class="svg-tm" x="430" y="78" text-anchor="middle">Impact Point</text>
+
+      <path d="M426 100 H382" stroke="var(--green)" stroke-width="2" fill="none" style="marker-end:url(#bpcol1-arr)"/>
+      <text class="svg-tm" x="376" y="92" text-anchor="end">Impact Normal</text>
+      <text class="svg-tm" x="448" y="175">Hit Actor = ce mur</text>
+    </svg>
+    <figcaption>Le segment va de Start à End mais s'arrête au premier obstacle qui <em>bloque</em> ce canal. Le trait en pointillé n'a jamais été testé.</figcaption>
+  </figure>
+  <table>
+    <thead><tr><th>Famille de nœuds</th><th>Teste</th><th>Bon pour</th></tr></thead>
+    <tbody>
+      <tr><td><code>Line Trace by Channel</code></td><td>un segment, contre un canal de trace</td><td>interaction (<code>Interact</code>), tir instantané, test de sol</td></tr>
+      <tr><td><code>Line Trace for Objects</code></td><td>un segment, contre une liste d'Object Types</td><td>« y a-t-il un Pawn ou un corps physique sur ce trajet ? »</td></tr>
+      <tr><td><code>Multi Line Trace…</code></td><td>comme ci-dessus, en gardant <strong>tous</strong> les impacts jusqu'au premier Block</td><td>balle qui traverse, laser, sélection en ligne</td></tr>
+      <tr><td><code>Sphere / Capsule / Box Trace…</code></td><td>un volume balayé le long du trajet</td><td>visée assistée (un rayon est trop fin), détection d'un sol en pente</td></tr>
+      <tr><td><code>Sphere / Box / Capsule Overlap Actors</code></td><td>un volume immobile</td><td>explosion, « qui est autour de ce point ? »</td></tr>
+      <tr><td><code>Get Overlapping Actors / Components</code></td><td>ce qui chevauche déjà un composant</td><td>état initial d'un trigger au <code>BeginPlay</code></td></tr>
+      <tr><td><code>Get Hit Result Under Cursor by Channel</code></td><td>un rayon caméra → curseur</td><td>clic dans le monde (RTS, point & click)</td></tr>
+    </tbody>
+  </table>
+  <table>
+    <thead><tr><th>Paramètre</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><em>Start</em> / <em>End</em></td><td>points en coordonnées monde — souvent la position de la caméra et <code>Start + Forward × 1000</code></td></tr>
+      <tr><td><em>Trace Channel</em> / <em>Object Types</em></td><td>ce qu'on teste</td></tr>
+      <tr><td><em>Trace Complex</em></td><td>triangles exacts au lieu des formes simples — plus coûteux, nécessaire pour un Physical Material par face</td></tr>
+      <tr><td><em>Actors to Ignore</em> / <em>Ignore Self</em></td><td>ne pas se toucher soi-même (ni l'arme tenue)</td></tr>
+      <tr><td><em>Draw Debug Type</em></td><td><em>None</em>, <em>For One Frame</em>, <em>For Duration</em>, <em>Persistent</em> — à activer pendant la mise au point</td></tr>
+    </tbody>
+  </table>
+  <h3>Lire le Hit Result</h3>
+  <p>La sortie <em>Out Hit</em> se lit avec <code>Break Hit Result</code> :</p>
+  <table>
+    <thead><tr><th>Champ</th><th>Contenu</th></tr></thead>
+    <tbody>
+      <tr><td><em>Blocking Hit</em> (et le booléen de retour du nœud)</td><td>y a-t-il eu impact ? Faux : rien sur le trajet, <em>End</em> n'est pas atteint par un obstacle</td></tr>
+      <tr><td><em>Initial Overlap</em></td><td>la trace a démarré <strong>à l'intérieur</strong> d'un objet bloquant</td></tr>
+      <tr><td><em>Hit Actor</em> / <em>Hit Component</em></td><td>qui a été touché</td></tr>
+      <tr><td><em>Impact Point</em> / <em>Impact Normal</em></td><td>le point exact de contact et la normale de la <strong>surface</strong> touchée</td></tr>
+      <tr><td><em>Location</em> / <em>Normal</em></td><td>pour une trace en volume : la position du <strong>centre</strong> du volume au moment de l'impact (identique à Impact Point pour un rayon)</td></tr>
+      <tr><td><em>Distance</em></td><td>longueur parcourue avant l'impact</td></tr>
+      <tr><td><em>Phys Material</em> / <em>Bone Name</em></td><td>le <a href="#physmat">Physical Material</a> touché ; l'os touché sur un Skeletal Mesh (zone de dégâts : tête, jambe)</td></tr>
+    </tbody>
+  </table>
+  <table>
+    <thead><tr><th>Usage</th><th>Montage</th></tr></thead>
+    <tbody>
+      <tr><td>Interaction</td><td>trace caméra → devant, 300 cm, canal <code>Interact</code> → <code>Hit Actor</code> → message d'<a href="ui-structures-interfaces.html#interfaces">interface</a></td></tr>
+      <tr><td>Test de sol</td><td>trace vers le bas depuis le pied ; <em>Distance</em> petite = au sol, grande = en l'air</td></tr>
+      <tr><td>Arme hitscan</td><td>trace caméra → viseur ; <em>Impact Point</em> pour l'effet, <em>Bone Name</em> pour les dégâts de tête</td></tr>
+      <tr><td>Ligne de vue d'une IA</td><td>trace de l'ennemi vers le joueur : si <em>Blocking Hit</em> est faux (ou si <em>Hit Actor</em> est le joueur), il le voit</td></tr>
+      <tr><td>Aperçu de placement</td><td>trace caméra → sol ; l'<em>Impact Point</em> positionne le fantôme de l'objet</td></tr>
+    </tbody>
+  </table>
+  <div class="callout warn">
+    <span class="label">Coût</span>
+    <p>Une trace unique est bon marché ; des dizaines de <code>Multi</code> traces ou <em>Trace Complex</em> à chaque <code>Event Tick</code>, non. Réserver les traces continues à ce qui en a besoin (viseur), lancer les autres à l'événement (clic, tir), et choisir un canal dédié pour n'être testé que par les objets concernés.</p>
+  </div>
+
+  <h2 id="evenements" data-group="Collision">Pourquoi mon événement ne part pas</h2>
+  <table>
+    <thead><tr><th>Symptôme</th><th>Cause probable</th><th>Correction</th></tr></thead>
+    <tbody>
+      <tr><td>Begin Overlap ne se déclenche jamais</td><td><em>Generate Overlap Events</em> décoché sur l'un des <strong>deux</strong> composants</td><td>le cocher des deux côtés</td></tr>
+      <tr><td>idem</td><td>l'un des côtés répond <em>Ignore</em> à l'Object Type de l'autre</td><td>au moins un côté en <em>Overlap</em>, l'autre pas en <em>Ignore</em></td></tr>
+      <tr><td>idem</td><td><em>Collision Enabled</em> = <em>Physics Only</em> ou <em>No Collision</em> : les overlaps sont des <strong>queries</strong></td><td>passer en <em>Query Only</em> ou <em>Query and Physics</em></td></tr>
+      <tr><td>Hit ne se déclenche pas</td><td>pas de <em>Block</em> des deux côtés, ou corps simulé sans <em>Simulation Generates Hit Events</em></td><td>régler les réponses ; cocher l'option sur le corps simulé</td></tr>
+      <tr><td>Un objet déplacé traverse un mur</td><td><code>Set Actor Location</code> sans <em>Sweep</em> : l'objet est téléporté</td><td>cocher <em>Sweep</em> (et récupérer le <em>Sweep Hit Result</em>)</td></tr>
+      <tr><td>Rien ne se passe pour un objet déjà dans la zone</td><td>l'overlap existait avant l'activation ; Begin Overlap ne part qu'à l'entrée</td><td><code>Get Overlapping Actors</code> au <code>BeginPlay</code></td></tr>
+      <tr><td>L'événement part deux fois pour un Character</td><td>la capsule <em>et</em> le mesh chevauchent la zone</td><td>comparer <em>Other Comp</em> à la capsule, ou couper <em>Generate Overlap Events</em> sur le mesh</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="simulation" data-group="Physique">Simuler la physique</h2>
+  <p>Cocher <em>Simulate Physics</em> sur un composant (<em>Physics</em> dans ses Details) le confie à Chaos : gravité, collisions, rebonds, frottements. Il n'est alors plus déplacé par le code mais par la simulation.</p>
+  <table>
+    <thead><tr><th>Condition</th><th>Pourquoi</th></tr></thead>
+    <tbody>
+      <tr><td><em>Mobility</em> = <em>Movable</em></td><td>un composant statique ne peut pas bouger</td></tr>
+      <tr><td><em>Collision Enabled</em> avec physique (<em>Query and Physics</em> ou <em>Physics Only</em>)</td><td>sinon rien à simuler : l'objet tombe à travers le sol</td></tr>
+      <tr><td>Une collision <strong>simple</strong> convexe</td><td>la physique n'utilise pas les triangles</td></tr>
+      <tr><td><em>Enable Gravity</em></td><td>pour que l'objet tombe</td></tr>
+    </tbody>
+  </table>
+  <table>
+    <thead><tr><th>Propriété</th><th>Effet</th></tr></thead>
+    <tbody>
+      <tr><td><em>Mass in Kg (Override)</em></td><td>fixe la masse ; sinon elle vient du volume × la densité du <a href="#physmat">Physical Material</a></td></tr>
+      <tr><td><em>Linear Damping</em> / <em>Angular Damping</em></td><td>freinage en translation / en rotation (un palet qui glisse longtemps = amortissement faible)</td></tr>
+      <tr><td><em>Center of Mass Offset</em></td><td>décale le centre de gravité (un objet qui se redresse tout seul)</td></tr>
+      <tr><td><em>Constraints</em> → <em>Lock Position / Rotation</em></td><td>fige des axes (jeu en 2.5D, porte qui ne tourne que sur Z)</td></tr>
+      <tr><td><em>Use CCD</em> (Continuous Collision Detection)</td><td>évite qu'un petit objet rapide traverse un mur d'une frame à l'autre</td></tr>
+    </tbody>
+  </table>
+  <div class="callout danger">
+    <span class="label">Ne pas téléporter un corps simulé</span>
+    <p><code>Set Actor Location</code> ou <code>Add Actor World Offset</code> sur un composant qui simule le téléporte et perturbe la simulation (vitesse conservée, collisions ignorées). Pour le déplacer : forces, impulsions ou <code>Set Physics Linear Velocity</code> (voir plus bas).</p>
+  </div>
+  <div class="callout info">
+    <span class="label">Le Character n'est pas un corps physique</span>
+    <p>Un <code>Character</code> est déplacé par son <code>CharacterMovementComponent</code>, pas par la simulation : il pousse les objets physiques seulement si <em>Enable Physics Interaction</em> est coché (avec <em>Push Force Factor</em> et <em>Touch Force Factor</em> pour doser). Pour un contrôle exact, appliquer soi-même une impulsion dans <code>On Component Hit</code>.</p>
+  </div>
+
+  <h3>Quel mouvement choisir ?</h3>
+  <table>
+    <thead><tr><th>Besoin</th><th>Outil</th></tr></thead>
+    <tbody>
+      <tr><td>Mouvement entièrement scripté (porte, plateforme)</td><td><code>Timeline</code> + <code>Set Relative Location / Rotation</code> — voir <a href="index.html#timelines">Timelines</a></td></tr>
+      <tr><td>Projectile (balle, flèche, sort) sans simulation complète</td><td><code>Projectile Movement Component</code> : vitesse initiale, <em>Projectile Gravity Scale</em>, <em>Should Bounce</em>, <em>Bounciness</em></td></tr>
+      <tr><td>Objet qui tombe, roule, s'empile, réagit aux chocs</td><td><em>Simulate Physics</em></td></tr>
+      <tr><td>Personnage humanoïde jouable</td><td><code>CharacterMovementComponent</code></td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="forces" data-group="Physique">Forces, impulsions & vitesse</h2>
+  <p>Sur un composant qui simule, on agit par ces nœuds. La différence essentielle : une <strong>impulsion</strong> est un coup unique, une <strong>force</strong> est une poussée continue à renouveler à chaque frame.</p>
+  <table>
+    <thead><tr><th>Nœud</th><th>Effet</th></tr></thead>
+    <tbody>
+      <tr><td><code>Add Impulse</code></td><td>coup instantané (frapper une caisse). <em>Vel Change</em> coché : ignore la masse — même effet quel que soit le poids</td></tr>
+      <tr><td><code>Add Impulse at Location</code></td><td>idem, appliqué à un point : l'objet se met aussi à tourner</td></tr>
+      <tr><td><code>Add Force</code> / <code>Add Force at Location</code></td><td>poussée continue, à rappeler à chaque <code>Tick</code> ; <em>Accel Change</em> ignore la masse</td></tr>
+      <tr><td><code>Add Torque in Degrees</code> / <code>in Radians</code></td><td>couple de rotation continu</td></tr>
+      <tr><td><code>Add Radial Impulse</code> / <code>Add Radial Force</code></td><td>explosion ou souffle : origine, rayon, intensité, <em>Falloff</em> (<em>Linear</em> décroît avec la distance, <em>Constant</em> non)</td></tr>
+      <tr><td><code>Set Physics Linear Velocity</code> / <code>Set Physics Angular Velocity in Degrees</code></td><td>fixe directement la vitesse (<em>Add to Current</em> pour l'ajouter à l'existante)</td></tr>
+      <tr><td><code>Get Physics Linear Velocity</code>, <code>Get Mass</code></td><td>lire l'état</td></tr>
+    </tbody>
+  </table>
+  <div class="callout tip">
+    <span class="label">Des nombres énormes, c'est normal</span>
+    <p>Les unités d'Unreal sont des centimètres : une impulsion qui fait sauter une caisse de 100 kg vaut typiquement des dizaines de milliers. Partir de <code>masse × vitesse voulue en cm/s</code>, ou cocher <em>Vel Change</em> pour raisonner directement en vitesse.</p>
+  </div>
+  <div class="callout info">
+    <span class="label">Composants prêts à l'emploi</span>
+    <p><code>Radial Force Component</code> (souffle ou impulsion autour de son centre, déclenchable par <code>Fire Impulse</code>) et <code>Physics Thruster Component</code> (poussée constante dans une direction : fusée, propulseur) évitent de réécrire ces nœuds.</p>
+  </div>
+
+  <h2 id="contraintes" data-group="Physique">Contraintes & Physics Handle</h2>
+  <table>
+    <thead><tr><th>Composant</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>Physics Constraint</code></td><td>relie deux composants et limite leur mouvement relatif : <em>Linear Limits</em> (axes X, Y, Z : <em>Free</em>, <em>Limited</em>, <em>Locked</em>) et <em>Angular Limits</em> (<em>Swing 1</em>, <em>Swing 2</em>, <em>Twist</em>, avec un angle). Option <em>Disable Collision</em> entre les deux corps liés. Un seuil de rupture (<em>Linear / Angular Break</em>) casse la liaison et prévient par <code>On Constraint Broken</code></td></tr>
+      <tr><td><code>Physics Handle</code></td><td>saisit un corps simulé et le tient à une position cible : <code>Grab Component at Location</code> (ou <em>with Rotation</em>), <code>Set Target Location</code> / <code>Rotation</code>, <code>Release Component</code>. Raideur et amortissement réglables</td></tr>
+    </tbody>
+  </table>
+  <table>
+    <thead><tr><th>Montage</th><th>Réglage</th></tr></thead>
+    <tbody>
+      <tr><td>Porte à charnière</td><td>Physics Constraint entre le mur (fixe) et la porte (simulée) ; <em>Linear</em> tout <em>Locked</em>, deux des trois axes angulaires <em>Locked</em>, le dernier <em>Limited</em> à 90°</td></tr>
+      <tr><td>Balançoire, lustre</td><td>un axe angulaire <em>Free</em> ou largement <em>Limited</em>, amortissement léger</td></tr>
+      <tr><td>Porter une caisse (style « gravity gun »)</td><td>Physics Handle : <code>Grab</code> sur le <em>Hit Component</em> d'une trace, puis <code>Set Target Location</code> devant la caméra à chaque frame</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="ragdoll" data-group="Physique">Physics Asset & ragdoll</h2>
+  <p>Un <strong>Physics Asset</strong> décrit la physique d'un Skeletal Mesh : un corps (capsule, boîte, sphère) par os important, reliés par des contraintes. C'est ce qui permet à un personnage de s'effondrer en <em>ragdoll</em>.</p>
+  <table>
+    <thead><tr><th>Étape de la mort en ragdoll</th><th>Nœud</th></tr></thead>
+    <tbody>
+      <tr><td>1. Stopper le déplacement</td><td><code>Disable Movement</code> sur le <code>CharacterMovementComponent</code></td></tr>
+      <tr><td>2. Libérer le corps de la capsule</td><td>capsule : <code>Set Collision Enabled</code> → <em>No Collision</em></td></tr>
+      <tr><td>3. Collision du mesh</td><td>mesh : <code>Set Collision Profile Name</code> → <code>Ragdoll</code></td></tr>
+      <tr><td>4. Lancer la simulation</td><td>mesh : <code>Set Simulate Physics</code> → coché</td></tr>
+      <tr><td>5. Suivre le corps (facultatif)</td><td>rattacher le <code>SpringArm</code> au mesh plutôt qu'à la capsule, qui reste debout à l'écart</td></tr>
+    </tbody>
+  </table>
+  <div class="callout tip">
+    <span class="label">Ragdoll partiel & réactions aux coups</span>
+    <p><code>Set All Bodies Below Simulate Physics</code> (nom d'os, simuler, <em>Include Self</em>) ne passe en physique que la partie du squelette sous un os — un bras qui pend, le haut du corps qui encaisse. <code>Set All Bodies Below Physics Blend Weight</code> (0 → 1) dose le mélange entre l'animation et la simulation, pour un personnage qui chancelle puis se relève.</p>
+  </div>
+  <div class="callout info">
+    <span class="label">Mesh importé sans Physics Asset</span>
+    <p>Un personnage venu d'ailleurs (un <a href="animation-blueprint.html#retarget">personnage Mixamo</a>, un asset acheté) peut arriver sans Physics Asset : clic droit sur le Skeletal Mesh → <em>Create → Physics Asset</em>, puis vérifier dans l'éditeur que les capsules suivent bien les os et que les limites des contraintes sont plausibles.</p>
+  </div>
+
+  <h2 id="physmat" data-group="Surfaces &amp; outils">Physical Material</h2>
+  <p>Un <strong>Physical Material</strong> décrit le « comportement » d'une matière : glissante ou rugueuse, rebondissante ou molle, lourde ou légère — et surtout <strong>de quoi elle est faite</strong>, pour que le jeu réagisse (bruit de pas, impact de balle).</p>
+  <table>
+    <thead><tr><th>Propriété</th><th>Effet</th></tr></thead>
+    <tbody>
+      <tr><td><em>Friction</em> / <em>Static Friction</em></td><td>glissement en mouvement / au démarrage (0 : glace, 1 : caoutchouc)</td></tr>
+      <tr><td><em>Friction Combine Mode</em></td><td>comment combiner deux surfaces en contact : <em>Average</em> (par défaut), <em>Min</em>, <em>Multiply</em>, <em>Max</em></td></tr>
+      <tr><td><em>Restitution</em></td><td>rebond : 0 mou, 1 rebond parfait ; son <em>Combine Mode</em> fonctionne comme celui de la friction</td></tr>
+      <tr><td><em>Density</em></td><td>en g/cm³ ; la masse d'un corps = volume × densité (sauf <em>Mass in Kg</em> imposée)</td></tr>
+      <tr><td><em>Surface Type</em></td><td>une étiquette (Béton, Bois, Herbe, Métal…) lisible par la logique du jeu</td></tr>
+    </tbody>
+  </table>
+  <p>Les noms de <em>Surface Type</em> se déclarent une fois dans <em>Project Settings → Physics → Physical Surface</em> (<code>SurfaceType1</code>, <code>SurfaceType2</code>… à renommer). Il se prépare ensuite en l'associant à une matière :</p>
+  <table>
+    <thead><tr><th>Où l'assigner</th><th>Réglage</th></tr></thead>
+    <tbody>
+      <tr><td>Un Static Mesh (collision simple)</td><td>éditeur de mesh → <em>Collision → Simple Collision Physical Material</em></td></tr>
+      <tr><td>Un composant, pour une instance précise</td><td><em>Collision → Phys Material Override</em></td></tr>
+      <tr><td>Un Material (par face, collision complexe)</td><td>Details du Material → <em>Physical Material</em> — utilisé par les traces avec <em>Trace Complex</em></td></tr>
+      <tr><td>Un Landscape</td><td>chaque <em>Landscape Layer Info</em> reçoit le sien (sol d'herbe, de terre…) selon la peinture</td></tr>
+      <tr><td>Un corps d'un Physics Asset</td><td>propriété <em>Phys Material</em> du corps (peau, os, armure)</td></tr>
+    </tbody>
+  </table>
+  <h3>Bruits de pas et impacts selon la surface</h3>
+  <figure>
+    <svg viewBox="0 0 720 120" role="img" aria-label="De l'Anim Notify de pas au son choisi selon la surface">
+      <defs><marker id="bpcol2-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+        <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
+      <rect class="svg-bg" x="0" y="0" width="720" height="120" rx="6"/>
+      <rect class="svg-box-w" x="15" y="30" width="124" height="60" rx="6"/>
+      <text class="svg-t" x="77" y="55" text-anchor="middle">Anim Notify</text>
+      <text class="svg-tm" x="77" y="73" text-anchor="middle">pied au sol</text>
+      <path class="svg-arrow" d="M139 60 H153" style="marker-end:url(#bpcol2-arr)"/>
+
+      <rect class="svg-box" x="155" y="30" width="124" height="60" rx="6"/>
+      <text class="svg-t" x="217" y="55" text-anchor="middle">Line Trace</text>
+      <text class="svg-tm" x="217" y="73" text-anchor="middle">vers le bas</text>
+      <path class="svg-arrow" d="M279 60 H293" style="marker-end:url(#bpcol2-arr)"/>
+
+      <rect class="svg-box" x="295" y="30" width="124" height="60" rx="6"/>
+      <text class="svg-t" x="357" y="55" text-anchor="middle">Phys Material</text>
+      <text class="svg-tm" x="357" y="73" text-anchor="middle">du Hit Result</text>
+      <path class="svg-arrow" d="M419 60 H433" style="marker-end:url(#bpcol2-arr)"/>
+
+      <rect class="svg-box-a" x="435" y="30" width="124" height="60" rx="6"/>
+      <text class="svg-t" x="497" y="55" text-anchor="middle">Surface Type</text>
+      <text class="svg-tm" x="497" y="73" text-anchor="middle">puis Switch</text>
+      <path class="svg-arrow" d="M559 60 H573" style="marker-end:url(#bpcol2-arr)"/>
+
+      <rect class="svg-box-g" x="575" y="30" width="124" height="60" rx="6"/>
+      <text class="svg-t" x="637" y="55" text-anchor="middle">Son + VFX</text>
+      <text class="svg-tm" x="637" y="73" text-anchor="middle">selon la surface</text>
+    </svg>
+    <figcaption>La même chaîne sert aux pas, aux impacts de balles et aux dérapages de voiture : seule la source de la trace change.</figcaption>
+  </figure>
+  <table>
+    <thead><tr><th>Étape</th><th>Nœud</th></tr></thead>
+    <tbody>
+      <tr><td>1. Déclencher</td><td>un <a href="animation-blueprint.html#notifies">Anim Notify</a> <code>AN_Footstep</code> posé sur chaque pas de l'animation</td></tr>
+      <tr><td>2. Trace</td><td><code>Line Trace by Channel</code> (canal <em>Visibility</em>) de la position du pied vers le bas, d'environ 50 cm</td></tr>
+      <tr><td>3. Lire la surface</td><td><code>Get Surface Type</code> sur le Hit Result (il lit son <em>Phys Material</em>) → <code>Switch on EPhysicalSurface</code></td></tr>
+      <tr><td>4. Réagir</td><td>par branche : <code>Play Sound at Location</code> et <code>Spawn System at Location</code> (poussière, éclaboussure) — voir <a href="feedback.html">Materials, SFX & VFX</a></td></tr>
+    </tbody>
+  </table>
+  <div class="callout warn">
+    <span class="label">Sans matière assignée, pas de surface</span>
+    <p>Si rien ne porte de Physical Material à l'endroit touché, <em>Phys Material</em> est vide et <code>Get Surface Type</code> renvoie <em>Default</em> : prévoir un cas par défaut dans le Switch. Pour une valeur <em>par face</em> d'un mesh, il faut à la fois une trace avec <em>Trace Complex</em> et un Physical Material sur le <em>Material</em>, pas sur le mesh.</p>
+  </div>
+  <div class="callout info">
+    <span class="label">Le Character ignore ces frictions</span>
+    <p>Un personnage qui marche utilise la valeur <em>Ground Friction</em> de son <code>CharacterMovementComponent</code>, pas la friction du Physical Material. Pour du verglas, lire le <em>Surface Type</em> sous le joueur et appliquer soi-même <code>Ground Friction</code> et <code>Braking Deceleration Walking</code> selon la surface.</p>
+  </div>
+
+  <h2 id="debug" data-group="Surfaces &amp; outils">Déboguer collisions & physique</h2>
+  <table>
+    <thead><tr><th>Outil</th><th>Montre</th></tr></thead>
+    <tbody>
+      <tr><td>Console : <code>show collision</code></td><td>les formes de collision de tous les objets (bascule à nouveau pour couper)</td></tr>
+      <tr><td><em>Draw Debug Type</em> sur les traces</td><td>le trajet de la trace, ses points d'impact, sa couleur d'échec / de réussite</td></tr>
+      <tr><td>Collision Analyzer (<em>Window → Developer Tools</em>)</td><td>enregistre les requêtes de collision : qui a testé quoi, avec quel canal, quel résultat</td></tr>
+      <tr><td>Console : <code>p.Chaos.DebugDraw.Enabled 1</code></td><td>affichage de debug du moteur physique Chaos (corps, contacts, contraintes)</td></tr>
+      <tr><td><code>Alt + S</code> (<em>Simulate</em>)</td><td>laisse tourner la physique dans l'éditeur sans lancer le jeu, pour régler masses et frottements</td></tr>
+      <tr><td>Console : <code>slomo 0.1</code></td><td>ralentit le jeu pour observer un contact ou un tir</td></tr>
+      <tr><td>Console : <code>stat physics</code></td><td>le coût de la simulation par frame</td></tr>
+    </tbody>
+  </table>
+
+  <footer class="pg">
+    <span><a href="feedback.html">← Materials, SFX & VFX</a></span>
+    <span><a href="fonctions-events-timers.html">Suivant : Fonctions, events & timers →</a></span>
+  </footer>
+</main>
+</div>
+
+<script src="../assets/site.config.js"></script>
+<script src="../assets/nav.js"></script>
+</body>
+</html>

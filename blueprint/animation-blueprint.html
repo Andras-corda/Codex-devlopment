@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Codex — Blueprint · Animation Blueprint</title>
-<meta name="description" content="Blend Space (1D/2D) et Animation Blueprint : Event Graph vs AnimGraph, State Machine Idle/Run vs Chute.">
+<meta name="description" content="Blend Space (1D/2D), Animation Blueprint (Event Graph vs AnimGraph, State Machine), Layered blend per bone, Save/Use Cached Pose, Anim Notify et Notify State, retargeting d'animations Mixamo avec IK Rig et IK Retargeter.">
 <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body data-lang="blueprint" data-page="animbp">
@@ -18,7 +18,7 @@
   <h1>3 · Animation Blueprint</h1>
   <p class="lead">Faire correspondre le mouvement du personnage (<a href="personnage.html">page précédente</a>) à une animation cohérente : <strong>Blend Space</strong> pour mélanger, <strong>Animation Blueprint (ABP)</strong> pour piloter le tout.</p>
 
-  <h2 id="blendspace">Blend Space</h2>
+  <h2 id="blendspace" data-group="Les bases">Blend Space</h2>
   <p>Un <strong>Blend Space</strong> mélange plusieurs animations selon un ou deux paramètres continus (ex. la vitesse) — au lieu de choisir « soit Idle, soit Walk, soit Run », on obtient un mélange progressif entre elles.</p>
   <figure>
     <svg viewBox="0 0 460 260" role="img" aria-label="Blend Space 2D : vitesse et direction">
@@ -53,7 +53,7 @@
     </tbody>
   </table>
 
-  <h2 id="animbp">Animation Blueprint</h2>
+  <h2 id="animbp" data-group="Les bases">Animation Blueprint</h2>
   <p>Un Animation Blueprint pilote le <code>SkeletalMeshComponent</code> et se divise en deux graphes : l'<strong>Event Graph</strong> calcule des variables chaque frame, l'<strong>AnimGraph</strong> les utilise pour produire la pose finale.</p>
   <figure>
     <svg viewBox="0 0 620 220" role="img" aria-label="Pipeline de l'Animation Blueprint">
@@ -92,6 +92,197 @@
   <div class="callout warn">
     <span class="label">Ne pas confondre les deux graphes</span>
     <p>L'Event Graph tourne comme un Blueprint classique (nœuds d'exécution). L'AnimGraph est <strong>évalué en continu</strong> pour produire une pose — pas de notion d'ordre séquentiel, chaque nœud décrit « quelle pose produire à partir de ces entrées ».</p>
+  </div>
+
+  <h2 id="layered" data-group="Mélanger les poses">Layered Blend per Bone</h2>
+  <p>Le nœud <code>Layered blend per bone</code> combine <strong>deux poses par partie du squelette</strong> : la pose de base partout, et une pose « calque » à partir d'un os donné. C'est ce qui permet de viser ou d'attaquer avec le haut du corps pendant que les jambes continuent de courir.</p>
+  <figure>
+    <svg viewBox="0 0 640 230" role="img" aria-label="Layered blend per bone : jambes de la locomotion, haut du corps du slot">
+      <defs><marker id="bplb-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+        <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
+      <rect class="svg-bg" x="0" y="0" width="640" height="230" rx="6"/>
+      <rect class="svg-box" x="15" y="30" width="170" height="55" rx="6"/>
+      <text class="svg-t" x="100" y="53" text-anchor="middle">Use Cached Pose</text>
+      <text class="svg-tm" x="100" y="71" text-anchor="middle">« Locomotion »</text>
+      <rect class="svg-box-w" x="15" y="140" width="170" height="55" rx="6"/>
+      <text class="svg-t" x="100" y="163" text-anchor="middle">Slot « UpperBody »</text>
+      <text class="svg-tm" x="100" y="181" text-anchor="middle">montages haut du corps</text>
+
+      <path d="M185 57 C 215 57, 215 105, 238 105" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bplb-arr)"/>
+      <path d="M185 167 C 215 167, 215 123, 238 123" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bplb-arr)"/>
+
+      <rect class="svg-box-a" x="240" y="60" width="210" height="110" rx="6"/>
+      <text class="svg-t" x="345" y="84" text-anchor="middle">Layered blend per bone</text>
+      <text class="svg-tm" x="345" y="109" text-anchor="middle">Base Pose ← jambes</text>
+      <text class="svg-tm" x="345" y="127" text-anchor="middle">Blend Poses 0 ← haut du corps</text>
+      <text class="svg-tm" x="345" y="148" text-anchor="middle">Filtre : spine_01 + enfants</text>
+
+      <path d="M450 115 H503" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bplb-arr)"/>
+      <rect class="svg-box-g" x="505" y="82" width="120" height="65" rx="6"/>
+      <text class="svg-t" x="565" y="110" text-anchor="middle">Output Pose</text>
+      <text class="svg-tm" x="565" y="128" text-anchor="middle">pose finale</text>
+    </svg>
+    <figcaption>Tout ce qui descend de <code>spine_01</code> (torse, bras, tête) vient du Slot ; le reste du squelette garde la locomotion.</figcaption>
+  </figure>
+  <table>
+    <thead><tr><th>Réglage</th><th>Effet</th></tr></thead>
+    <tbody>
+      <tr><td><em>Layer Setup → Branch Filters → Bone Name</em></td><td>os de départ du calque (<code>spine_01</code> pour le haut du corps, le premier os d'un bras pour un seul bras) : cet os et tout ce qui en descend reçoit la pose du calque</td></tr>
+      <tr><td><em>Blend Depth</em></td><td>fondu progressif sur plusieurs os au lieu d'une coupure nette à l'os de départ</td></tr>
+      <tr><td>Pin <em>Blend Weights</em></td><td>0 → 1 par calque. Branché sur une variable (<code>bIsAttacking</code>) ou fixé à 1 quand le Slot ne joue rien : il renvoie alors simplement la pose entrante</td></tr>
+      <tr><td><em>Mesh Space Rotation Blend</em></td><td>mélange les rotations dans l'espace du mesh plutôt que de chaque os : le haut du corps ne suit plus la torsion des jambes — à cocher pour un calque « haut du corps »</td></tr>
+      <tr><td><em>Blend Mode</em></td><td><em>Branch Filter</em> (par os, ci-dessus) ou <em>Blend Mask</em> (un asset qui donne un poids à chaque os)</td></tr>
+      <tr><td><em>Add pin</em></td><td>ajoute d'autres calques (bras gauche, tête…), chacun avec son filtre et son poids</td></tr>
+    </tbody>
+  </table>
+  <div class="callout danger">
+    <span class="label">Le montage n'apparaît pas</span>
+    <p><code>Play Anim Montage</code> joue sur le <strong>Slot</strong> choisi dans le montage (<em>Slot Name</em>, ex. <code>DefaultGroup.UpperBody</code>). Si l'Animation Blueprint ne contient pas de nœud <code>Slot</code> du même nom, le montage joue « dans le vide » : aucune erreur, aucune animation visible. Le nœud Slot se place <em>avant</em> la sortie (ou comme source du calque, comme ci-dessus).</p>
+  </div>
+
+  <h3>Les autres nœuds de mélange</h3>
+  <table>
+    <thead><tr><th>Nœud</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>Blend</code></td><td>deux poses A et B mélangées par un <em>Alpha</em> (0 → A, 1 → B)</td></tr>
+      <tr><td><code>Blend Poses by bool / int / enum</code></td><td>choisit une pose parmi plusieurs selon une valeur (arme rangée/sortie, posture debout/accroupi), avec un temps de fondu par entrée</td></tr>
+      <tr><td><code>Apply Additive</code></td><td>ajoute une animation additive (respiration, penché dans les virages) par-dessus la pose courante</td></tr>
+      <tr><td><code>Slot</code></td><td>point d'insertion des montages dans le graphe</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="cache" data-group="Mélanger les poses">Save Cached Pose / Use Cached Pose</h2>
+  <p>Une pose calculée (typiquement la <em>State Machine</em> de locomotion) peut être <strong>enregistrée sous un nom</strong> puis réutilisée à plusieurs endroits du graphe, sans être recalculée : elle n'est évaluée qu'une fois par mise à jour, quel que soit le nombre d'utilisations.</p>
+  <table>
+    <thead><tr><th>Nœud</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>Save cached pose</code> « Locomotion »</td><td>reçoit la pose en entrée et la mémorise sous ce nom ; il n'a <strong>pas de sortie</strong> et ne se branche pas sur <em>Output Pose</em></td></tr>
+      <tr><td><code>Use cached pose</code> « Locomotion »</td><td>ressort la pose mémorisée, autant de fois qu'on veut (clic droit dans le graphe → chercher le nom)</td></tr>
+    </tbody>
+  </table>
+  <table>
+    <thead><tr><th>Recette « locomotion + haut du corps »</th><th>Nœuds</th></tr></thead>
+    <tbody>
+      <tr><td>1. Mémoriser</td><td><em>State Machine</em> « Locomotion » → <code>Save cached pose</code> « Locomotion »</td></tr>
+      <tr><td>2. Base</td><td><code>Use cached pose</code> « Locomotion » → pin <em>Base Pose</em> d'un <code>Layered blend per bone</code></td></tr>
+      <tr><td>3. Calque</td><td><code>Slot</code> « UpperBody » → <em>Blend Poses 0</em> (filtre <code>spine_01</code>)</td></tr>
+      <tr><td>4. Corps entier</td><td>sortie du Layered blend → <code>Slot</code> « DefaultSlot » (montages plein corps, ex. roulade) → <em>Output Pose</em></td></tr>
+    </tbody>
+  </table>
+  <div class="callout info">
+    <span class="label">Pourquoi pas dupliquer la State Machine</span>
+    <p>Copier la State Machine en deux endroits la ferait tourner <strong>deux fois</strong> (coût doublé) et ses états pourraient se désynchroniser. Un cached pose garantit que tout le monde lit <em>la même</em> pose. Il vaut uniquement à l'intérieur du même Animation Blueprint.</p>
+  </div>
+
+  <h2 id="notifies" data-group="Événements d'animation">Anim Notify & Notify State</h2>
+  <p>Un <strong>notify</strong> est un marqueur posé sur la timeline d'une animation (ou d'un montage) : quand la lecture le franchit, il déclenche un événement. C'est la façon propre de synchroniser le gameplay sur l'animation — le pas qui touche le sol, l'instant où l'épée frappe — au lieu de compter des secondes dans un <code>Delay</code>.</p>
+  <figure>
+    <svg viewBox="0 0 640 200" role="img" aria-label="Timeline d'une animation avec deux notifies et un notify state">
+      <rect class="svg-bg" x="0" y="0" width="640" height="200" rx="6"/>
+      <text class="svg-tm" x="320" y="22" text-anchor="middle">Animation « Attack_01 » — 1,2 s</text>
+      <rect class="svg-box" x="40" y="60" width="560" height="28" rx="4"/>
+
+      <path d="M157 60 L150 48 H164 Z" fill="var(--warn)"/>
+      <text class="svg-t" x="157" y="40" text-anchor="middle">AN_Whoosh</text>
+      <path d="M553 60 L546 48 H560 Z" fill="var(--warn)"/>
+      <text class="svg-t" x="553" y="40" text-anchor="middle">AN_Footstep</text>
+
+      <path d="M292 88 V104" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="3 3" fill="none"/>
+      <path d="M507 88 V104" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="3 3" fill="none"/>
+      <rect class="svg-box-w" x="292" y="104" width="215" height="28" rx="4"/>
+      <text class="svg-t" x="400" y="123" text-anchor="middle">ANS_Hitbox</text>
+      <text class="svg-tm" x="292" y="152" text-anchor="middle">Begin</text>
+      <text class="svg-tm" x="400" y="152" text-anchor="middle">Tick (chaque frame)</text>
+      <text class="svg-tm" x="507" y="152" text-anchor="middle">End</text>
+
+      <text class="svg-tm" x="40" y="185" text-anchor="middle">0 s</text>
+      <text class="svg-tm" x="600" y="185" text-anchor="middle">1,2 s</text>
+    </svg>
+    <figcaption>Un notify est un instant ; un notify state couvre un intervalle et prévient au début, à chaque frame, puis à la fin.</figcaption>
+  </figure>
+  <table>
+    <thead><tr><th></th><th>Anim Notify</th><th>Anim Notify State</th></tr></thead>
+    <tbody>
+      <tr><td>Durée</td><td>un instant</td><td>un intervalle (début → fin)</td></tr>
+      <tr><td>Événements</td><td><code>Notify</code></td><td><code>Notify Begin</code>, <code>Notify Tick</code>, <code>Notify End</code></td></tr>
+      <tr><td>Exemples</td><td>pas qui touche le sol, son, particules, fin d'un coup</td><td>hitbox d'arme active, fenêtre de combo, invincibilité, traînée d'épée</td></tr>
+      <tr><td>Préfixe usuel</td><td><code>AN_</code></td><td><code>ANS_</code></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Les créer et les traiter</h3>
+  <table>
+    <thead><tr><th>Façon</th><th>Comment</th><th>Où se traite l'événement</th></tr></thead>
+    <tbody>
+      <tr><td>Notifies intégrés</td><td>piste <em>Notifies</em> de l'animation → clic droit → <em>Add Notify</em> → <em>Play Sound</em>, <em>Play Niagara Particle Effect</em>…</td><td>nulle part : le moteur joue directement le son ou l'effet (socket et décalage réglables)</td></tr>
+      <tr><td>Notify nommé</td><td><em>Add Notify → New Notify…</em> puis un nom (<code>FootstepL</code>)</td><td>événement <code>AnimNotify_FootstepL</code> dans l'<strong>Event Graph de l'Animation Blueprint</strong> — accès à ses variables et à <code>Try Get Pawn Owner</code></td></tr>
+      <tr><td>Notify en classe Blueprint</td><td>Content Browser → Blueprint Class → <code>AnimNotify</code> (ou <code>AnimNotifyState</code>), puis <em>Add Notify</em> → le choisir</td><td>on surcharge <code>Received Notify</code> (ou <code>Received Notify Begin</code> / <code>Tick</code> / <code>End</code> pour un State) ; <code>Get Owner</code> sur le <em>Mesh Comp</em> donne l'Actor. Réutilisable dans toutes les animations</td></tr>
+    </tbody>
+  </table>
+  <div class="callout tip">
+    <span class="label">Exemple : bruits de pas selon le sol</span>
+    <p>Un <code>AN_Footstep</code> posé sur chaque pas de la marche et de la course : il lance un <code>Line Trace</code> vers le bas depuis le pied, lit le <em>Physical Material</em> touché et joue le son correspondant. Chaîne complète dans <a href="collisions-physique.html#physmat">Physical Material</a>.</p>
+  </div>
+  <div class="callout warn">
+    <span class="label">Quand un notify ne part pas</span>
+    <p><strong>Mesh non évalué</strong> : un mesh hors champ ou sur un serveur dédié peut ne pas faire avancer ses animations — régler <em>Visibility Based Anim Tick Option</em> sur <em>Always Tick Pose</em> pour les notifies de gameplay (hitbox). <strong>Poids trop faible</strong> : une animation presque entièrement fondue ne déclenche pas ses notifies. <strong>Timing de combat</strong> : dans un montage, passer <em>Montage Tick Type</em> du notify sur <em>Branching Point</em> pour qu'il parte exactement à sa frame et non en fin de mise à jour. À régler aussi sur le notify : <em>Notify Trigger Chance</em> (probabilité) et <em>Notify Filter LOD</em> (ignorer les notifies cosmétiques sur les personnages lointains).</p>
+  </div>
+
+  <h2 id="retarget" data-group="Importer des animations">Retargeting d'animations (Mixamo)</h2>
+  <p>Une animation est liée à un <strong>Skeleton</strong> : elle ne se joue que sur des personnages qui le partagent. Le <em>retargeting</em> convertit une animation d'un squelette vers un autre (autres proportions, autres noms d'os). Cas typique : des animations <a href="https://www.mixamo.com" target="_blank" rel="noopener">Mixamo</a> à faire jouer sur le Mannequin d'Unreal.</p>
+  <div class="callout tip">
+    <span class="label">Parfois, inutile de retargeter</span>
+    <p>Si on utilise le <strong>personnage Mixamo lui-même</strong>, ses animations Mixamo importées sur son Skeleton fonctionnent directement : aucun retargeting. On retargete seulement pour faire jouer ces animations sur un <em>autre</em> squelette (le Mannequin, un personnage acheté).</p>
+  </div>
+  <figure>
+    <svg viewBox="0 0 660 230" role="img" aria-label="Chaîne de retargeting : deux IK Rig, un IK Retargeter, des animations exportées">
+      <defs><marker id="bprt-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+        <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
+      <rect class="svg-bg" x="0" y="0" width="660" height="230" rx="6"/>
+      <rect class="svg-box" x="15" y="30" width="135" height="55" rx="6"/>
+      <text class="svg-t" x="82" y="53" text-anchor="middle">Mixamo</text>
+      <text class="svg-tm" x="82" y="71" text-anchor="middle">FBX · T-pose</text>
+      <path class="svg-arrow" d="M150 57 H173" style="marker-end:url(#bprt-arr)"/>
+      <rect class="svg-box-w" x="175" y="30" width="140" height="55" rx="6"/>
+      <text class="svg-t" x="245" y="53" text-anchor="middle">IK Rig source</text>
+      <text class="svg-tm" x="245" y="71" text-anchor="middle">chaînes d'os</text>
+
+      <rect class="svg-box" x="15" y="145" width="135" height="55" rx="6"/>
+      <text class="svg-t" x="82" y="168" text-anchor="middle">Mannequin UE5</text>
+      <text class="svg-tm" x="82" y="186" text-anchor="middle">A-pose</text>
+      <path class="svg-arrow" d="M150 172 H173" style="marker-end:url(#bprt-arr)"/>
+      <rect class="svg-box-w" x="175" y="145" width="140" height="55" rx="6"/>
+      <text class="svg-t" x="245" y="168" text-anchor="middle">IK Rig cible</text>
+      <text class="svg-tm" x="245" y="186" text-anchor="middle">chaînes d'os</text>
+
+      <path d="M315 57 C 335 57, 335 108, 353 108" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bprt-arr)"/>
+      <path d="M315 172 C 335 172, 335 133, 353 133" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bprt-arr)"/>
+
+      <rect class="svg-box-a" x="355" y="88" width="140" height="65" rx="6"/>
+      <text class="svg-t" x="425" y="115" text-anchor="middle">IK Retargeter</text>
+      <text class="svg-tm" x="425" y="133" text-anchor="middle">source → cible</text>
+      <path class="svg-arrow" d="M495 120 H523" style="marker-end:url(#bprt-arr)"/>
+      <rect class="svg-box-g" x="525" y="88" width="120" height="65" rx="6"/>
+      <text class="svg-t" x="585" y="115" text-anchor="middle">Animations</text>
+      <text class="svg-tm" x="585" y="133" text-anchor="middle">du Mannequin</text>
+    </svg>
+    <figcaption>Un IK Rig par squelette décrit ses chaînes d'os ; l'IK Retargeter relie les deux et exporte de nouvelles animations pour le squelette cible.</figcaption>
+  </figure>
+  <table>
+    <thead><tr><th>Étape</th><th>Comment</th></tr></thead>
+    <tbody>
+      <tr><td>1. Récupérer</td><td>sur Mixamo : le personnage en FBX <em>With Skin</em> (une fois), puis chaque animation en <em>Without Skin</em>. Cocher <em>In Place</em> pour les cycles de marche et de course (le déplacement vient du jeu, pas de l'animation)</td></tr>
+      <tr><td>2. Importer</td><td>le personnage (crée Skeletal Mesh + Skeleton), puis les animations en choisissant <strong>ce même Skeleton</strong>. Si on s'arrête là, les animations jouent sur le personnage Mixamo</td></tr>
+      <tr><td>3. Un IK Rig par squelette</td><td>Content Browser → <em>Animation → IK Rig</em>, sur le mesh Mixamo puis sur le Mannequin. Définir le <em>Retarget Root</em> (le bassin : <code>Hips</code> / <code>pelvis</code>) et les <em>Retarget Chains</em> (colonne, bras, jambes, tête, doigts). La génération automatique des chaînes devine l'essentiel sur un humanoïde — à vérifier à la main</td></tr>
+      <tr><td>4. IK Retargeter</td><td><em>Animation → IK Retargeter</em> : source = IK Rig Mixamo, cible = IK Rig Mannequin ; vérifier le <em>Chain Mapping</em> (chaque chaîne source vers sa chaîne cible)</td></tr>
+      <tr><td>5. Aligner les poses</td><td>Mixamo est en T-pose, le Mannequin UE5 en A-pose. Dans le retargeter, <em>Edit Pose</em> sur la cible jusqu'à ce que les deux personnages se superposent bras compris</td></tr>
+      <tr><td>6. Exporter</td><td>onglet <em>Asset Browser</em> du retargeter : sélectionner les animations → <em>Export Selected Animations</em> (ou clic droit sur une animation → <em>Retarget Animations</em>). Elles existent désormais sur le Skeleton du Mannequin</td></tr>
+      <tr><td>7. Utiliser</td><td>dans le <a href="#blendspace">Blend Space</a> et l'<a href="#animbp">Animation Blueprint</a> du Mannequin</td></tr>
+    </tbody>
+  </table>
+  <div class="callout warn">
+    <span class="label">Les défauts classiques</span>
+    <p><strong>Poses non alignées</strong> : bras de travers ou jambes qui se croisent — c'est presque toujours la T-pose contre la A-pose de l'étape 5. <strong>Pieds qui glissent ou flottent</strong> : proportions différentes ; activer l'IK des pieds dans le retargeter et vérifier que le <em>Retarget Root</em> est bien le bassin. <strong>Pas de root motion</strong> : Mixamo n'a pas d'os <code>root</code> ; avec <em>In Place</em>, on déplace le personnage par le code (<code>Add Movement Input</code>). <strong>Mauvais Skeleton</strong> : un Blend Space n'accepte que des animations du Skeleton auquel il est lié — importer ou exporter sur le bon.</p>
   </div>
 
   <footer class="pg">

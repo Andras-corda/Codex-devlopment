@@ -20,23 +20,82 @@
 
   <h2 id="idee" data-group="Introduction">Blueprint, en bref</h2>
   <p>Blueprint est le langage de <strong>script visuel</strong> d'Unreal Engine : au lieu d'écrire du texte, on relie des <strong>nœuds</strong> dans un graphe. Chaque nœud a des <strong>pins d'exécution</strong> (le fil blanc — l'ordre dans lequel les choses se produisent) et des <strong>pins de données</strong> (colorés selon le type — la valeur qui circule). Sous le capot, Blueprint reste du C++ compilé ; c'est une couche visuelle par-dessus, pas un langage séparé.</p>
+  <figure>
+    <img src="../assets/gifs/pins-blueprint-unreal.gif" width="960" height="540" loading="lazy" alt="Animation : les pins d'un nœud Blueprint, le fil blanc d'exécution et les pins de données colorés selon leur type">
+    <figcaption>Les pins en action : le fil blanc d'exécution fixe l'ordre, les pins colorés transportent les valeurs — un fil ne se branche qu'entre types compatibles.</figcaption>
+  </figure>
   <table>
-    <thead><tr><th>Type de pin</th><th>Couleur (approximative)</th></tr></thead>
-    <tbody>
-      <tr><td>Exécution (exec)</td><td><span style="display:inline-block;width:28px;height:3px;background:#e6edf3;vertical-align:middle;margin-right:8px"></span>fil blanc, pas une valeur — juste « et ensuite »</td></tr>
-      <tr><td>Boolean</td><td><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#8f2d2d;vertical-align:middle;margin-right:8px"></span>rouge sombre</td></tr>
-      <tr><td>Integer</td><td><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#1faaa4;vertical-align:middle;margin-right:8px"></span>cyan / turquoise</td></tr>
-      <tr><td>Float</td><td><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#7ec699;vertical-align:middle;margin-right:8px"></span>vert pâle</td></tr>
-      <tr><td>Vector</td><td><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#e8c547;vertical-align:middle;margin-right:8px"></span>jaune / or</td></tr>
-      <tr><td>Object reference</td><td><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#1f6feb;vertical-align:middle;margin-right:8px"></span>bleu</td></tr>
-      <tr><td>Rotator</td><td><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#9ea8f5;vertical-align:middle;margin-right:8px"></span>bleu lavande</td></tr>
-      <tr><td>Transform</td><td><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#e8872a;vertical-align:middle;margin-right:8px"></span>orange</td></tr>
-      <tr><td>Class reference</td><td><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#8a3fd1;vertical-align:middle;margin-right:8px"></span>violet</td></tr>
-      <tr><td>String</td><td><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#e04ec4;vertical-align:middle;margin-right:8px"></span>magenta</td></tr>
-      <tr><td>Name</td><td><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#b06fe0;vertical-align:middle;margin-right:8px"></span>violet clair</td></tr>
-      <tr><td>Text</td><td><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#e0869b;vertical-align:middle;margin-right:8px"></span>rose saumon</td></tr>
-    </tbody>
-  </table>
+  <thead>
+    <tr>
+      <th>Type de Pin</th>
+      <th>Aperçu &amp; Couleur</th>
+      <th>Rôle technique &amp; Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Exec</code></td>
+      <td><span style="display:inline-block;width:16px;height:12px;background:#ffffff;clip-path:polygon(0% 0%, 60% 0%, 100% 50%, 60% 100%, 0% 100%);vertical-align:middle;margin-right:8px"></span>Fil blanc</td>
+      <td><strong>Exécution :</strong> Déclenche le flux logique. Ce n'est pas une valeur numérique, juste l'ordre « et ensuite ».</td>
+    </tr>
+    <tr>
+      <td><code>Boolean</code></td>
+      <td><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#ea2c2c;vertical-align:middle;margin-right:8px"></span>Rouge vif</td>
+      <td><strong>Vrai ou Faux :</strong> Stocke un état binaire (0 ou 1, <code>true</code> / <code>false</code>).</td>
+    </tr>
+    <tr>
+      <td><code>Integer</code></td>
+      <td><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#17e6be;vertical-align:middle;margin-right:8px"></span>Cyan / Turquoise</td>
+      <td><strong>Nombre entier :</strong> Utilisé pour les compteurs, les index ou les ID (ex: -1, 0, 42).</td>
+    </tr>
+    <tr>
+      <td><code>Float / Real</code></td>
+      <td><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#a1f876;vertical-align:middle;margin-right:8px"></span>Vert pâle</td>
+      <td><strong>Nombre à virgule :</strong> Utilisé pour le temps, la santé ou la vitesse (ex: 3.14, 0.5). Représenté par le type <em>Real (Double)</em> sous UE5.</td>
+    </tr>
+    <tr>
+      <td><code>Name</code></td>
+      <td><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#bf76f8;vertical-align:middle;margin-right:8px"></span>Violet clair</td>
+      <td><strong>Identifiant constant :</strong> Texte ultra-léger et optimisé pour identifier des assets, des os (Bones) ou des tags. Non modifiable à l'exécution.</td>
+    </tr>
+    <tr>
+      <td><code>String</code></td>
+      <td><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#ef55d9;vertical-align:middle;margin-right:8px"></span>Magenta / Fuchsia</td>
+      <td><strong>Chaîne dynamique :</strong> Texte brut manipulable (concaténation, découpage). Idéal pour le débug ou la logique système.</td>
+    </tr>
+    <tr>
+      <td><code>Text</code></td>
+      <td><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#e58bb7;vertical-align:middle;margin-right:8px"></span>Rose saumon</td>
+      <td><strong>Texte utilisateur :</strong> Gère nativement la localisation (traduction du jeu) et le formatage. C'est le type requis pour l'interface UI (UMG).</td>
+    </tr>
+    <tr>
+      <td><code>Vector</code></td>
+      <td><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#f0cd44;vertical-align:middle;margin-right:8px"></span>Jaune / Or</td>
+      <td><strong>Vecteur 3D :</strong> Contient trois Floats (X, Y, Z). Idéal pour représenter une position, une direction ou une échelle dans l'espace.</td>
+    </tr>
+    <tr>
+      <td><code>Rotator</code></td>
+      <td><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#9ca7fc;vertical-align:middle;margin-right:8px"></span>Bleu lavande</td>
+      <td><strong>Rotation 3D :</strong> Contient l'orientation selon trois axes (Roll, Pitch, Yaw / Roulis, Tangage, Lacet).</td>
+    </tr>
+    <tr>
+      <td><code>Transform</code></td>
+      <td><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#f57200;vertical-align:middle;margin-right:8px"></span>Orange</td>
+      <td><strong>Matrice complète :</strong> Combine une Position (Vector), une Rotation (Rotator) et une Échelle (Vector). Définit l'état spatial global d'un objet.</td>
+    </tr>
+    <tr>
+      <td><code>Object Reference</code></td>
+      <td><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#006cf4;vertical-align:middle;margin-right:8px"></span>Bleu roi</td>
+      <td><strong>Pointeur d'instance :</strong> Référence vers un objet précis qui existe physiquement dans votre niveau (ex: "ce" joueur, "cette" lampe).</td>
+    </tr>
+    <tr>
+      <td><code>Class Reference</code></td>
+      <td><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#5800c4;vertical-align:middle;margin-right:8px"></span>Violet foncé</td>
+      <td><strong>Type d'asset (Subclass Of) :</strong> Désigne un type d'objet théorique plutôt qu'une instance physique (ex: utilisé pour dire au nœud <em>Spawn Actor</em> quelle classe faire apparaître).</td>
+    </tr>
+  </tbody>
+</table>
+
   <p>Chaque type est détaillé un par un (nœuds, opérations, pièges) dans <a href="variables-types.html">1 · Variables, types &amp; tags</a>.</p>
   <div class="callout tip">
     <span class="label">Le réflexe pour lire un graphe inconnu</span>
@@ -46,41 +105,142 @@
   <h2 id="branch-switch" data-group="Contrôle du flux">Décisions : Branch, Switch & contrôle du flux</h2>
   <p>Les nœuds de décision aiguillent le <strong>fil d'exécution</strong> blanc : une entrée, plusieurs sorties, une seule empruntée.</p>
   <table>
-    <thead><tr><th>Nœud</th><th>Équivalent texte</th><th>Rôle</th></tr></thead>
-    <tbody>
-      <tr><td><code>Branch</code></td><td><code>if / else</code></td><td>un Boolean → sortie <em>True</em> ou <em>False</em> (raccourci : <kbd>B</kbd> + clic)</td></tr>
-      <tr><td><code>Switch on Int</code></td><td><code>switch</code></td><td>une sortie par valeur entière, plus <em>Default</em></td></tr>
-      <tr><td><code>Switch on String</code> / <code>on Name</code></td><td><code>switch</code> sur texte</td><td>une sortie par texte (option <em>Case Sensitive</em>)</td></tr>
-      <tr><td><code>Switch on E_…</code></td><td><code>switch</code> sur enum</td><td>une sortie par valeur de l'<a href="ui-structures-interfaces.html#enums">énumération</a> — le plus lisible</td></tr>
-      <tr><td><code>Select</code></td><td>ternaire <code>? :</code></td><td>choisit une <strong>valeur</strong> (pas un chemin) selon un index, un bool ou une enum</td></tr>
-    </tbody>
-  </table>
+  <thead>
+    <tr>
+      <th>Nœud</th>
+      <th>Équivalent texte</th>
+      <th>Broches Clés</th>
+      <th>Rôle &amp; Comportement</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Branch</code></td>
+      <td><code>if / else</code></td>
+      <td><strong>Entrée :</strong> <em>Condition</em> (Bool)<br><strong>Sorties :</strong> <em>True</em>, <em>False</em></td>
+      <td>Oriente le flux d'exécution selon la valeur d'un booléen. (Raccourci : maintenir <kbd>B</kbd> + clic gauche).</td>
+    </tr>
+    <tr>
+      <td><code>Switch on Int</code></td>
+      <td><code>switch (int)</code></td>
+      <td><strong>Entrées :</strong> <em>Selection</em>, <em>Start Index</em><br><strong>Sorties :</strong> <em>0</em>, <em>1</em>, <em>...</em>, <em>Default</em></td>
+      <td>Ouvre une sortie d'exécution par valeur entière définie. La sortie <em>Default</em> s'active si l'entier ne correspond à aucune broche listée.</td>
+    </tr>
+    <tr>
+      <td><code>Switch on String</code> / <code>on Name</code></td>
+      <td><code>switch (string)</code></td>
+      <td><strong>Entrée :</strong> <em>Selection</em><br><strong>Sorties :</strong> <em>(Chaînes personnalisées)</em>, <em>Default</em></td>
+      <td>Ouvre une sortie d'exécution pour chaque chaîne de texte configurée. Possède une option cruciale <em>Case Sensitive</em> dans les détails pour respecter ou non la casse.</td>
+    </tr>
+    <tr>
+      <td><code>Switch on E_…</code></td>
+      <td><code>switch (enum)</code></td>
+      <td><strong>Entrée :</strong> <em>Selection</em><br><strong>Sorties :</strong> <em>(Une broche par état)</em></td>
+      <td>Crée dynamiquement une sortie d'exécution pour chaque état défini dans l'<a href="ui-structures-interfaces.html#enums">énumération</a>. C'est la méthode la plus propre et lisible pour gérer des machines à états (ex: états d'un joueur).</td>
+    </tr>
+    <tr>
+      <td><code>Select</code></td>
+      <td>Opérateur ternaire ou <code>switch</code> de valeur</td>
+      <td><strong>Entrée :</strong> <em>Index</em> (Wildcard: Bool, Int, Enum...)<br><strong>Sortie :</strong> <em>Return Value</em></td>
+      <td>Choisit et retourne une <strong>valeur</strong> (et non un chemin d'exécution) selon l'index fourni en entrée. Le type de valeur retourné s'adapte automatiquement à ce que vous y branchez.</td>
+    </tr>
+  </tbody>
+</table>
+
   <table>
-    <thead><tr><th>Contrôle du flux</th><th>Rôle</th></tr></thead>
-    <tbody>
-      <tr><td><code>Sequence</code></td><td>exécute <em>Then 0</em>, puis <em>Then 1</em>… dans l'ordre — pour ranger une longue chaîne. N'attend pas la fin d'un <code>Delay</code> placé dans une branche précédente</td></tr>
-      <tr><td><code>Do Once</code></td><td>ne laisse passer qu'une fois, jusqu'à un <em>Reset</em> (ramasser un objet, déclencher une cinématique)</td></tr>
-      <tr><td><code>Do N</code></td><td>laisse passer N fois</td></tr>
-      <tr><td><code>Flip Flop</code></td><td>alterne A, B, A, B… (lampe allumée / éteinte)</td></tr>
-      <tr><td><code>Gate</code></td><td>porte ouverte ou fermée (<em>Open</em>, <em>Close</em>, <em>Toggle</em>) que le flux traverse ou non</td></tr>
-      <tr><td><code>Multi Gate</code></td><td>envoie vers la sortie suivante à chaque passage (séquentiel ou aléatoire)</td></tr>
-    </tbody>
-  </table>
+  <thead>
+    <tr>
+      <th>Nœud</th>
+      <th>Broches Clés</th>
+      <th>Rôle &amp; Comportement</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Sequence</code></td>
+      <td><strong>Sorties :</strong> <em>Then 0</em>, <em>Then 1</em>, <em>Then...</em></td>
+      <td>Exécute ses sorties l'une après l'autre au cours de la même frame. Idéal pour organiser un long script. <strong>Attention :</strong> il n'attend pas la fin d'un nœud asynchrone (ex: <em>Delay</em>) placé dans une branche précédente pour lancer la suivante.</td>
+    </tr>
+    <tr>
+      <td><code>Do Once</code></td>
+      <td><strong>Entrées :</strong> <em>In</em>, <em>Reset</em>, <em>Start Closed</em><br><strong>Sortie :</strong> <em>Out</em></td>
+      <td>Ne laisse passer le flux qu'une seule fois. Reste bloqué jusqu'à ce qu'un signal active l'entrée <em>Reset</em> (ex: ramasser un objet unique, déclencher une cinématique).</td>
+    </tr>
+    <tr>
+      <td><code>Do N</code></td>
+      <td><strong>Entrées :</strong> <em>In</em>, <em>Reset</em>, <em>N</em><br><strong>Sorties :</strong> <em>Out</em>, <em>Counter</em></td>
+      <td>Laisse passer le flux un nombre exact de fois défini par la valeur <em>N</em>. L'entrée <em>Reset</em> remet le compteur à zéro. La sortie <em>Counter</em> indique le nombre d'exécutions actuelles.</td>
+    </tr>
+    <tr>
+      <td><code>Flip Flop</code></td>
+      <td><strong>Sorties :</strong> <em>A</em>, <em>B</em>, <em>Is A</em></td>
+      <td>Alterne automatiquement entre la sortie <em>A</em> et la sortie <em>B</em> à chaque nouvelle impulsion (ex: allumer/éteindre une lampe). Le booléen <em>Is A</em> permet de savoir quelle branche vient de s'exécuter.</td>
+    </tr>
+    <tr>
+      <td><code>Gate</code></td>
+      <td><strong>Entrées :</strong> <em>Enter</em>, <em>Open</em>, <em>Close</em>, <em>Toggle</em>, <em>Start Closed</em><br><strong>Sortie :</strong> <em>Out</em></td>
+      <td>Une porte logique. Le flux entrant par <em>Enter</em> ne ressort par <em>Out</em> que si la porte est ouverte. Les entrées permettent de l'ouvrir (<em>Open</em>), la fermer (<em>Close</em>) ou inverser son état (<em>Toggle</em>).</td>
+    </tr>
+    <tr>
+      <td><code>Multi Gate</code></td>
+      <td><strong>Entrées :</strong> <em>In</em>, <em>Reset</em>, <em>StartIndex</em><br><strong>Sorties :</strong> <em>Out 0</em>, <em>Out 1</em>, <em>Out...</em></td>
+      <td>Dirige le flux vers une sortie différente à chaque passage. Peut fonctionner de manière séquentielle ou totalement aléatoire (option <em>Is Random</em>). L'option <em>Loop</em> permet de recommencer au début une fois toutes les sorties utilisées.</td>
+    </tr>
+  </tbody>
+</table>
+
   <div class="callout warn">
     <span class="label">AND / OR n'arrêtent pas l'évaluation</span>
     <p>En C++, <code>ptr &amp;&amp; ptr-&gt;IsAlive()</code> ne lit jamais <code>ptr</code> s'il est nul. En Blueprint, le nœud <code>AND</code> évalue <strong>toutes</strong> ses entrées : brancher <code>Is Valid</code> et une lecture sur la même référence dans un <code>AND</code> produit quand même l'erreur <em>Accessed None</em>. Enchaîner deux <code>Branch</code>, ou utiliser la macro <code>Is Valid</code> (avec pins d'exécution) d'abord.</p>
   </div>
 
   <h2 id="boucles" data-group="Contrôle du flux">Boucles</h2>
+  <figure>
+    <img src="../assets/gifs/boucles-blueprint-unreal.gif" width="960" height="540" loading="lazy" alt="Animation : une boucle Blueprint exécute son corps à chaque tour puis continue sur Completed">
+    <figcaption>Les boucles en action : le corps du nœud s'exécute à chaque tour, puis le flux repart par <em>Completed</em>.</figcaption>
+  </figure>
   <table>
-    <thead><tr><th>Nœud</th><th>Sorties</th><th>Bon pour</th></tr></thead>
-    <tbody>
-      <tr><td><code>For Loop</code></td><td><em>Loop Body</em>, <em>Index</em>, <em>Completed</em></td><td>de <em>First Index</em> à <em>Last Index</em> — <strong>inclus</strong> : 0 → 9 fait 10 tours</td></tr>
-      <tr><td><code>For Loop with Break</code></td><td>+ entrée <em>Break</em></td><td>s'arrêter dès qu'on a trouvé</td></tr>
-      <tr><td><code>For Each Loop</code></td><td><em>Array Element</em>, <em>Array Index</em></td><td>parcourir un <a href="#collections">Array</a> (existe aussi <em>with Break</em> et <em>Reverse</em>)</td></tr>
-      <tr><td><code>While Loop</code></td><td><em>Loop Body</em>, <em>Completed</em></td><td>tant qu'une condition est vraie — le corps doit finir par la rendre fausse</td></tr>
-    </tbody>
-  </table>
+  <thead>
+    <tr>
+      <th>Nœud</th>
+      <th>Broches Clés</th>
+      <th>Bon pour</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>For Loop</code></td>
+      <td><strong>Sorties :</strong> <em>Loop Body</em>, <em>Index</em>, <em>Completed</em></td>
+      <td>Répéter de <em>First Index</em> à <em>Last Index</em> — <strong>inclus</strong> : de 0 à 9 fait 10 tours.</td>
+    </tr>
+    <tr>
+      <td><code>For Loop with Break</code></td>
+      <td><strong>Entrée :</strong> <em>Break</em><br><strong>Sorties :</strong> <em>Loop Body</em>, <em>Index</em>, <em>Completed</em></td>
+      <td>Répéter sur une plage de nombres avec la possibilité de s'arrêter prématurément.</td>
+    </tr>
+    <tr>
+      <td><code>For Each Loop</code></td>
+      <td><strong>Sorties :</strong> <em>Loop Body</em>, <em>Array Element</em>, <em>Array Index</em>, <em>Completed</em></td>
+      <td>Parcourir entièrement un <a href="#collections">Array</a>, du premier au dernier élément.</td>
+    </tr>
+    <tr>
+      <td><code>For Each Loop with Break</code></td>
+      <td><strong>Entrée :</strong> <em>Break</em><br><strong>Sorties :</strong> <em>Loop Body</em>, <em>Array Element</em>, <em>Array Index</em>, <em>Completed</em></td>
+      <td>Parcourir un <a href="#collections">Array</a> et s'arrêter dès qu'on a trouvé l'élément recherché.</td>
+    </tr>
+    <tr>
+      <td><code>Reverse For Each Loop</code></td>
+      <td><strong>Sorties :</strong> <em>Loop Body</em>, <em>Array Element</em>, <em>Array Index</em>, <em>Completed</em></td>
+      <td>Parcourir un <a href="#collections">Array</a> en sens inverse (indispensable si on <strong>supprime</strong> des éléments pendant la boucle).</td>
+    </tr>
+    <tr>
+      <td><code>While Loop</code></td>
+      <td><strong>Sorties :</strong> <em>Loop Body</em>, <em>Completed</em></td>
+      <td>Tant qu'une condition est vraie — le corps doit obligatoirement la rendre fausse pour éviter un plantage.</td>
+    </tr>
+  </tbody>
+</table>
+
   <div class="callout danger">
     <span class="label">Une boucle s'exécute en une seule frame</span>
     <p>Toutes les itérations tournent <strong>d'un coup</strong>, avant l'image suivante : un <code>Delay</code> dans le corps ne ralentit pas la boucle (elle se termine, le Delay ne se déclenche qu'une fois). Une <code>While Loop</code> dont la condition ne devient jamais fausse gèle le jeu jusqu'à l'erreur <em>Infinite Loop detected</em>. Pour répéter <strong>dans le temps</strong> : <code>Set Timer by Event</code> (case <em>Looping</em>) puis <code>Clear and Invalidate Timer by Handle</code>, ou <code>Event Tick</code>. Pour une animation fluide d'une valeur (porte, lumière, fondu) : une <a href="#timelines">Timeline</a>.</p>
@@ -93,38 +253,15 @@
   <h2 id="timelines" data-group="Contrôle du flux">Timelines</h2>
   <p>Une <strong>Timeline</strong> fait varier une ou plusieurs valeurs <strong>le long d'une courbe</strong>, sur une durée donnée, et prévient le graphe à chaque frame. C'est l'outil pour tout ce qui s'anime dans le temps sans animation squelettique : une porte qui pivote, une plateforme qui monte, une lumière qui clignote, un fondu.</p>
   <figure>
-    <svg viewBox="0 0 620 230" role="img" aria-label="Courbe d'une Timeline et nœud Timeline">
-      <defs><marker id="bptl-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
-        <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
-      <rect class="svg-bg" x="0" y="0" width="620" height="230" rx="6"/>
-      <text class="svg-t" x="160" y="24" text-anchor="middle">Track « Alpha » (Float), Length = 1 s</text>
-      <path class="svg-line" d="M40 190 H290 M40 190 V40"/>
-      <text class="svg-tm" x="30" y="55" text-anchor="end">1</text>
-      <text class="svg-tm" x="30" y="194" text-anchor="end">0</text>
-      <text class="svg-tm" x="40" y="210" text-anchor="middle">0 s</text>
-      <text class="svg-tm" x="280" y="210" text-anchor="middle">1 s</text>
-      <path d="M40 190 C 120 190, 200 50, 280 50" stroke="var(--link)" stroke-width="2.5" fill="none"/>
-      <circle cx="40" cy="190" r="5" fill="var(--warn)"/>
-      <circle cx="280" cy="50" r="5" fill="var(--warn)"/>
-      <text class="svg-tm" x="165" y="140">clés (keys)</text>
-
-      <rect class="svg-box-a" x="360" y="40" width="240" height="150" rx="6"/>
-      <text class="svg-t" x="480" y="62" text-anchor="middle">Timeline_Door</text>
-      <text class="svg-tm" x="375" y="90">▶ Play</text>
-      <text class="svg-tm" x="375" y="108">▶ Play from Start</text>
-      <text class="svg-tm" x="375" y="126">▶ Reverse</text>
-      <text class="svg-tm" x="375" y="144">▶ Stop</text>
-      <text class="svg-tm" x="375" y="162">▶ Set New Time</text>
-      <text class="svg-tm" x="585" y="90" text-anchor="end">Update ▶</text>
-      <text class="svg-tm" x="585" y="108" text-anchor="end">Finished ▶</text>
-      <text class="svg-tm" x="585" y="126" text-anchor="end">Direction ●</text>
-      <text class="svg-tm" x="585" y="144" text-anchor="end">Alpha ●</text>
-      <path d="M295 120 H355" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3" fill="none" style="marker-end:url(#bptl-arr)"/>
-    </svg>
-    <figcaption>À gauche, l'éditeur de courbe (double-clic sur le nœud) ; à droite, le nœud dans l'Event Graph : entrées de contrôle, sorties à chaque frame et valeur de la courbe.</figcaption>
+    <img src="../assets/gifs/timeline-unreal.gif" width="960" height="540" loading="lazy" alt="Animation : une Timeline fait varier un Alpha de 0 à 1 le long d'une courbe ; un Lerp en tire un angle de 0 à 90° appliqué par Set Relative Rotation à une porte qui s'ouvre avec Play et se referme avec Reverse">
+    <figcaption>Une Timeline en action : la courbe (Alpha de 0 à 1) alimente un <code>Lerp</code> qui fait pivoter la porte — dans un sens avec <em>Play</em>, dans l'autre avec <em>Reverse</em>.</figcaption>
   </figure>
 
   <h3>Le nœud</h3>
+  <figure>
+    <img src="../assets/NodeUnreal/nodeTimeLine.png" width="241" height="259" loading="lazy" alt="Le nœud Timeline : entrées Play, Play from Start, Stop, Reverse, Reverse from End, Set New Time ; sorties Update, Finished, Direction">
+    <figcaption>Le nœud Timeline dans l'Event Graph : entrées de contrôle à gauche, sorties <em>Update</em>, <em>Finished</em> et <em>Direction</em> à droite (chaque track ajoute sa propre sortie de valeur).</figcaption>
+  </figure>
   <table>
     <thead><tr><th>Pin</th><th>Rôle</th></tr></thead>
     <tbody>
@@ -190,45 +327,77 @@
   <h2 id="collections" data-group="Données">Types de collection : Array, Set, Map</h2>
   <p>N'importe quelle variable peut devenir une collection : dans le panneau <em>Details</em>, l'icône à droite du type fait passer de <strong>valeur simple</strong> à <strong>Array</strong>, <strong>Set</strong> ou <strong>Map</strong>. Blueprint n'a pas de type « List » séparé : l'<code>Array</code> joue ce rôle (c'est un <code>TArray</code> en C++, un tableau dynamique qui grandit tout seul).</p>
   <figure>
-    <svg viewBox="0 0 620 200" role="img" aria-label="Array, Set et Map comparés">
-      <rect class="svg-bg" x="0" y="0" width="620" height="200" rx="6"/>
-      <text class="svg-t" x="105" y="26" text-anchor="middle">Array — ordonné, doublons OK</text>
-      <rect class="svg-box" x="20" y="45" width="40" height="36" rx="4"/><text class="svg-mono" x="40" y="68" text-anchor="middle">Épée</text>
-      <rect class="svg-box" x="62" y="45" width="40" height="36" rx="4"/><text class="svg-mono" x="82" y="68" text-anchor="middle">Clé</text>
-      <rect class="svg-box" x="104" y="45" width="40" height="36" rx="4"/><text class="svg-mono" x="124" y="68" text-anchor="middle">Clé</text>
-      <rect class="svg-box" x="146" y="45" width="40" height="36" rx="4"/><text class="svg-mono" x="166" y="68" text-anchor="middle">Arc</text>
-      <text class="svg-tm" x="40" y="100" text-anchor="middle">0</text><text class="svg-tm" x="82" y="100" text-anchor="middle">1</text>
-      <text class="svg-tm" x="124" y="100" text-anchor="middle">2</text><text class="svg-tm" x="166" y="100" text-anchor="middle">3</text>
-      <text class="svg-tm" x="105" y="130" text-anchor="middle">accès par index : Get(2)</text>
-
-      <text class="svg-t" x="310" y="26" text-anchor="middle">Set — unique, sans ordre</text>
-      <rect class="svg-box-g" x="235" y="45" width="150" height="70" rx="35"/>
-      <text class="svg-mono" x="280" y="75" text-anchor="middle">Épée</text>
-      <text class="svg-mono" x="335" y="75" text-anchor="middle">Clé</text>
-      <text class="svg-mono" x="310" y="98" text-anchor="middle">Arc</text>
-      <text class="svg-tm" x="310" y="130" text-anchor="middle">« est-ce que j'ai… ? » : Contains</text>
-
-      <text class="svg-t" x="515" y="26" text-anchor="middle">Map — clé → valeur</text>
-      <rect class="svg-box-a" x="440" y="45" width="70" height="28" rx="4"/><text class="svg-mono" x="475" y="64" text-anchor="middle">Épée</text>
-      <rect class="svg-box" x="520" y="45" width="70" height="28" rx="4"/><text class="svg-mono" x="555" y="64" text-anchor="middle">1</text>
-      <rect class="svg-box-a" x="440" y="77" width="70" height="28" rx="4"/><text class="svg-mono" x="475" y="96" text-anchor="middle">Clé</text>
-      <rect class="svg-box" x="520" y="77" width="70" height="28" rx="4"/><text class="svg-mono" x="555" y="96" text-anchor="middle">2</text>
-      <text class="svg-tm" x="515" y="130" text-anchor="middle">accès par clé : Find(Clé) → 2</text>
-      <text class="svg-tm" x="310" y="175" text-anchor="middle">Même inventaire, trois façons de le stocker : liste d'objets, ensemble d'objets possédés, quantité par objet.</text>
-    </svg>
+    <img src="../assets/gifs/collections-unreal.gif" width="960" height="540" loading="lazy" alt="Animation : un TArray (liste ordonnée avec doublons), un TSet (ensemble d'éléments uniques) et un TMap (clé vers valeur)">
+    <figcaption>Les trois collections côte à côte : ordre et doublons possibles pour l'<code>Array</code>, unicité pour le <code>Set</code>, une valeur par clé pour la <code>Map</code>.</figcaption>
   </figure>
   <table>
-    <thead><tr><th></th><th>Array</th><th>Set</th><th>Map</th></tr></thead>
-    <tbody>
-      <tr><td>Ordre</td><td>oui, index à partir de 0</td><td>non</td><td>non</td></tr>
-      <tr><td>Doublons</td><td>autorisés</td><td>interdits</td><td>clés uniques, valeurs libres</td></tr>
-      <tr><td>Accès</td><td><code>Get</code> (index)</td><td><code>Contains</code></td><td><code>Find</code> (clé) → valeur + booléen <em>trouvé</em></td></tr>
-      <tr><td>Ajout / retrait</td><td><code>Add</code>, <code>Add Unique</code>, <code>Insert</code>, <code>Remove Index</code>, <code>Remove Item</code></td><td><code>Add</code>, <code>Remove</code></td><td><code>Add</code> (remplace si la clé existe), <code>Remove</code></td></tr>
-      <tr><td>Utile aussi</td><td><code>Length</code>, <code>Last Index</code>, <code>Find</code>, <code>Contains</code>, <code>Clear</code>, <code>Shuffle</code>, <code>Random</code></td><td><code>Union</code>, <code>Intersection</code>, <code>Difference</code>, <code>To Array</code></td><td><code>Keys</code>, <code>Values</code> (sortent des Arrays)</td></tr>
-      <tr><td>Parcours</td><td><code>For Each Loop</code> (et <em>with Break</em>)</td><td>via <code>To Array</code></td><td>via <code>Keys</code> puis <code>Find</code></td></tr>
-      <tr><td>Bon pour</td><td>listes ordonnées, files, inventaire à cases</td><td>tags, « déjà visité », objets uniques</td><td>quantités, tables de correspondance (id → donnée)</td></tr>
-    </tbody>
-  </table>
+  <thead>
+    <tr>
+      <th>Caractéristique</th>
+      <th>Array (Tableau)</th>
+      <th>Set (Ensemble)</th>
+      <th>Map (Dictionnaire)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Ordre</strong></td>
+      <td>Oui (Indexation stricte à partir de 0).</td>
+      <td>Non ordonné.</td>
+      <td>Non ordonné.</td>
+    </tr>
+    <tr>
+      <td><strong>Doublons</strong></td>
+      <td>Autorisés (un même élément peut être présent plusieurs fois).</td>
+      <td>Strictement interdits (chaque élément est unique).</td>
+      <td>Clés uniques obligatoires, mais les valeurs associées peuvent être identiques.</td>
+    </tr>
+    <tr>
+      <td><strong>Accès aux données</strong></td>
+      <td><code>Get (a copy / a ref)</code> via son Index numérique.</td>
+      <td>Pas d'accès direct, vérification via <code>Contains</code>.</td>
+      <td><code>Find</code> via sa Clé (renvoie la Valeur associée + un booléen de réussite).</td>
+    </tr>
+    <tr>
+      <td><strong>Ajout / Retrait</strong></td>
+      <td>
+        <code>Add</code>, <code>Add Unique</code>, <code>Insert</code><br>
+        <code>Remove Index</code>, <code>Remove Item</code>, <code>Clear</code>
+      </td>
+      <td>
+        <code>Add</code>, <code>Remove</code>, <code>Clear</code>
+      </td>
+      <td>
+        <code>Add</code> (écrase et remplace si la clé existe déjà), <code>Remove</code>, <code>Clear</code>
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Utilitaires clés</strong></td>
+      <td>
+        <code>Length</code>, <code>Last Index</code>, <code>Contains</code>, <code>Find Item</code>, <code>Shuffle</code>
+      </td>
+      <td>
+        <code>Union</code>, <code>Intersection</code>, <code>Difference</code>, <code>To Array</code>
+      </td>
+      <td>
+        <code>Keys</code>, <code>Values</code> (extraient les données sous forme d'Arrays distincts)
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Parcours (Loops)</strong></td>
+      <td>Direct via <code>For Each Loop</code> (ou <code>Reverse For Each</code>).</td>
+      <td>Nécessite une conversion préalable via le nœud <code>To Array</code>.</td>
+      <td>Parcours indirect : extraire les <code>Keys</code> (Array) puis boucler dessus avec un <code>Find</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>Cas d'usage idéal</strong></td>
+      <td>Listes ordonnées, files d'attente, inventaires à emplacements fixes.</td>
+      <td>Gestion de tags, systèmes de quêtes (« déjà visité »), listes de validation d'objets uniques.</td>
+      <td>Bases de données locales, tables de correspondance (ex: lier un ID d'item à une quantité ou à une structure de stats).</td>
+    </tr>
+  </tbody>
+</table>
+
   <div class="callout warn">
     <span class="label">Copie vs référence</span>
     <p>Sur un Array de <strong>structures</strong>, <code>Get (a copy)</code> et l'élément sorti par <code>For Each Loop</code> sont des <strong>copies</strong> : les modifier ne change rien dans le tableau. Utiliser <code>Get (a ref)</code> + <code>Set Members in …</code>, ou <code>Set Array Elem</code>. Et ne jamais retirer d'éléments pendant un <code>For Each Loop</code> sur le même tableau — parcourir à l'envers avec <code>Reverse For Each Loop</code>.</p>
@@ -241,18 +410,74 @@
   <h2 id="event-fonction-macro" data-group="Organiser un graphe">Events, fonctions, macros, collapsed nodes & dispatchers</h2>
   <p>Quatre façons d'organiser un graphe. Elles se ressemblent visuellement mais ne se comportent pas pareil : c'est surtout le <strong>temps</strong> (peut-on attendre ?) et le <strong>retour</strong> (peut-on renvoyer une valeur ?) qui les distinguent.</p>
   <table>
-    <thead><tr><th></th><th>Custom Event</th><th>Function</th><th>Macro</th><th>Collapsed Node</th></tr></thead>
-    <tbody>
-      <tr><td>Où ça vit</td><td>Event Graph</td><td>son propre graphe</td><td>son propre graphe</td><td>sous-graphe du graphe courant</td></tr>
-      <tr><td>Valeurs de retour</td><td>non</td><td>oui</td><td>oui</td><td>oui (pins de sortie)</td></tr>
-      <tr><td>Nœuds latents (<code>Delay</code>, <code>Timeline</code>, <code>AI Move To</code>)</td><td><strong>oui</strong></td><td><strong>non</strong> — s'exécute d'un bloc, dans la même frame</td><td>oui (<code>Delay</code> ; pas de Timeline)</td><td>oui, comme le graphe parent</td></tr>
-      <tr><td>Variables locales</td><td>non</td><td>oui</td><td>nœuds <code>Local Integer</code>, <code>Local Boolean</code>…</td><td>non</td></tr>
-      <tr><td>Plusieurs pins d'exécution</td><td>une entrée</td><td>une entrée, une sortie</td><td><strong>plusieurs entrées/sorties</strong> (comme <code>Branch</code>, <code>DoOnce</code>)</td><td>oui</td></tr>
-      <tr><td>Appelable depuis un autre BP</td><td>oui</td><td>oui (et surchargeable dans un enfant)</td><td>non, sauf via une <em>Blueprint Macro Library</em></td><td>non</td></tr>
-      <tr><td>Réseau / Dispatchers</td><td>RPC (<em>Run on Server</em>…), lié à un Event Dispatcher</td><td>non</td><td>non</td><td>non</td></tr>
-      <tr><td>Rôle</td><td>réagir à quelque chose, séquences dans le temps</td><td>calcul ou action réutilisable</td><td>petit motif de flux réutilisé (copié à chaque usage)</td><td><strong>purement visuel</strong> — ranger un graphe</td></tr>
-    </tbody>
-  </table>
+  <thead>
+    <tr>
+      <th>Caractéristique</th>
+      <th>Custom Event</th>
+      <th>Function</th>
+      <th>Macro</th>
+      <th>Collapsed Node</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Emplacement</strong></td>
+      <td>Dans l'<em>Event Graph</em> global.</td>
+      <td>Possède son propre graphe isolé.</td>
+      <td>Possède son propre graphe isolé.</td>
+      <td>Sous-graphe virtuel directement ancré dans le graphe courant.</td>
+    </tr>
+    <tr>
+      <td><strong>Valeurs de retour</strong></td>
+      <td>Non (unidirectionnel).</td>
+      <td>Oui (via un nœud <em>Return Node</em>).</td>
+      <td>Oui (via des broches de sortie de données).</td>
+      <td>Oui (via des broches de sortie de données).</td>
+    </tr>
+    <tr>
+      <td><strong>Nœuds asynchrones / latents</strong><br><em>(Delay, Timeline, AI Move To)</em></td>
+      <td><strong>Oui.</strong> Parfaitement supportés.</td>
+      <td><strong>Non.</strong> S'exécute obligatoirement d'un seul bloc au cours de la même frame.</td>
+      <td><strong>Partiel.</strong> Accepte les <em>Delays</em> mais refuse catégoriquement les <em>Timelines</em>.</td>
+      <td><strong>Oui.</strong> Conserve exactement les mêmes capacités que le graphe parent.</td>
+    </tr>
+    <tr>
+      <td><strong>Variables locales</strong></td>
+      <td>Non (utilise les variables globales du BP).</td>
+      <td>Oui (allouées et détruites à chaque appel, idéal pour la mémoire).</td>
+      <td>Partiel (via des nœuds spécifiques comme <em>Local Integer</em>, <em>Local Float</em>).</td>
+      <td>Non (utilise les variables du graphe parent).</td>
+    </tr>
+    <tr>
+      <td><strong>Broches d'exécution multiples</strong></td>
+      <td>Une seule entrée (broche d'appel).</td>
+      <td>Une seule entrée, une seule sortie d'exécution.</td>
+      <td><strong>Oui (entrées/sorties libres).</strong> Permet de recréer des structures de flux (ex: type <em>Branch</em>).</td>
+      <td>Oui (entrées/sorties libres selon les liaisons faites avec l'extérieur).</td>
+    </tr>
+    <tr>
+      <td><strong>Accès inter-Blueprints</strong></td>
+      <td>Oui (appelable via une référence d'objet).</td>
+      <td>Oui (appelable via référence, et **surchargeable** dans les Blueprints enfants).</td>
+      <td>Non (locale au BP, sauf si créée dans une <em>Blueprint Macro Library</em>).</td>
+      <td>Strictement non (privé au graphe dans lequel il se trouve).</td>
+    </tr>
+    <tr>
+      <td><strong>Réseau &amp; Dispatchers</strong></td>
+      <td><strong>Oui.</strong> Utilisé pour les RPC (<em>Run on Server</em>, <em>Multicast</em>) et s'abonne aux <em>Event Dispatchers</em>.</td>
+      <td>Non. Impossible de répliquer directement une fonction sur le réseau.</td>
+      <td>Non.</td>
+      <td>Non.</td>
+    </tr>
+    <tr>
+      <td><strong>Rôle principal</strong></td>
+      <td>Réagir à un événement, déclencher des actions réparties dans le temps ou synchroniser le réseau.</td>
+      <td>Effectuer un calcul pur, une vérification ou une action logique réutilisable et encapsulée.</td>
+      <td>Créer des petits motifs répétitifs de contrôle de flux. Le code est dupliqué en tâche de fond à chaque instance.</td>
+      <td><strong>Purement cosmétique.</strong> Masquer et ranger un paquet de nœuds pour rendre le graphe lisible.</td>
+    </tr>
+  </tbody>
+</table>
   <div class="callout tip">
     <span class="label">Fonction pure</span>
     <p>Cocher <code>Pure</code> retire les pins d'exécution (nœud vert, comme un <code>Get</code>) — pour un calcul sans effet de bord. Attention : un nœud pur est <strong>réévalué à chaque pin qui le lit</strong>. Un <code>Random Integer</code> pur branché à deux endroits donne deux valeurs différentes : stocker le résultat dans une variable d'abord.</p>
@@ -265,35 +490,45 @@
   <h3 id="dispatchers">Event Dispatchers</h3>
   <p>Un <strong>Event Dispatcher</strong> est un événement qu'un Blueprint <strong>annonce</strong> sans savoir qui écoute. D'autres Blueprints s'y <strong>abonnent</strong> et réagissent chacun à leur façon. C'est l'inverse d'un appel direct : l'émetteur ne dépend de personne.</p>
   <figure>
-    <svg viewBox="0 0 620 200" role="img" aria-label="Un Event Dispatcher diffusé à plusieurs abonnés">
-      <defs><marker id="bpd-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
-        <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
-      <rect class="svg-bg" x="0" y="0" width="620" height="200" rx="6"/>
-      <rect class="svg-box-w" x="20" y="65" width="190" height="70" rx="6"/>
-      <text class="svg-t" x="115" y="90" text-anchor="middle">BP_Boss</text>
-      <text class="svg-tm" x="115" y="108" text-anchor="middle">vie à 0 →</text>
-      <text class="svg-tm" x="115" y="123" text-anchor="middle">Call OnDeath</text>
-      <path d="M210 100 C 270 100, 270 40, 348 40" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpd-arr)"/>
-      <path d="M210 100 H348" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpd-arr)"/>
-      <path d="M210 100 C 270 100, 270 160, 348 160" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpd-arr)"/>
-      <rect class="svg-box-g" x="350" y="20" width="250" height="40" rx="6"/>
-      <text class="svg-t" x="475" y="45" text-anchor="middle">Level Blueprint : ouvre la porte</text>
-      <rect class="svg-box-g" x="350" y="80" width="250" height="40" rx="6"/>
-      <text class="svg-t" x="475" y="105" text-anchor="middle">WBP_HUD : cache la barre du boss</text>
-      <rect class="svg-box-g" x="350" y="140" width="250" height="40" rx="6"/>
-      <text class="svg-t" x="475" y="165" text-anchor="middle">BP_Music : change de piste</text>
-    </svg>
-    <figcaption>Le boss ne connaît ni la porte, ni le HUD, ni la musique : ce sont eux qui se sont abonnés.</figcaption>
+    <img src="../assets/gifs/event-dispatcher-unreal.gif" width="960" height="540" loading="lazy" alt="Animation : un Event Dispatcher déclaré sur l'émetteur est appelé, et chaque Blueprint abonné réagit à sa façon">
+    <figcaption>Un Event Dispatcher en action : l'émetteur annonce, chaque abonné réagit à sa façon — l'émetteur ne connaît aucun d'eux.</figcaption>
   </figure>
   <table>
-    <thead><tr><th>Étape</th><th>Où</th><th>Comment</th></tr></thead>
-    <tbody>
-      <tr><td>1. Déclarer</td><td>émetteur (<code>BP_Boss</code>)</td><td>panneau <em>My Blueprint → Event Dispatchers → +</em>, ex. <code>OnDeath</code> ; ajouter des entrées si besoin (<code>OnHealthChanged(NewHealth)</code>)</td></tr>
-      <tr><td>2. Diffuser</td><td>émetteur</td><td>nœud <code>Call OnDeath</code> au bon moment — tous les abonnés sont prévenus</td></tr>
-      <tr><td>3. S'abonner</td><td>chaque abonné</td><td>sur une <strong>référence</strong> au boss : <code>Bind Event to OnDeath</code>, relié (pin carré rouge) à un <code>Custom Event</code> de même signature. <em>Assign</em> crée les deux d'un coup</td></tr>
-      <tr><td>4. Se désabonner</td><td>abonné</td><td><code>Unbind Event from OnDeath</code> / <code>Unbind All</code> — quand l'abonné disparaît ou n'est plus concerné</td></tr>
-    </tbody>
-  </table>
+  <thead>
+    <tr>
+      <th>Étape</th>
+      <th>Emplacement</th>
+      <th>Action dans l'Éditeur &amp; Code</th>
+      <th>Rôle technique &amp; Pièges</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>1. Déclarer</strong></td>
+      <td>Émetteur<br>(ex: <code>BP_Boss</code>)</td>
+      <td>Panneau <em>My Blueprint</em> → section <em>Event Dispatchers</em> → bouton <code>+</code>. Nommer l'événement (ex: <code>OnDeath</code>). Ajouter des paramètres d'entrée dans les détails si nécessaire (ex: <code>OnHealthChanged(NewHealth)</code>).</td>
+      <td>Définit la "signature" (les informations qui seront envoyées). À ce stade, le dispatcher est juste une boîte vide en attente d'abonnés.</td>
+    </tr>
+    <tr>
+      <td><strong>2. Diffuser</strong></td>
+      <td>Émetteur</td>
+      <td>Glisser le dispatcher dans le graphe et choisir <code>Call</code>. Relier ce nœud au moment fatidique (ex: quand la vie tombe à 0).</td>
+      <td>Déclenche instantanément et simultanément la fonction de tous les Blueprints qui écoutent cet événement. Si personne n'écoute, le flux continue sans erreur.</td>
+    </tr>
+    <tr>
+      <td><strong>3. S'abonner</strong></td>
+      <td>Abonné<br>(ex: <code>BP_UI_Zone</code>)</td>
+      <td>À partir d'une <strong>référence valide</strong> de l'émetteur, tirer un fil et créer le nœud <code>Bind Event to [Nom]</code>. Relier la broche carrée rouge (<em>Event</em>) à un <code>Custom Event</code> créé pour l'occasion. <br><em>Astuce :</em> Glisser le dispatcher depuis la référence et choisir <code>Assign</code> crée le nœud Bind et le Custom Event d'un seul coup.</td>
+      <td><strong>Le piège :</strong> Le nœud <code>Bind</code> doit absolument être exécuté par le flux blanc (ex: au <em>Begin Play</em>) pour que l'écoute commence. La signature du <code>Custom Event</code> connecté doit correspondre au millimètre près à celle déclarée à l'étape 1.</td>
+    </tr>
+    <tr>
+      <td><strong>4. Se désabonner</strong></td>
+      <td>Abonné</td>
+      <td>À partir de la référence de l'émetteur, utiliser le nœud <code>Unbind Event from...</code> ou <code>Unbind All Events</code>.</td>
+      <td>Permet d'arrêter d'écouter l'émetteur. Essentiel pour la propreté du code ou pour éviter qu'un objet détruit ou désactivé ne continue de réagir en tâche de fond (fuites de mémoire logiques).</td>
+    </tr>
+  </tbody>
+</table>
   <div class="callout tip">
     <span class="label">Vous en utilisez déjà</span>
     <p><code>On Component Begin Overlap</code>, <code>On Clicked</code> d'un bouton, <code>On Destroyed</code>… sont des Event Dispatchers fournis par le moteur : on peut s'y abonner depuis un autre Blueprint avec <code>Bind Event to On Component Begin Overlap</code>. Le bon moment pour s'abonner est souvent <code>BeginPlay</code> (ou <code>Event Construct</code> pour un widget).</p>
@@ -317,15 +552,15 @@
       </tr>
       <tr>
         <td><a href="personnage.html">2 · Personnage & Input</a></td>
-        <td>composants d'un Character 3e personne, caméra (SpringArm, réglages, IA_Look), Enhanced Input (Input Actions & Mapping Context), boîtes de collision</td>
+        <td>composants d'un Character 3e personne, Pawn & possession, caméra (SpringArm, réglages, IA_Look), Enhanced Input (Input Actions & Mapping Context), boîtes de collision</td>
       </tr>
       <tr>
         <td><a href="animation-blueprint.html">3 · Animation Blueprint</a></td>
-        <td>Blend Space, Event Graph vs AnimGraph, State Machine</td>
+        <td>Blend Space, Event Graph vs AnimGraph, State Machine, Layered blend per bone, cached poses, Anim Notify & Notify State, retargeting Mixamo</td>
       </tr>
       <tr>
         <td><a href="levels-gamemode.html">4 · Levels & Game Framework</a></td>
-        <td>Game Mode, Game Instance, niveaux & sublevels (streaming), Level Blueprint</td>
+        <td>Game Mode, PlayerStart & respawn, Game Instance, SaveGame, niveaux & sublevels, méthodes de streaming, Level Blueprint</td>
       </tr>
       <tr>
         <td><a href="ui-structures-interfaces.html">5 · UI, Structs & Interfaces</a></td>
@@ -338,6 +573,14 @@
       <tr>
         <td><a href="feedback.html">7 · Materials, SFX & VFX</a></td>
         <td>Dynamic Material Instance, intégrer des sons et des particules (Niagara/Cascade) depuis un Blueprint</td>
+      </tr>
+      <tr>
+        <td><a href="collisions-physique.html">8 · Collisions & physique</a></td>
+        <td>Object Types et canaux custom, presets, collision des meshes, traces, simulation, forces, contraintes, ragdoll, Physical Material, débogage</td>
+      </tr>
+      <tr>
+        <td><a href="fonctions-events-timers.html">9 · Fonctions, events & timers</a></td>
+        <td>fonctions, Custom Events, Event Dispatcher & event handler, macros, Set Timer by Event / by Function Name (pause, reprise), exécution à la frame suivante</td>
       </tr>
     </tbody>
   </table>

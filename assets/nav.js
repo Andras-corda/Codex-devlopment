@@ -106,3 +106,112 @@
     renderLangGrid(cfg);
   });
 })();
+
+/* Info-bulles : survol / focus / tap sur tout élément portant data-tip="texte".
+   Options : data-tip-title="Titre", data-tip-img="chemin.png" (+ data-tip-alt). data-tip="" = réservé pour plus tard. */
+(function () {
+  "use strict";
+
+  var tip = null, current = null, timer = null;
+  var touch = !!(window.matchMedia && window.matchMedia("(hover: none)").matches);
+
+  function target(e) {
+    return e.target && e.target.closest ? e.target.closest("[data-tip]") : null;
+  }
+
+  function place() {
+    if (!current || !tip) return;
+    var bar = document.getElementById("topbar");
+    var margin = 8, min = bar ? bar.getBoundingClientRect().bottom + margin : margin;
+    tip.style.left = "0px";
+    tip.style.top = "0px";
+    var r = current.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
+    var left = Math.max(margin, Math.min(r.left + r.width / 2 - w / 2, window.innerWidth - w - margin));
+    var top = r.top - h - margin;
+    if (top < min) top = r.bottom + margin;
+    tip.style.left = left + "px";
+    tip.style.top = top + "px";
+  }
+
+  function fill(el) {
+    tip.textContent = "";
+    var title = el.getAttribute("data-tip-title");
+    if (title) {
+      var t = document.createElement("div");
+      t.className = "tooltip-title";
+      t.textContent = title;
+      tip.appendChild(t);
+    }
+    var src = el.getAttribute("data-tip-img");
+    if (src) {
+      var img = document.createElement("img");
+      img.alt = el.getAttribute("data-tip-alt") || "";
+      img.addEventListener("load", place);
+      img.src = src;
+      tip.appendChild(img);
+    }
+    var p = document.createElement("div");
+    p.className = "tooltip-text";
+    p.textContent = el.getAttribute("data-tip");
+    tip.appendChild(p);
+  }
+
+  function show(el) {
+    if (!el.getAttribute("data-tip")) return;
+    if (!tip) {
+      tip = document.createElement("div");
+      tip.id = "tooltip";
+      tip.className = "tooltip";
+      tip.setAttribute("role", "tooltip");
+      document.body.appendChild(tip);
+    }
+    current = el;
+    fill(el);
+    el.setAttribute("aria-describedby", "tooltip");
+    tip.classList.add("on");
+    place();
+  }
+
+  function hide() {
+    clearTimeout(timer);
+    if (current) { current.removeAttribute("aria-describedby"); current = null; }
+    if (tip) tip.classList.remove("on");
+  }
+
+  document.addEventListener("mouseover", function (e) {
+    if (touch) return;
+    var el = target(e);
+    if (!el || el === current) return;
+    clearTimeout(timer);
+    timer = setTimeout(function () { show(el); }, 120);
+  });
+  document.addEventListener("mouseout", function (e) {
+    var el = target(e);
+    if (!el || (e.relatedTarget && el.contains(e.relatedTarget))) return;
+    hide();
+  });
+  document.addEventListener("focusin", function (e) {
+    if (touch) return;
+    var el = target(e);
+    if (el) show(el);
+  });
+  document.addEventListener("focusout", hide);
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") hide(); });
+  window.addEventListener("scroll", hide, true);
+  window.addEventListener("resize", hide);
+
+  // Écran tactile : un premier tap affiche l'info-bulle (sans suivre un lien), un second suit/ferme.
+  document.addEventListener("click", function (e) {
+    if (!touch) return;
+    var el = target(e);
+    if (el && el.getAttribute("data-tip") && current !== el) { e.preventDefault(); show(el); }
+    else hide();
+  });
+
+  // Accessibilité clavier : rendre focusables les éléments annotés qui ne le sont pas.
+  document.addEventListener("DOMContentLoaded", function () {
+    [].forEach.call(document.querySelectorAll("[data-tip]"), function (el) {
+      if (el.getAttribute("data-tip") && !el.hasAttribute("tabindex") && el.tabIndex < 0) el.setAttribute("tabindex", "0");
+    });
+  });
+})();

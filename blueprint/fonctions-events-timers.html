@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Codex — Blueprint · Fonctions, events & timers</title>
+<meta name="description" content="Fonctions, Custom Events, Event Dispatcher et event handler, macros, Set Timer by Event / by Function Name (pause, reprise, annulation) et exécution à la frame suivante dans Blueprint.">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-lang="blueprint" data-page="events">
+
+<div class="topbar" id="topbar"></div>
+
+<div class="wrap">
+<aside class="side" id="side"></aside>
+
+<main>
+  <h1>9 · Fonctions, events & timers</h1>
+  <p class="lead">Organiser le code d'un Blueprint et le faire réagir dans le temps : <strong>fonctions</strong> pour calculer, <strong>events</strong> pour réagir, <strong>macros</strong> pour factoriser des bouts de flux, <strong>timers</strong> pour planifier. Le tableau comparatif d'ensemble est dans l'<a href="index.html#event-fonction-macro">accueil</a> ; cette page détaille chacun.</p>
+
+  <h2 id="fonctions" data-group="Fonctions">Fonctions</h2>
+  <p>Une fonction est un graphe à part, appelé depuis ailleurs, qui s'exécute <strong>d'un seul bloc</strong> (dans la même frame) puis rend la main. Création : panneau <em>My Blueprint → Functions → +</em>.</p>
+  <table>
+    <thead><tr><th>Élément</th><th>À savoir</th></tr></thead>
+    <tbody>
+      <tr><td>Entrées / sorties</td><td>ajoutées dans les Details de la fonction. Les sorties se renseignent sur le <code>Return Node</code> ; on peut en avoir plusieurs (un par chemin). Une sortie jamais renseignée renvoie sa valeur par défaut (0, <em>false</em>, <em>None</em>) — sans erreur</td></tr>
+      <tr><td><em>Pass-by-Reference</em> (case sur une entrée)</td><td>le paramètre devient un alias de la variable de l'appelant (pin en losange) : la fonction la modifie directement, sans copie. Sinon l'entrée est une copie</td></tr>
+      <tr><td>Valeur par défaut d'une entrée</td><td>utilisée quand la broche n'est pas branchée à l'appel</td></tr>
+      <tr><td>Variables locales</td><td>section <em>Local Variables</em> du panneau My Blueprint : créées à chaque appel, détruites à la sortie, remises à leur valeur initiale à l'appel suivant</td></tr>
+      <tr><td><em>Access Specifier</em></td><td><em>Public</em> (appelable de partout), <em>Protected</em> (ce Blueprint et ses enfants), <em>Private</em> (ce Blueprint seulement)</td></tr>
+      <tr><td><em>Pure</em> / <em>Const</em></td><td><em>Pure</em> retire les pins d'exécution (calcul sans effet de bord, réévalué à chaque lecture) ; <em>Const</em> interdit à la fonction de modifier les variables du Blueprint</td></tr>
+      <tr><td><em>Call In Editor</em></td><td>ajoute un bouton dans les Details d'une instance placée dans le niveau : lancer la fonction sans jouer (regénérer un décor, ranger des Actors)</td></tr>
+      <tr><td>Override / <code>Parent:</code></td><td>un Blueprint enfant redéfinit la fonction — voir <a href="oop.html#polymorphisme">Polymorphisme</a></td></tr>
+      <tr><td>Blueprint Function Library</td><td>asset qui contient des fonctions <strong>statiques</strong> (sans instance), appelables depuis n'importe quel Blueprint : conversions, calculs utilitaires. Elles n'ont pas de <em>self</em> — tout ce dont elles ont besoin leur est passé en paramètre</td></tr>
+    </tbody>
+  </table>
+  <div class="callout danger">
+    <span class="label">Une fonction ne peut pas attendre</span>
+    <p><code>Delay</code>, <code>Timeline</code>, <code>AI Move To</code>, <code>Move Component To</code> et tous les nœuds <em>latents</em> sont refusés dans une fonction (ils s'affichent avec une icône d'horloge, désactivés). Pour faire attendre quelque chose : mettre la partie « attente » dans un <a href="#events">Custom Event</a>, ou planifier la suite avec un <a href="#timers">timer</a> — un <code>Set Timer</code> peut, lui, être appelé depuis une fonction, puisqu'il ne fait que programmer l'appel.</p>
+  </div>
+  <div class="callout tip">
+    <span class="label">Du spaghetti à la fonction</span>
+    <p>Sélectionner les nœuds → clic droit → <code>Collapse to Function</code> : les entrées et sorties sont déduites des fils qui traversent la sélection. Nommer la fonction par ce qu'elle <strong>fait</strong> (<code>ApplyDamage</code>), pas par ce qu'elle contient.</p>
+  </div>
+
+  <h2 id="events" data-group="Événements">Events & Custom Events</h2>
+  <p>Un event est un <strong>point d'entrée</strong> de l'Event Graph : le moteur ou un autre nœud l'appelle, le flux blanc part de lui. Contrairement à une fonction, il <strong>peut attendre</strong> (nœuds latents) mais n'a <strong>pas de valeur de retour</strong>.</p>
+  <table>
+    <thead><tr><th>Event du moteur</th><th>Déclenché quand…</th></tr></thead>
+    <tbody>
+      <tr><td><code>Event BeginPlay</code></td><td>l'Actor commence à exister dans le jeu (l'ordre entre Actors n'est pas garanti)</td></tr>
+      <tr><td><code>Event Tick</code></td><td>chaque frame, avec <em>Delta Seconds</em></td></tr>
+      <tr><td><code>Event End Play</code></td><td>l'Actor quitte le jeu (destruction, changement de niveau, fin de partie) — le bon endroit pour se désabonner</td></tr>
+      <tr><td><code>Event AnyDamage</code></td><td>l'Actor reçoit des dégâts (<em>Damage</em>, <em>Damage Type</em>, <em>Instigated By</em>, <em>Damage Causer</em>)</td></tr>
+      <tr><td><code>Event ActorBeginOverlap</code> / <code>Event Hit</code></td><td>collision — voir <a href="collisions-physique.html#evenements">Pourquoi mon événement ne part pas</a></td></tr>
+      <tr><td>Événement d'input</td><td>une <em>Input Action</em> est déclenchée — voir <a href="personnage.html#input">Enhanced Input</a></td></tr>
+    </tbody>
+  </table>
+  <table>
+    <thead><tr><th>Custom Event</th><th>Détail</th></tr></thead>
+    <tbody>
+      <tr><td>Créer</td><td>clic droit dans l'Event Graph → <em>Add Custom Event…</em>, puis un nom et des entrées dans les Details</td></tr>
+      <tr><td>Appeler</td><td>depuis n'importe quel graphe du même Blueprint (nœud portant son nom), ou depuis un autre Blueprint via une <a href="variables-types.html#object">référence</a> typée</td></tr>
+      <tr><td>Peut attendre</td><td>oui : <code>Delay</code>, <code>Timeline</code>, <code>AI Move To</code>… fonctionnent</td></tr>
+      <tr><td>Retourner une valeur</td><td>non. Écrire le résultat dans une variable, appeler un second event de retour, ou utiliser une fonction</td></tr>
+      <tr><td><em>Call In Editor</em> / <em>Replicates</em></td><td>bouton dans l'éditeur ; réplication réseau (<em>Run on Server</em>, <em>Multicast</em>…)</td></tr>
+    </tbody>
+  </table>
+  <table>
+    <thead><tr><th></th><th>Delay</th><th>Retriggerable Delay</th></tr></thead>
+    <tbody>
+      <tr><td>Rappelé pendant qu'il court</td><td>l'appel est <strong>ignoré</strong> : le compte à rebours initial continue</td><td>le compte à rebours <strong>repart de zéro</strong></td></tr>
+      <tr><td>Bon pour</td><td>attendre une fois</td><td>« agir X secondes après la <em>dernière</em> fois » (debounce)</td></tr>
+    </tbody>
+  </table>
+  <div class="callout warn">
+    <span class="label">Un Delay ne s'annule pas</span>
+    <p>Une fois lancé, un <code>Delay</code> ne se stoppe pas, et si l'Actor est détruit entre-temps la suite ne s'exécute simplement jamais. Pour un délai qu'on veut pouvoir annuler, mettre en pause ou interroger : un <a href="#timers">timer</a>.</p>
+  </div>
+
+  <h2 id="handler" data-group="Événements">Event Dispatcher & event handler</h2>
+  <p>Le <strong>dispatcher</strong> annonce, le <strong>handler</strong> réagit. Le principe et le tableau de la mise en place sont dans <a href="index.html#dispatchers">Event Dispatchers</a> ; voici le vocabulaire et ce qui se passe réellement.</p>
+  <table>
+    <thead><tr><th>Terme</th><th>Ce que c'est</th><th>Nœud</th></tr></thead>
+    <tbody>
+      <tr><td>Event Dispatcher</td><td>un événement <em>multicast</em> déclaré sur l'émetteur : n'importe quel nombre d'abonnés, aucun si personne n'écoute</td><td>variable dans <em>My Blueprint → Event Dispatchers</em></td></tr>
+      <tr><td>Diffuser</td><td>appeler tous les abonnés d'un coup</td><td><code>Call [Nom]</code></td></tr>
+      <tr><td><strong>Event handler</strong></td><td>le Custom Event (ou la fonction) de l'abonné qui réagit ; sa signature doit être identique à celle du dispatcher</td><td>Custom Event ou fonction</td></tr>
+      <tr><td>S'abonner</td><td>brancher le handler sur le dispatcher d'un objet précis</td><td><code>Bind Event to [Nom]</code></td></tr>
+      <tr><td><em>Assign</em></td><td>crée en une fois le <code>Bind</code> et un handler à la bonne signature</td><td>glisser le dispatcher depuis une référence → <code>Assign</code></td></tr>
+      <tr><td><code>Create Event</code></td><td>fabrique la broche « delegate » à partir d'une fonction ou d'un Custom Event choisi dans une liste — pratique pour binder un handler écrit ailleurs</td><td>nœud <code>Create Event</code></td></tr>
+      <tr><td>Se désabonner</td><td>cesser d'écouter</td><td><code>Unbind Event from…</code> / <code>Unbind All Events</code></td></tr>
+    </tbody>
+  </table>
+  <p>Les dispatchers du moteur s'utilisent de la même façon : <code>On Component Begin Overlap</code>, <code>On Clicked</code> (bouton), <code>On Destroyed</code>, <code>On Take Any Damage</code>… On s'y abonne par <code>Bind Event to…</code> ou <em>Assign</em> depuis la référence de l'objet.</p>
+  <table>
+    <thead><tr><th>Piège</th><th>Cause</th><th>Correction</th></tr></thead>
+    <tbody>
+      <tr><td>Le handler n'est jamais appelé</td><td>le <code>Bind</code> n'est pas relié au flux blanc, ou la référence de l'émetteur est vide (<em>None</em>)</td><td>binder au <code>BeginPlay</code> une fois la référence valide (<code>Is Valid</code>)</td></tr>
+      <tr><td>Le handler s'exécute plusieurs fois</td><td>le <code>Bind</code> est exécuté plusieurs fois (BeginPlay rejoué, overlap répété, Tick)</td><td>binder une seule fois, ou <code>Unbind</code> avant de rebinder</td></tr>
+      <tr><td>Le handler réagit alors que l'abonné n'est plus concerné</td><td>jamais désabonné</td><td><code>Unbind</code> dans <code>Event End Play</code> ou dès que l'abonné n'est plus intéressé</td></tr>
+      <tr><td>La broche rouge refuse de se brancher</td><td>signature du handler différente de celle du dispatcher</td><td>utiliser <em>Assign</em>, ou aligner les entrées</td></tr>
+      <tr><td>Besoin d'une réponse de l'abonné</td><td>un dispatcher n'a pas de valeur de retour</td><td>le handler écrit dans une variable de l'émetteur, ou passer par une <a href="ui-structures-interfaces.html#interfaces">interface</a></td></tr>
+      <tr><td>Ordre d'appel inattendu</td><td>aucun ordre garanti entre abonnés</td><td>ne jamais en dépendre ; enchaîner explicitement si besoin</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="macros" data-group="Macros">Macros</h2>
+  <p>Une macro est un morceau de graphe réutilisable qui est <strong>recopié à chaque endroit où on l'utilise</strong> (inlining à la compilation). Son intérêt est ce qu'une fonction ne sait pas faire : plusieurs pins d'exécution en entrée et en sortie, comme un <code>Branch</code>.</p>
+  <figure>
+    <svg viewBox="0 0 580 190" role="img" aria-label="Une macro à une entrée d'exécution et trois sorties">
+      <defs><marker id="bpfn1-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+        <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
+      <rect class="svg-bg" x="0" y="0" width="580" height="190" rx="6"/>
+      <path d="M20 95 H148" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpfn1-arr)"/>
+      <text class="svg-tm" x="84" y="84" text-anchor="middle">entrée</text>
+      <rect class="svg-box-a" x="150" y="30" width="170" height="130" rx="6"/>
+      <text class="svg-t" x="235" y="90" text-anchor="middle">Macro ValiderCible</text>
+      <text class="svg-tm" x="235" y="110" text-anchor="middle">1 entrée, 3 sorties</text>
+      <path d="M320 50 H388" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpfn1-arr)"/>
+      <path d="M320 95 H388" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpfn1-arr)"/>
+      <path d="M320 140 H388" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpfn1-arr)"/>
+      <rect class="svg-box-g" x="390" y="33" width="170" height="34" rx="6"/>
+      <text class="svg-t" x="475" y="55" text-anchor="middle">Valide : attaquer</text>
+      <rect class="svg-box-w" x="390" y="78" width="170" height="34" rx="6"/>
+      <text class="svg-t" x="475" y="100" text-anchor="middle">Mort : ignorer</text>
+      <rect class="svg-box" x="390" y="123" width="170" height="34" rx="6"/>
+      <text class="svg-t" x="475" y="145" text-anchor="middle">Invalide : chercher</text>
+    </svg>
+    <figcaption>Une fonction n'a qu'une sortie d'exécution ; une macro peut aiguiller le flux vers plusieurs suites.</figcaption>
+  </figure>
+  <table>
+    <thead><tr><th>Aspect</th><th>Macro</th></tr></thead>
+    <tbody>
+      <tr><td>Pins d'exécution</td><td>autant d'entrées et de sorties que voulu (chacune nommée)</td></tr>
+      <tr><td>Données</td><td>entrées et sorties typées, y compris <em>wildcard</em> (type qui s'adapte au fil branché — c'est ce qui rend <code>For Each Loop</code> utilisable avec n'importe quel tableau)</td></tr>
+      <tr><td>Nœuds latents</td><td><code>Delay</code> accepté, <code>Timeline</code> refusé</td></tr>
+      <tr><td>Où la créer</td><td><em>My Blueprint → Macros → +</em> (locale à ce Blueprint), ou dans une <strong>Blueprint Macro Library</strong> (Content Browser → <em>Blueprint → Blueprint Macro Library</em>) pour la partager entre Blueprints. Le parent choisi à la création de la bibliothèque détermine les nœuds disponibles (un parent <code>Actor</code> donne accès aux fonctions d'Actor)</td></tr>
+      <tr><td>Appel depuis l'extérieur</td><td>impossible : pas de référence, pas d'override. Les macros du moteur (<code>For Loop</code>, <code>Do Once</code>, <code>Is Valid</code>…) sont dans la bibliothèque <em>StandardMacros</em></td></tr>
+    </tbody>
+  </table>
+  <table>
+    <thead><tr><th>Choisir</th><th>Quand</th></tr></thead>
+    <tbody>
+      <tr><td>Macro</td><td>un motif de <strong>flux</strong> (valider puis aiguiller vers plusieurs suites), répété à quelques endroits, dont on veut des sorties d'exécution multiples</td></tr>
+      <tr><td>Fonction</td><td>un calcul ou une action réutilisable, appelable de l'extérieur, surchargeable par un enfant, avec un seul chemin de sortie</td></tr>
+      <tr><td>Collapsed Node</td><td>seulement ranger visuellement un graphe — rien n'est réutilisé</td></tr>
+    </tbody>
+  </table>
+  <div class="callout warn">
+    <span class="label">Une macro utilisée 40 fois, c'est 40 copies</span>
+    <p>Chaque usage ajoute son contenu au Blueprint : une grosse macro très répétée alourdit la compilation et le Blueprint. Dès qu'il n'y a plus qu'un seul chemin d'exécution à la sortie, une fonction est le bon choix.</p>
+  </div>
+
+  <h2 id="timers" data-group="Timers">Timers : Set Timer by Event / by Function Name</h2>
+  <p>Un <strong>timer</strong> demande au moteur d'appeler un event ou une fonction dans X secondes, une fois ou en boucle — sans occuper l'Event Tick et sans bloquer un graphe. Il rend un <code>Timer Handle</code> qui permet de le retrouver pour le pauser, l'interroger ou l'annuler.</p>
+  <table>
+    <thead><tr><th>Nœud</th><th>Cible désignée par</th><th>À retenir</th></tr></thead>
+    <tbody>
+      <tr><td><code>Set Timer by Event</code></td><td>une broche <em>Event</em> (delegate) : on y branche un Custom Event, ou un <code>Create Event</code></td><td>le plus sûr : le lien est visuel, renommer le Custom Event ne casse rien</td></tr>
+      <tr><td><code>Set Timer by Function Name</code></td><td>un <em>Object</em> (par défaut <em>self</em>) et un <em>Function Name</em> saisi en texte</td><td>la fonction est cherchée <strong>par son nom à l'exécution</strong> : faute de frappe ou renommage = timer muet, sans erreur. Elle ne doit pas avoir de paramètres</td></tr>
+    </tbody>
+  </table>
+  <table>
+    <thead><tr><th>Paramètre</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><em>Time</em></td><td>délai en secondes (de jeu) avant l'appel — ou entre deux appels si <em>Looping</em></td></tr>
+      <tr><td><em>Looping</em></td><td>coché : rappelle toutes les <em>Time</em> secondes jusqu'à ce qu'on l'arrête ; décoché : un seul appel</td></tr>
+      <tr><td><em>Initial Start Delay</em></td><td>délai avant le <strong>premier</strong> déclenchement quand on le veut différent de <em>Time</em> (laissé à 0, le premier appel a lieu après <em>Time</em>)</td></tr>
+      <tr><td><em>Initial Start Delay Random Deviation</em></td><td>aléa ± ajouté à ce premier délai — évite que cent ennemis créés ensemble tirent tous à la même frame</td></tr>
+      <tr><td>Sortie <em>Return Value</em></td><td>le <code>Timer Handle</code> : <em>Promote to Variable</em> pour le garder</td></tr>
+    </tbody>
+  </table>
+  <div class="callout danger">
+    <span class="label">Time = 0 supprime le timer</span>
+    <p>Un <code>Set Timer</code> avec <em>Time</em> ≤ 0 <strong>annule</strong> le timer au lieu de le déclencher « tout de suite ». Pour exécuter à la frame suivante, voir <a href="#nexttick">La frame suivante</a>.</p>
+  </div>
+  <div class="callout info">
+    <span class="label">Rappeler Set Timer le réarme</span>
+    <p>Appeler à nouveau <code>Set Timer</code> pour le même event (ou la même fonction) <strong>remplace</strong> le timer existant au lieu d'en ajouter un. C'est l'astuce « réinitialiser à chaque coup » : « la régénération démarre 5 s après le <em>dernier</em> coup reçu ».</p>
+  </div>
+  <div class="callout warn">
+    <span class="label">Temps de jeu, pas temps réel</span>
+    <p>Les timers suivent le temps de jeu : ralentis par le <em>time dilation</em> (<code>slomo</code>, <code>Set Global Time Dilation</code>) et figés quand le jeu est en pause (<code>Set Game Paused</code>). Un timer en boucle plus court qu'une frame est appelé <strong>plusieurs fois dans la même frame</strong> pour rattraper son retard — éviter des durées inférieures à ~0,02 s.</p>
+  </div>
+
+  <h2 id="pause" data-group="Timers">Pause, reprise & annulation</h2>
+  <figure>
+    <svg viewBox="0 0 640 240" role="img" aria-label="Cycle de vie d'un timer : actif, en pause, terminé">
+      <defs><marker id="bpfn2-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+        <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
+      <rect class="svg-bg" x="0" y="0" width="640" height="240" rx="6"/>
+      <rect class="svg-box-w" x="15" y="80" width="120" height="55" rx="6"/>
+      <text class="svg-t" x="75" y="104" text-anchor="middle">Set Timer…</text>
+      <text class="svg-tm" x="75" y="122" text-anchor="middle">by Event / Name</text>
+      <path d="M135 107 H188" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpfn2-arr)"/>
+
+      <text class="svg-tm" x="250" y="70" text-anchor="middle">Looping : repart à Time</text>
+      <rect class="svg-box-g" x="190" y="80" width="120" height="55" rx="6"/>
+      <text class="svg-t" x="250" y="104" text-anchor="middle">Actif</text>
+      <text class="svg-tm" x="250" y="122" text-anchor="middle">décompte</text>
+
+      <path d="M310 95 H398" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpfn2-arr)"/>
+      <text class="svg-tm" x="354" y="87" text-anchor="middle">Pause Timer</text>
+      <path d="M400 122 H312" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpfn2-arr)"/>
+      <text class="svg-tm" x="356" y="142" text-anchor="middle">Unpause Timer</text>
+      <rect class="svg-box-a" x="400" y="80" width="130" height="55" rx="6"/>
+      <text class="svg-t" x="465" y="104" text-anchor="middle">En pause</text>
+      <text class="svg-tm" x="465" y="122" text-anchor="middle">temps conservé</text>
+
+      <path d="M250 135 V178" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpfn2-arr)"/>
+      <text class="svg-tm" x="262" y="162">Clear · ou fin d'un one-shot</text>
+      <rect class="svg-box" x="190" y="180" width="130" height="48" rx="6"/>
+      <text class="svg-t" x="255" y="201" text-anchor="middle">Terminé</text>
+      <text class="svg-tm" x="255" y="217" text-anchor="middle">handle invalidé</text>
+    </svg>
+    <figcaption>Pause fige le décompte sans rien perdre ; Unpause reprend là où il s'était arrêté. Clear le détruit pour de bon : pour le relancer, il faut refaire un <code>Set Timer</code>.</figcaption>
+  </figure>
+  <table>
+    <thead><tr><th>Nœud</th><th>Effet</th></tr></thead>
+    <tbody>
+      <tr><td><code>Pause Timer by Handle</code> / <code>by Function Name</code></td><td>fige le timer : le temps écoulé est conservé, plus rien ne se déclenche</td></tr>
+      <tr><td><code>Unpause Timer by Handle</code> / <code>by Function Name</code></td><td>reprend avec le temps qu'il restait (et non depuis le début)</td></tr>
+      <tr><td><code>Clear and Invalidate Timer by Handle</code></td><td>arrête et détruit le timer, invalide le handle</td></tr>
+      <tr><td><code>Clear Timer by Function Name</code></td><td>même chose, en désignant l'objet et le nom de fonction</td></tr>
+      <tr><td><code>Is Timer Active</code></td><td>vrai s'il décompte ; <strong>faux</strong> s'il est en pause, terminé ou inexistant</td></tr>
+      <tr><td><code>Is Timer Paused</code></td><td>vrai s'il est en pause</td></tr>
+      <tr><td><code>Does Timer Exist</code></td><td>vrai s'il existe, actif ou en pause</td></tr>
+      <tr><td><code>Get Timer Elapsed Time</code> / <code>Get Timer Remaining Time</code></td><td>secondes écoulées / restantes — de quoi alimenter une barre de recharge</td></tr>
+    </tbody>
+  </table>
+  <p>Tous existent en deux versions, <strong>by Handle</strong> et <strong>by Function Name</strong>.</p>
+  <table>
+    <thead><tr><th></th><th>by Handle</th><th>by Function Name</th></tr></thead>
+    <tbody>
+      <tr><td>Il faut</td><td>garder le <code>Timer Handle</code> dans une variable</td><td>rien à stocker : l'objet et le nom suffisent</td></tr>
+      <tr><td>Plusieurs timers pour la même fonction</td><td>possible : un handle par timer</td><td>impossible : un seul timer par (objet, fonction)</td></tr>
+      <tr><td>Renommage / faute de frappe</td><td>sans danger (lien visuel)</td><td>casse sans avertissement</td></tr>
+      <tr><td>Convient</td><td>le cas général</td><td>un timer unique, quand on a déjà le nom sous la main</td></tr>
+    </tbody>
+  </table>
+  <table>
+    <thead><tr><th>Outil</th><th>Répète</th><th>Pause / annulation</th><th>Où l'utiliser</th><th>Bon pour</th></tr></thead>
+    <tbody>
+      <tr><td><code>Delay</code></td><td>non</td><td>non</td><td>Event Graph seulement</td><td>attendre une fois</td></tr>
+      <tr><td><code>Retriggerable Delay</code></td><td>non</td><td>se réarme à chaque appel</td><td>Event Graph seulement</td><td>debounce</td></tr>
+      <tr><td><code>Set Timer</code></td><td>oui (<em>Looping</em>)</td><td>oui, par handle ou par nom</td><td>partout, fonctions comprises</td><td>recharge, dégâts sur la durée, apparitions périodiques</td></tr>
+      <tr><td><code>Event Tick</code></td><td>chaque frame</td><td>on/off via <code>Set Actor Tick Enabled</code></td><td>Event Graph</td><td>suivi continu — à garder léger</td></tr>
+      <tr><td><a href="index.html#timelines"><code>Timeline</code></a></td><td>sur une durée</td><td>Play / Stop / Reverse</td><td>Event Graph d'un Actor</td><td>faire varier une valeur sur une courbe</td></tr>
+    </tbody>
+  </table>
+  <div class="callout tip">
+    <span class="label">Mettre en pause sans mettre le jeu en pause</span>
+    <p>Un menu d'inventaire ouvert qui doit figer un poison ou une recharge, sans arrêter le monde : <code>Pause Timer by Handle</code> à l'ouverture, <code>Unpause Timer by Handle</code> à la fermeture. Les effets reprennent avec le temps restant.</p>
+  </div>
+
+  <h2 id="nexttick" data-group="Timers">La frame suivante (next tick)</h2>
+  <p>Besoin fréquent : « attendre que tout soit en place » — un Actor tout juste spawné, un widget créé, un autre Actor dont le <code>BeginPlay</code> n'a pas encore tourné. Attendre <strong>une seule frame</strong> suffit souvent.</p>
+  <figure>
+    <svg viewBox="0 0 560 170" role="img" aria-label="Delay Until Next Tick : la suite s'exécute à la frame suivante">
+      <defs><marker id="bpfn3-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+        <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
+      <rect class="svg-bg" x="0" y="0" width="560" height="170" rx="6"/>
+      <text class="svg-tm" x="165" y="36" text-anchor="middle">Frame N</text>
+      <text class="svg-tm" x="445" y="36" text-anchor="middle">Frame N+1</text>
+      <path d="M330 44 V150" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3" fill="none"/>
+      <rect class="svg-box" x="25" y="60" width="125" height="60" rx="6"/>
+      <text class="svg-t" x="87" y="85" text-anchor="middle">Event BeginPlay</text>
+      <text class="svg-tm" x="87" y="103" text-anchor="middle">spawn + réglages</text>
+      <path d="M150 90 H178" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpfn3-arr)"/>
+      <rect class="svg-box-a" x="180" y="60" width="130" height="60" rx="6"/>
+      <text class="svg-t" x="245" y="85" text-anchor="middle">Delay Until</text>
+      <text class="svg-t" x="245" y="103" text-anchor="middle">Next Tick</text>
+      <path d="M310 90 H358" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpfn3-arr)"/>
+      <rect class="svg-box-g" x="360" y="60" width="165" height="60" rx="6"/>
+      <text class="svg-t" x="442" y="85" text-anchor="middle">Suite du graphe</text>
+      <text class="svg-tm" x="442" y="103" text-anchor="middle">tout est en place</text>
+    </svg>
+    <figcaption>Le flux s'interrompt à la fin de la frame courante et reprend au début de la suivante.</figcaption>
+  </figure>
+  <table>
+    <thead><tr><th>Besoin</th><th>Outil</th></tr></thead>
+    <tbody>
+      <tr><td>Attendre une frame au milieu d'un event</td><td><code>Delay Until Next Tick</code> (nœud latent : Event Graph, pas fonction ni macro à timeline)</td></tr>
+      <tr><td>Planifier un event ou une fonction à la frame suivante, y compris depuis une fonction</td><td><code>Set Timer for Next Tick by Event</code> / <code>by Function Name</code> (selon la version du moteur ; en C++ : <code>SetTimerForNextTick</code>)</td></tr>
+      <tr><td>Écrire un <code>Set Timer</code> « immédiat »</td><td>impossible : <em>Time</em> ≤ 0 annule le timer. Utiliser les outils ci-dessus</td></tr>
+      <tr><td>Un <code>Delay</code> de 0 seconde</td><td>attend aussi jusqu'à la frame suivante, mais l'intention est moins lisible que <code>Delay Until Next Tick</code></td></tr>
+    </tbody>
+  </table>
+  <div class="callout info">
+    <span class="label">Quand c'est la bonne solution</span>
+    <p><strong>Ordre d'initialisation</strong> : au <code>BeginPlay</code>, rien ne garantit qu'un autre Actor a déjà fini le sien ; attendre une frame avant de le lire. <strong>Après un spawn</strong> : laisser le nouvel objet terminer sa construction avant de le configurer. <strong>Réentrance</strong> : un event qui se rappelle lui-même immédiatement risque la boucle infinie ; le rappeler à la frame suivante la brise.</p>
+  </div>
+
+  <h2 id="exemples" data-group="Timers">Exemples</h2>
+  <table>
+    <thead><tr><th>Cas</th><th>Montage</th></tr></thead>
+    <tbody>
+      <tr><td>Régénération de vie pendant 10 s</td><td>un <code>Set Timer by Event</code> (1 s, <em>Looping</em>) qui soigne ; handle gardé en variable. Un second <code>Set Timer by Event</code> (10 s, sans boucle) qui appelle <code>Clear and Invalidate Timer by Handle</code> sur le premier. Le premier soin arrive après 1 s : appeler l'event de soin une fois à la main pour qu'il soit immédiat</td></tr>
+      <tr><td>Recharge d'une capacité</td><td><code>Set Timer by Event</code> (durée de recharge, sans boucle) ; <code>Is Timer Active</code> bloque la réutilisation ; <code>Get Timer Remaining Time</code> ÷ durée totale alimente la barre de l'<a href="ui-structures-interfaces.html#widgets">interface</a></td></tr>
+      <tr><td>Poison</td><td>timer en boucle (1 s) qui retire de la vie ; <code>Pause Timer by Handle</code> pendant une immunité, <code>Unpause</code> à la fin, <code>Clear</code> à la guérison</td></tr>
+      <tr><td>Régénération « après le dernier coup »</td><td>à chaque dégât, rappeler le même <code>Set Timer by Event</code> (5 s) : il se réarme, la régénération ne démarre que si 5 s passent sans coup</td></tr>
+      <tr><td>Apparitions périodiques</td><td><code>Set Timer by Event</code> (<em>Looping</em>, avec <em>Random Deviation</em>) qui fait spawner un ennemi ; <code>Clear</code> à la fin de la vague</td></tr>
+    </tbody>
+  </table>
+
+  <footer class="pg">
+    <span><a href="collisions-physique.html">← Collisions & physique</a></span>
+    <span><a href="index.html">Retour à l'accueil Blueprint</a></span>
+  </footer>
+</main>
+</div>
+
+<script src="../assets/site.config.js"></script>
+<script src="../assets/nav.js"></script>
+</body>
+</html>

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Codex — Blueprint · UI, Structs & Interfaces</title>
-<meta name="description" content="Widget Blueprints (UMG), Blueprint Structures, Blueprint Interfaces et énumérations (enum) dans Unreal Engine.">
+<meta name="description" content="Widget Blueprints (UMG), Blueprint Structures, Data Assets et Primary Data Assets, Blueprint Interfaces, énumérations (enum) et Blueprint Function Library dans Unreal Engine.">
 <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body data-lang="blueprint" data-page="ui">
@@ -16,7 +16,7 @@
 
 <main>
   <h1>5 · UI, Structs & Interfaces</h1>
-  <p class="lead">Afficher une interface (<strong>Widget Blueprint</strong>), regrouper des données (<strong>Structure</strong>), faire communiquer des Blueprints sans les lier (<strong>Blueprint Interface</strong>), et nommer des états (<strong>Enumeration</strong>).</p>
+  <p class="lead">Afficher une interface (<strong>Widget Blueprint</strong>), regrouper des données (<strong>Structure</strong>, <strong>Data Asset</strong>), faire communiquer des Blueprints sans les lier (<strong>Blueprint Interface</strong>), nommer des états (<strong>Enumeration</strong>) et partager des fonctions utilitaires (<strong>Blueprint Function Library</strong>).</p>
 
   <h2 id="widgets" data-group="Interface utilisateur">Widget Blueprint (UMG)</h2>
   <p>Un <strong>Widget Blueprint</strong> (préfixe <code>WBP_</code>, <em>User Interface → Widget Blueprint</em>) décrit un morceau d'interface : HUD, menu pause, barre de vie, inventaire. Il a deux onglets : le <strong>Designer</strong> (on place les éléments visuellement) et le <strong>Graph</strong> (la logique, comme un Blueprint normal).</p>
@@ -79,6 +79,10 @@
 
   <h2 id="structures" data-group="Données & communication">Blueprint Structure</h2>
   <p>Une <strong>Structure</strong> (préfixe <code>S_</code>, <em>Blueprint → Structure</em>) regroupe plusieurs variables sous un seul type — l'équivalent d'un <code>struct</code> en C++ / C#. Elle contient seulement des données, pas de logique.</p>
+  <figure>
+    <img src="../assets/gifs/structures-unreal.gif" width="960" height="540" loading="lazy" alt="Animation : une structure Blueprint regroupe plusieurs variables sous un seul type ; Make la construit et Break l'éclate en ses membres">
+    <figcaption>Une structure en action : plusieurs variables rangées sous un seul type, assemblées par <code>Make</code> et éclatées par <code>Break</code>.</figcaption>
+  </figure>
   <table>
     <thead><tr><th><code>S_Item</code> — membre</th><th>Type</th></tr></thead>
     <tbody>
@@ -102,32 +106,93 @@
   </div>
   <div class="callout tip">
     <span class="label">Structures et Data Tables</span>
-    <p>Une <strong>Data Table</strong> utilise une structure comme type de ligne : on remplit (ou importe en CSV/JSON) toutes les données d'objets, d'ennemis ou de dialogues, puis on les lit avec <code>Get Data Table Row</code>. Les données sortent du graphe, le Blueprint ne garde qu'un identifiant (Row Name).</p>
+    <p>Une <strong>Data Table</strong> utilise une structure comme type de ligne : on remplit (ou importe en CSV/JSON) toutes les données d'objets, d'ennemis ou de dialogues, puis on les lit avec <code>Get Data Table Row</code>. Les données sortent du graphe, le Blueprint ne garde qu'un identifiant (Row Name). Pour quelques éléments riches (meshes, sons, héritage), un <a href="#dataassets">Data Asset</a> convient mieux.</p>
   </div>
+
+  <h2 id="dataassets">Data Asset & Primary Data Asset</h2>
+  <p>Un <strong>Data Asset</strong> est un <em>fichier de données</em> à part entière : on définit une classe Blueprint qui décrit les champs (nom, dégâts, icône, mesh…), puis on crée <strong>un asset par élément</strong> (une épée, une hache…) et on en remplit les valeurs dans l'éditeur. Contrairement à une <a href="#structures">structure</a> (une valeur copiée dans une variable), c'est un objet partagé que n'importe quel Blueprint peut référencer.</p>
+  <figure>
+    <svg viewBox="0 0 640 200" role="img" aria-label="Une classe de Data Asset, deux assets créés à partir d'elle et un Blueprint qui en référence un">
+      <defs><marker id="bpda-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+        <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
+      <rect class="svg-bg" x="0" y="0" width="640" height="200" rx="6"/>
+      <rect class="svg-box-w" x="15" y="72" width="170" height="58" rx="6"/>
+      <text class="svg-t" x="100" y="97" text-anchor="middle">BP_WeaponData</text>
+      <text class="svg-tm" x="100" y="115" text-anchor="middle">définit les champs</text>
+
+      <path d="M185 92 C 215 92, 220 55, 248 55" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpda-arr)"/>
+      <path d="M185 112 C 215 112, 220 145, 248 145" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpda-arr)"/>
+      <text class="svg-tm" x="215" y="30" text-anchor="middle">un asset par arme</text>
+
+      <rect class="svg-box-g" x="250" y="30" width="150" height="50" rx="6"/>
+      <text class="svg-t" x="325" y="52" text-anchor="middle">DA_Sword</text>
+      <text class="svg-tm" x="325" y="68" text-anchor="middle">Damage = 25</text>
+      <rect class="svg-box-g" x="250" y="120" width="150" height="50" rx="6"/>
+      <text class="svg-t" x="325" y="142" text-anchor="middle">DA_Axe</text>
+      <text class="svg-tm" x="325" y="158" text-anchor="middle">Damage = 40</text>
+
+      <path d="M470 98 C 440 98, 440 55, 402 55" stroke="var(--link)" stroke-width="1.5" stroke-dasharray="4 3" fill="none" style="marker-end:url(#bpda-arr)"/>
+      <rect class="svg-box-a" x="470" y="72" width="150" height="58" rx="6"/>
+      <text class="svg-t" x="545" y="97" text-anchor="middle">BP_Weapon</text>
+      <text class="svg-tm" x="545" y="115" text-anchor="middle">WeaponData = DA_Sword</text>
+      <text class="svg-tm" x="545" y="150" text-anchor="middle">référence</text>
+    </svg>
+    <figcaption>La classe décrit les champs une fois ; chaque asset en est une instance remplie ; un Blueprint pointe vers l'asset dont il a besoin.</figcaption>
+  </figure>
+  <table>
+    <thead><tr><th>Étape</th><th>Comment</th></tr></thead>
+    <tbody>
+      <tr><td>1. Créer la classe</td><td>Content Browser → <em>Blueprint Class</em> → <em>All Classes</em> → <code>DataAsset</code> (ou <code>PrimaryDataAsset</code>), nommée <code>BP_WeaponData</code></td></tr>
+      <tr><td>2. Déclarer les champs</td><td>des variables ordinaires : <code>DisplayName</code> (Text), <code>Damage</code> (Float), <code>Icon</code>, <code>Mesh</code>… Cocher <em>Instance Editable</em> (l'œil) sur chacune, sinon elle n'apparaît pas dans l'asset</td></tr>
+      <tr><td>3. Créer les assets</td><td>Content Browser → <em>Miscellaneous → Data Asset</em> → choisir <code>BP_WeaponData</code> → <code>DA_Sword</code>. Les valeurs se remplissent dans son panneau <em>Details</em></td></tr>
+      <tr><td>4. Référencer</td><td>dans <code>BP_Weapon</code>, une variable <code>WeaponData</code> de type <em>Object Reference</em> vers <code>BP_WeaponData</code>, <em>Instance Editable</em> : choisir <code>DA_Sword</code> dans les Details de l'arme</td></tr>
+      <tr><td>5. Lire</td><td><code>Get WeaponData</code> → <code>Damage</code>, <code>Mesh</code>… (au <code>BeginPlay</code>, après un <code>Is Valid</code>)</td></tr>
+    </tbody>
+  </table>
+  <div class="callout warn">
+    <span class="label">Des constantes, pas un état</span>
+    <p>Un Data Asset est <strong>partagé</strong> : tous les Blueprints qui le référencent lisent le même objet. Modifier ses valeurs à l'exécution les change pour tout le monde (et, dans l'éditeur, peut même persister après l'arrêt du jeu). Ce qui évolue pendant la partie — munitions restantes, durabilité — vit dans l'instance de l'arme, pas dans l'asset.</p>
+  </div>
+  <div class="callout info">
+    <span class="label">Hard ou soft reference</span>
+    <p>Un champ <em>Mesh</em> ou <em>Icon</em> en référence normale (<em>hard</em>) charge l'asset pointé dès que le Data Asset est chargé : une liste de cent armes charge cent meshes. Utiliser des <strong>Soft Object References</strong> puis <code>Async Load Asset</code> pour ne charger que ce qui sert (voir <a href="variables-types.html#class">Hard vs Soft</a>).</p>
+  </div>
+
+  <h3>Primary Data Asset</h3>
+  <p>Un <code>PrimaryDataAsset</code> est un Data Asset qui possède en plus une <strong>identité</strong> (<em>Primary Asset Id</em>, de la forme <code>Type:Nom</code>, ex. <code>Weapon:DA_Sword</code>) connue de l'<strong>Asset Manager</strong>. Cela permet de <strong>retrouver et charger des assets sans les référencer en dur</strong>.</p>
+  <table>
+    <thead><tr><th>Élément</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><em>Project Settings → Game → Asset Manager → Primary Asset Types to Scan</em></td><td>déclare un type (ex. <code>Weapon</code>), sa classe de base et les dossiers à scanner : tous les assets trouvés sont inscrits dans le catalogue</td></tr>
+      <tr><td><code>Get Primary Asset Id List</code></td><td>liste les identifiants de tous les assets d'un type, <strong>sans les charger</strong> — remplir une boutique, un menu de sélection</td></tr>
+      <tr><td><code>Async Load Primary Asset</code></td><td>charge un asset à partir de son identifiant, sans bloquer le jeu ; la suite part sur <em>Completed</em></td></tr>
+      <tr><td><code>Get Primary Asset Id from Object</code></td><td>l'identifiant d'un asset déjà chargé</td></tr>
+    </tbody>
+  </table>
+  <div class="callout tip">
+    <span class="label">Sauvegarder un identifiant, pas une référence</span>
+    <p>Dans un <a href="levels-gamemode.html#savegame">SaveGame</a>, stocker le <em>Primary Asset Id</em> de l'arme équipée (un simple texte), puis la recharger par <code>Async Load Primary Asset</code> au chargement de la partie. Une référence d'objet directe ne survivrait pas à la fermeture du jeu.</p>
+  </div>
+  <div class="callout info">
+    <span class="label">Un Data Asset suffit souvent</span>
+    <p>Sans besoin de retrouver ses assets par type ni de les charger à la demande, un Data Asset référencé directement fait le travail. Le Primary Data Asset sert aux catalogues (tous les objets du jeu), aux chargements asynchrones et au contrôle de ce qui est inclus dans le jeu final. Le type par défaut d'un Primary Data Asset créé en Blueprint pur vient de sa première classe C++ parente : vérifier dans <em>Primary Asset Types to Scan</em> que les assets sont bien reconnus.</p>
+  </div>
+  <table>
+    <thead><tr><th>Besoin</th><th>Outil</th></tr></thead>
+    <tbody>
+      <tr><td>Regrouper quelques valeurs dans une variable</td><td><a href="#structures">Structure</a></td></tr>
+      <tr><td>Beaucoup de lignes identiques (équilibrage, butin, dialogues), éditables dans un tableur</td><td>Data Table (une structure comme type de ligne)</td></tr>
+      <tr><td>Quelques éléments riches, avec meshes, sons, références, héritage</td><td>Data Asset</td></tr>
+      <tr><td>Idem, à retrouver par type, charger à la demande ou référencer par identifiant</td><td>Primary Data Asset</td></tr>
+      <tr><td>Une liste fermée de valeurs nommées</td><td><a href="#enums">Énumération</a></td></tr>
+    </tbody>
+  </table>
 
   <h2 id="interfaces">Blueprint Interface</h2>
   <p>Une <strong>Blueprint Interface</strong> (préfixe <code>BPI_</code>, <em>Blueprint → Blueprint Interface</em>) est une liste de <strong>signatures de fonctions sans corps</strong>. Chaque Blueprint qui l'implémente écrit sa propre version. L'appelant n'a pas besoin de connaître la classe exacte de sa cible : il envoie un <strong>message</strong>.</p>
   <figure>
-    <svg viewBox="0 0 620 200" role="img" aria-label="Un message d'interface reçu par trois classes différentes">
-      <defs><marker id="bpi-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
-        <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
-      <rect class="svg-bg" x="0" y="0" width="620" height="200" rx="6"/>
-      <rect class="svg-box-a" x="20" y="65" width="170" height="70" rx="6"/>
-      <text class="svg-t" x="105" y="90" text-anchor="middle">Personnage</text>
-      <text class="svg-tm" x="105" y="108" text-anchor="middle">Line Trace → Hit Actor</text>
-      <text class="svg-tm" x="105" y="123" text-anchor="middle">→ Interact (Message)</text>
-      <path d="M190 100 C 260 100, 260 40, 348 40" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpi-arr)"/>
-      <path d="M190 100 H348" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpi-arr)"/>
-      <path d="M190 100 C 260 100, 260 160, 348 160" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpi-arr)"/>
-      <text class="svg-tm" x="270" y="92" text-anchor="middle">BPI_Interactable</text>
-      <rect class="svg-box-g" x="350" y="20" width="250" height="40" rx="6"/>
-      <text class="svg-t" x="475" y="45" text-anchor="middle">BP_Door : ouvre la porte</text>
-      <rect class="svg-box-g" x="350" y="80" width="250" height="40" rx="6"/>
-      <text class="svg-t" x="475" y="105" text-anchor="middle">BP_Chest : donne un objet</text>
-      <rect class="svg-box-g" x="350" y="140" width="250" height="40" rx="6"/>
-      <text class="svg-t" x="475" y="165" text-anchor="middle">BP_NPC : lance un dialogue</text>
-    </svg>
-    <figcaption>Un seul appel, trois comportements — et aucun <code>Cast To</code> : le personnage ne dépend d'aucune de ces classes.</figcaption>
+    <img src="../assets/gifs/blueprint-interface-unreal.gif" width="960" height="540" loading="lazy" alt="Animation : une Blueprint Interface, un même message reçu par des classes différentes qui réagissent chacune à leur façon">
+    <figcaption>Une interface en action : un seul message, des comportements différents selon la classe qui le reçoit — et aucun <code>Cast To</code>.</figcaption>
   </figure>
   <table>
     <thead><tr><th>Étape</th><th>Comment</th></tr></thead>
@@ -165,6 +230,43 @@
   <div class="callout tip">
     <span class="label">Enum + Map + Struct</span>
     <p>Les trois se combinent bien : une Map <code>E_ItemType → S_ItemData</code> ou une Data Table dont une colonne est un enum. Et une enum fait une excellente <strong>variable d'état</strong> pour l'Animation Blueprint (transitions de la State Machine selon <code>E_PlayerState</code>). Ajouter une valeur <strong>à la fin</strong> de l'enum : insérer au milieu décale l'index numérique des valeurs suivantes (conversions en <code>Byte</code>, sauvegardes qui stockent cet index).</p>
+  </div>
+
+  <h2 id="function-library" data-group="Code partagé">Blueprint Function Library</h2>
+  <p>Une <strong>Blueprint Function Library</strong> (préfixe <code>BPFL_</code>, Content Browser → <em>Blueprint → Blueprint Function Library</em>) est un asset qui rassemble des fonctions <strong>statiques</strong> : elles n'appartiennent à aucun objet, n'ont pas de <em>self</em> et s'appellent depuis <strong>n'importe quel</strong> Blueprint — Actor, Widget, Animation Blueprint, Level Blueprint — sans référence ni cast. Les fonctions apparaissent dans la palette d'actions comme les nœuds du moteur (<code>Distance</code>, <code>Clamp</code>…).</p>
+  <table>
+    <thead><tr><th>Aspect</th><th>Ce qu'il faut savoir</th></tr></thead>
+    <tbody>
+      <tr><td>Créer</td><td>un asset <code>BPFL_Utils</code>, puis <em>Functions → +</em> comme dans n'importe quel Blueprint (entrées, sorties, variables locales)</td></tr>
+      <tr><td>Appeler</td><td>clic droit dans un graphe, chercher le nom : aucun pin <em>Target</em>, aucune référence à fournir</td></tr>
+      <tr><td>État</td><td>aucune variable membre, aucun Event Graph : une fonction de bibliothèque reçoit tout par ses entrées et ne retient rien d'un appel à l'autre</td></tr>
+      <tr><td>Contexte du monde</td><td>pour toucher au monde (<code>Get Player Controller</code>, <code>Spawn Actor</code>, un timer…), lui passer un objet en entrée — n'importe quel Actor, souvent le <em>self</em> de l'appelant — et le brancher sur le pin <em>World Context Object</em> des nœuds</td></tr>
+      <tr><td>Nœuds latents</td><td>refusés, comme dans toute fonction (voir <a href="fonctions-events-timers.html#fonctions">Fonctions</a>)</td></tr>
+      <tr><td><em>Pure</em></td><td>très courant : un calcul sans effet de bord devient un nœud vert, utilisable partout</td></tr>
+    </tbody>
+  </table>
+  <table>
+    <thead><tr><th>Bon candidat</th><th>Exemple</th></tr></thead>
+    <tbody>
+      <tr><td>formatage</td><td><code>FormatTime</code> : secondes → « 03:25 »</td></tr>
+      <tr><td>maths utilitaires</td><td><code>RemapAngle</code>, distance horizontale entre deux Actors, arrondi à un pas</td></tr>
+      <tr><td>validation</td><td><code>IsPlayerAlive</code> (Actor → bool) qui regroupe <code>Is Valid</code> et le test de vie</td></tr>
+      <tr><td>accès fréquents</td><td><code>GetMyGameInstance</code> : <code>Get Game Instance</code> + <code>Cast</code> vers la bonne classe, écrits une seule fois</td></tr>
+    </tbody>
+  </table>
+  <table>
+    <thead><tr><th>Où mettre ce code ?</th><th></th></tr></thead>
+    <tbody>
+      <tr><td>Function Library</td><td>un utilitaire sans état, utile à plusieurs Blueprints sans rapport entre eux</td></tr>
+      <tr><td>Fonction dans un Blueprint</td><td>elle lit ou modifie les variables de cet objet</td></tr>
+      <tr><td>Fonction d'un parent (héritage)</td><td>un comportement commun à une famille de classes, surchargeable — voir <a href="oop.html">Orienté objet</a></td></tr>
+      <tr><td>Macro Library</td><td>un motif de <em>flux</em> à plusieurs sorties d'exécution — voir <a href="fonctions-events-timers.html#macros">Macros</a></td></tr>
+      <tr><td><a href="levels-gamemode.html#gameinstance">GameInstance</a></td><td>un état global qui doit survivre aux niveaux</td></tr>
+    </tbody>
+  </table>
+  <div class="callout warn">
+    <span class="label">Garder la bibliothèque légère</span>
+    <p>Charger un Blueprint qui appelle une fonction de la bibliothèque charge aussi la bibliothèque — et tout ce qu'elle référence en dur. Une fonction qui fait un <code>Cast To BP_Boss</code> oblige tous les appelants à embarquer <code>BP_Boss</code>. Écrire des fonctions génériques (types de base, <code>Actor</code>) et répartir les utilitaires en plusieurs bibliothèques par domaine (<code>BPFL_Math</code>, <code>BPFL_UI</code>…).</p>
   </div>
 
   <footer class="pg">

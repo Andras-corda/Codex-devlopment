@@ -52,7 +52,9 @@ window.SITE_CONFIG = {
         { id: "levels",     title: "4 · Levels & Game Framework",   href: "levels-gamemode.html" },
         { id: "ui",         title: "5 · UI, Structs & Interfaces",  href: "ui-structures-interfaces.html" },
         { id: "oop",        title: "6 · Orienté objet",             href: "oop.html" },
-        { id: "feedback",   title: "7 · Materials, SFX & VFX",      href: "feedback.html" }
+        { id: "feedback",   title: "7 · Materials, SFX & VFX",      href: "feedback.html" },
+        { id: "physics",    title: "8 · Collisions & physique",     href: "collisions-physique.html" },
+        { id: "events",     title: "9 · Fonctions, events & timers", href: "fonctions-events-timers.html" }
       ]
     },
     {

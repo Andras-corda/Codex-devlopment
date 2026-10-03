@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Codex — Blueprint · Personnage & Input</title>
-<meta name="description" content="Composants d'un Character 3e personne (Capsule, SkeletalMesh, CharacterMovement, SpringArm) et caméra (SpringArm, CameraComponent, réglages) Enhanced Input (Input Actions & Mapping Context) et boîtes de collision (Overlap, Block, événements).">
+<meta name="description" content="Composants d'un Character 3e personne (Capsule, SkeletalMesh, CharacterMovement, SpringArm) et caméra (SpringArm, CameraComponent, réglages) Enhanced Input (Input Actions & Mapping Context) et boîtes de collision (Overlap, Block, événements), Pawn et possession (Possess, Auto Possess).">
 <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body data-lang="blueprint" data-page="personnage">
@@ -61,29 +61,70 @@
     </tbody>
   </table>
 
+  <h2 id="pawn">Pawn, Character & possession</h2>
+  <p>Un <code>Pawn</code> est un Actor qu'un <strong>Controller</strong> peut <strong>posséder</strong> : l'« avatar » (personnage, véhicule, caméra volante, tourelle) vers lequel l'input du joueur — ou les ordres d'une IA — sont envoyés. Un <code>Character</code> n'est qu'un Pawn déjà équipé pour la marche (capsule, mesh, <code>CharacterMovementComponent</code>) ; tout le reste se construit sur un Pawn plus nu.</p>
+  <table>
+    <thead><tr><th>Classe parente</th><th>Fournit</th><th>Bon pour</th></tr></thead>
+    <tbody>
+      <tr><td><code>Pawn</code></td><td>la possession, rien d'autre : ni déplacement, ni collision</td><td>véhicule, tourelle, drone, caméra de jeu de stratégie — on ajoute ses composants et son déplacement soi-même</td></tr>
+      <tr><td><code>DefaultPawn</code></td><td>collision sphérique + <code>FloatingPawnMovement</code> (vol libre)</td><td>prototype, caméra libre</td></tr>
+      <tr><td><code>SpectatorPawn</code></td><td>vol libre sans collision</td><td>mode spectateur (<em>Spectator Class</em> du <a href="levels-gamemode.html#gamemode">GameMode</a>)</td></tr>
+      <tr><td><code>Character</code></td><td>+ <code>CapsuleComponent</code>, <code>SkeletalMesh</code>, <code>CharacterMovementComponent</code></td><td>humanoïdes qui marchent, sautent, nagent</td></tr>
+      <tr><td><code>WheeledVehiclePawn</code></td><td>véhicule à roues (physique Chaos)</td><td>voitures, camions</td></tr>
+    </tbody>
+  </table>
+
+  <h3>La possession</h3>
+  <p>Le <code>PlayerController</code> persiste ; c'est le Pawn qu'il tient en main qui change. À l'apparition, le <a href="levels-gamemode.html#gamemode">GameMode</a> fait spawner la <em>Default Pawn Class</em> à l'emplacement d'un <a href="levels-gamemode.html#playerstart">PlayerStart</a>, puis le Controller le <code>Possess</code>.</p>
+  <figure>
+    <svg viewBox="0 0 620 190" role="img" aria-label="Un PlayerController possède un Pawn à la fois">
+      <defs><marker id="bppawn-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+        <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
+      <rect class="svg-bg" x="0" y="0" width="620" height="190" rx="6"/>
+      <rect class="svg-box-a" x="20" y="65" width="170" height="60" rx="6"/>
+      <text class="svg-t" x="105" y="90" text-anchor="middle">PlayerController</text>
+      <text class="svg-tm" x="105" y="108" text-anchor="middle">persiste, reçoit l'input</text>
+
+      <path d="M190 85 C 280 85, 290 48, 378 48" stroke="var(--link)" stroke-width="2" fill="none" style="marker-end:url(#bppawn-arr)"/>
+      <text class="svg-tm" x="285" y="36" text-anchor="middle">Possess</text>
+      <rect class="svg-box-g" x="380" y="20" width="220" height="55" rx="6"/>
+      <text class="svg-t" x="490" y="42" text-anchor="middle">BP_Hero (Character)</text>
+      <text class="svg-tm" x="490" y="60" text-anchor="middle">possédé actuellement</text>
+
+      <path d="M190 105 C 280 105, 290 142, 378 142" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3" fill="none" style="marker-end:url(#bppawn-arr)"/>
+      <text class="svg-tm" x="285" y="165" text-anchor="middle">UnPossess puis Possess</text>
+      <rect class="svg-box" x="380" y="115" width="220" height="55" rx="6"/>
+      <text class="svg-t" x="490" y="137" text-anchor="middle">BP_Car (Pawn)</text>
+      <text class="svg-tm" x="490" y="155" text-anchor="middle">en attente</text>
+    </svg>
+    <figcaption>Un Controller ne possède qu'un Pawn à la fois ; changer de personnage ou monter dans un véhicule revient à re-posséder.</figcaption>
+  </figure>
+  <table>
+    <thead><tr><th>Nœud / réglage</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>Possess</code> (Controller)</td><td>le Controller prend le contrôle du Pawn : input et caméra lui sont redirigés, l'ancien Pawn est lâché</td></tr>
+      <tr><td><code>UnPossess</code></td><td>lâche le Pawn contrôlé — le Controller n'a plus de Pawn (<code>Get Controlled Pawn</code> → <em>None</em>)</td></tr>
+      <tr><td><code>Event Possessed</code> / <code>Event Unpossessed</code> (dans le Pawn)</td><td>réagir à la prise ou à la perte de contrôle (afficher un HUD, ajouter/retirer un Mapping Context)</td></tr>
+      <tr><td><code>Get Controller</code> (Pawn) / <code>Get Controlled Pawn</code> (Controller)</td><td>passer de l'un à l'autre</td></tr>
+      <tr><td><code>Get Player Pawn</code> / <code>Get Player Character</code></td><td>le Pawn du joueur 0 — le second renvoie <em>None</em> si ce Pawn n'est pas un Character</td></tr>
+      <tr><td><em>Auto Possess Player</em> (Pawn posé dans le niveau)</td><td><em>Disabled</em>, <em>Player 0</em>… <em>Player 7</em> : possédé automatiquement au lancement, sans passer par le GameMode</td></tr>
+      <tr><td><em>Auto Possess AI</em> + <em>AI Controller Class</em></td><td><em>Placed in World</em>, <em>Spawned</em> ou les deux : un <code>AIController</code> de la classe choisie prend le Pawn</td></tr>
+    </tbody>
+  </table>
+  <div class="callout tip">
+    <span class="label">Changer de Pawn en cours de jeu</span>
+    <p>Monter dans un véhicule : <code>Get Player Controller</code> → <code>Possess</code> sur le véhicule. Les <em>Mapping Contexts</em> d'Enhanced Input appartiennent au joueur local, pas au Pawn : retirer celui du personnage et ajouter celui du véhicule dans <code>Event Unpossessed</code> / <code>Event Possessed</code>. Le personnage laissé derrière n'est pas détruit — il reste dans le niveau, inerte.</p>
+  </div>
+  <div class="callout danger">
+    <span class="label">Get Player Character devient None</span>
+    <p>Dès que le joueur possède un Pawn qui n'est pas un <code>Character</code> (véhicule, caméra), <code>Get Player Character</code> renvoie <em>None</em> et provoque des <em>Accessed None</em> en cascade. Utiliser <code>Get Player Pawn</code> puis un <code>Cast</code> (ou une <a href="ui-structures-interfaces.html#interfaces">interface</a>), ou garder une référence dans une <a href="variables-types.html#object">variable</a>.</p>
+  </div>
+
   <h2 id="camera">Caméra : SpringArm & CameraComponent</h2>
   <p>La caméra 3e personne repose sur deux composants : le <code>SpringArm</code> est un bras attaché à la capsule, et la <code>Camera</code> est accrochée à son extrémité (socket <code>SpringEndpoint</code>). C'est le <strong>bras</strong> qui tourne avec la souris ; la caméra suit sans rien calculer elle-même.</p>
   <figure>
-    <svg viewBox="0 0 620 220" role="img" aria-label="SpringArm, Socket Offset et caméra vus de côté">
-      <defs><marker id="bpcam-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
-        <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
-      <rect class="svg-bg" x="0" y="0" width="620" height="220" rx="6"/>
-      <rect class="svg-box-a" x="440" y="70" width="60" height="120" rx="30"/>
-      <text class="svg-t" x="470" y="208" text-anchor="middle">Personnage</text>
-      <circle cx="470" cy="100" r="5" fill="var(--link)"/>
-      <path d="M470 100 L200 70" stroke="var(--warn)" stroke-width="3" fill="none"/>
-      <text class="svg-tm" x="345" y="70" text-anchor="middle">Target Arm Length</text>
-      <path d="M200 70 L200 40" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3" fill="none" style="marker-end:url(#bpcam-arr)"/>
-      <text class="svg-tm" x="210" y="30">Socket Offset (épaule)</text>
-      <rect class="svg-box-g" x="150" y="22" width="44" height="30" rx="4"/>
-      <text class="svg-tm" x="172" y="41" text-anchor="middle">CAM</text>
-      <text class="svg-tm" x="120" y="80" text-anchor="middle">Camera</text>
-      <rect class="svg-box-w" x="300" y="110" width="20" height="80" rx="3"/>
-      <text class="svg-tm" x="310" y="205" text-anchor="middle">mur</text>
-      <text class="svg-tm" x="80" y="150">Do Collision Test : si un mur</text>
-      <text class="svg-tm" x="80" y="166">coupe le bras, il se raccourcit</text>
-    </svg>
-    <figcaption>Le bras part du personnage, la caméra est au bout ; le Socket Offset la décale (vue par-dessus l'épaule).</figcaption>
+    <img src="../assets/screenDuMoteur/cameraPlayer.png" width="915" height="597" loading="lazy" alt="Capture du viewport d'un Blueprint de personnage dans Unreal Engine : la capsule du joueur avec sa flèche de direction, et l'icône de la caméra placée derrière lui">
+    <figcaption>Dans le viewport d'Unreal : la capsule du personnage (la flèche indique son avant) et la caméra placée derrière lui, à distance. Les réglages du <code>SpringArm</code> qui fixent cette distance sont détaillés ci-dessous.</figcaption>
   </figure>
 
   <h3>Réglages du SpringArm</h3>
@@ -161,6 +202,10 @@
 
   <h3>Réponses : Ignore, Overlap, Block</h3>
   <p>Chaque composant a un <strong>Object Type</strong> (ce qu'il est : <code>WorldStatic</code>, <code>WorldDynamic</code>, <code>Pawn</code>, <code>PhysicsBody</code>…) et une <strong>réponse</strong> pour chaque canal (comment il réagit aux autres). Quand deux objets se rencontrent, c'est la réponse <strong>la plus faible</strong> des deux qui gagne :</p>
+  <figure>
+    <img src="../assets/gifs/collisions-unreal.gif" width="960" height="540" loading="lazy" alt="Animation : les trois réponses de collision Ignore, Overlap et Block, ce que fait un objet quand il en touche un autre">
+    <figcaption>Les trois réponses de collision en action : <em>Ignore</em> traverse sans rien dire, <em>Overlap</em> traverse en prévenant, <em>Block</em> arrête.</figcaption>
+  </figure>
   <table>
     <thead><tr><th>A \ B</th><th>Ignore</th><th>Overlap</th><th>Block</th></tr></thead>
     <tbody>
@@ -197,6 +242,11 @@
   <div class="callout info">
     <span class="label">Déboguer une collision</span>
     <p>Décocher <code>Hidden in Game</code> sur la boîte pour la voir en jeu, ou taper <code>show collision</code> dans la console (touche <kbd>²</kbd>/<kbd>~</kbd>). Les <strong>traces</strong> (<code>Line Trace by Channel</code>, <code>Sphere Trace</code>) sont l'autre moitié du système : un rayon qui teste un canal — c'est le canal <code>Camera</code> que le SpringArm utilise pour sa <a href="#camera">sonde anti-mur</a>, et <code>Visibility</code> pour viser un objet.</p>
+  </div>
+
+  <div class="callout tip">
+    <span class="label">Pour aller plus loin</span>
+    <p>Canaux et presets personnalisés, collision des meshes, traces, physique, Physical Material, ragdoll : tout cela est détaillé dans <a href="collisions-physique.html">8 · Collisions & physique</a>.</p>
   </div>
 
   <footer class="pg">
