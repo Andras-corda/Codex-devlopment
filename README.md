@@ -32,18 +32,18 @@ javascript/                        dossier du langage JavaScript (Node.js)
   backend.html (Express), animations.html (CSS + JS)
 blueprint/                         dossier Blueprint (Unreal Engine)
   index.html (Blueprint en bref, Branch/Switch, boucles, Timelines, Array/Set/Map,
-  events/fonctions/macros/collapsed, Event Dispatchers),
-  variables-types.html (chaque type de variable, Actor Tags & Gameplay Tags),
+  events/fonctions/macros/collapsed),
+  variables-types.html (chaque type de variable, conversions/parsing, Cast To, Actor Tags & Gameplay Tags),
   personnage.html (Character, Pawn & possession, caméra, Enhanced Input, collisions),
   animation-blueprint.html (Blend Space, ABP, Layered blend, cached poses, notifies, retargeting Mixamo),
-  levels-gamemode.html
-  (GameMode/GameState/PlayerState, PlayerStart, GameInstance, SaveGame, Open Level, méthodes de streaming,
-  niveaux & sublevels, Level Blueprint),
-  ui-structures-interfaces.html (Widget Blueprint/UMG, structures, interfaces, enums),
-  oop.html (héritage, polymorphisme, classes abstraites, hiérarchie des acteurs),
+  levels.html (niveaux & sublevels, Open Level, méthodes de streaming, Level Blueprint, World Settings),
+  ui-structures-interfaces.html (Widget Blueprint/UMG, structures, Data Table, Data Assets, enums,
+  héritage/polymorphisme/classes abstraites, interfaces, Function Library),
   feedback.html (Dynamic Material Instance, SFX, VFX Niagara/Cascade),
   collisions-physique.html (canaux & presets custom, traces, simulation, ragdoll, Physical Material),
-  fonctions-events-timers.html (fonctions, events, dispatcher/handler, macros, timers, frame suivante)
+  fonctions-events-timers.html (fonctions, events, dispatcher/handler, macros et Macro Library, timers, frame suivante),
+  classes-framework.html (Game Framework & classes : Actor, composants, hiérarchie, Pawn/Character, Player/AIController,
+  caméra, HUD, GameModeBase/GameMode, GameState/PlayerState, PlayerStart, GameInstance, SaveGame, World, Gameplay Statics, subsystems)
 cpp/                                dossier du langage C++ (console)
   index.html (compilateur/linker, IDE, anatomie du premier programme),
   procedural.html (variables, const/constexpr, types, portée, opérateurs, ++/--, décisions, boucles,

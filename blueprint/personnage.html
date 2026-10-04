@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Codex — Blueprint · Personnage & Input</title>
-<meta name="description" content="Composants d'un Character 3e personne (Capsule, SkeletalMesh, CharacterMovement, SpringArm) et caméra (SpringArm, CameraComponent, réglages) Enhanced Input (Input Actions & Mapping Context) et boîtes de collision (Overlap, Block, événements), Pawn et possession (Possess, Auto Possess).">
+<meta name="description" content="Composants d'un Character 3e personne (Capsule, SkeletalMesh, CharacterMovement, SpringArm) et caméra (SpringArm, CameraComponent, réglages) Enhanced Input (Input Actions & Mapping Context) et boîtes de collision (Overlap, Block, événements), Pawn et possession (Possess, Auto Possess), Modifiers, Triggers et états d'un Input Action, priorité des Mapping Contexts.">
 <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body data-lang="blueprint" data-page="personnage">
@@ -21,34 +21,8 @@
   <h2 id="personnage">Personnage à la troisième personne</h2>
   <p>Un <code>Character</code> (sous-classe de <code>Pawn</code> déjà équipée pour se déplacer) s'organise en une hiérarchie de composants : un seul se charge de la collision et sert de racine, les autres s'y accrochent.</p>
   <figure>
-    <svg viewBox="0 0 620 230" role="img" aria-label="Hiérarchie de composants d'un Character">
-      <defs><marker id="bp1-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
-        <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
-      <rect class="svg-bg" x="0" y="0" width="620" height="230" rx="6"/>
-      <rect class="svg-box-a" x="220" y="20" width="180" height="50" rx="6"/>
-      <text class="svg-t" x="310" y="42" text-anchor="middle">CapsuleComponent</text>
-      <text class="svg-tm" x="310" y="59" text-anchor="middle">racine — collision</text>
-
-      <path class="svg-arrow" d="M310 70 V95 M310 95 H100 V115 M310 95 H310 V115 M310 95 H520 V115" style="marker-end:none" fill="none" stroke="var(--muted)" stroke-width="1.5"/>
-      <path d="M100 115 L100 108" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bp1-arr)"/>
-      <path d="M310 115 L310 108" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bp1-arr)"/>
-      <path d="M520 115 L520 108" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bp1-arr)"/>
-
-      <rect class="svg-box" x="20" y="120" width="160" height="60" rx="6"/>
-      <text class="svg-t" x="100" y="145" text-anchor="middle">SkeletalMesh</text>
-      <text class="svg-tm" x="100" y="163" text-anchor="middle">le maillage visible</text>
-
-      <rect class="svg-box-g" x="230" y="120" width="160" height="60" rx="6"/>
-      <text class="svg-t" x="310" y="142" text-anchor="middle">CharacterMovement</text>
-      <text class="svg-tm" x="310" y="160" text-anchor="middle">vitesse, gravité,</text>
-      <text class="svg-tm" x="310" y="174" text-anchor="middle">saut</text>
-
-      <rect class="svg-box-w" x="440" y="120" width="160" height="60" rx="6"/>
-      <text class="svg-t" x="520" y="142" text-anchor="middle">SpringArm + Caméra</text>
-      <text class="svg-tm" x="520" y="160" text-anchor="middle">bras de caméra,</text>
-      <text class="svg-tm" x="520" y="174" text-anchor="middle">évite le clipping</text>
-    </svg>
-    <figcaption>Trois rôles distincts accrochés à la capsule : afficher, déplacer, filmer.</figcaption>
+    <img src="../assets/gifs/character-3e-personne-unreal.gif" width="960" height="540" loading="lazy" alt="Animation : les composants d'un Character à la troisième personne, un par un — CapsuleComponent (racine), SkeletalMeshComponent animé par l'Anim BP, CharacterMovement et ses réglages">
+    <figcaption>Les composants d'un Character, un par un : la capsule qui sert de racine, le mesh animé par l'Animation Blueprint, le <code>CharacterMovement</code> et ses réglages.</figcaption>
   </figure>
   <table>
     <thead><tr><th>Composant</th><th>Rôle</th></tr></thead>
@@ -68,14 +42,14 @@
     <tbody>
       <tr><td><code>Pawn</code></td><td>la possession, rien d'autre : ni déplacement, ni collision</td><td>véhicule, tourelle, drone, caméra de jeu de stratégie — on ajoute ses composants et son déplacement soi-même</td></tr>
       <tr><td><code>DefaultPawn</code></td><td>collision sphérique + <code>FloatingPawnMovement</code> (vol libre)</td><td>prototype, caméra libre</td></tr>
-      <tr><td><code>SpectatorPawn</code></td><td>vol libre sans collision</td><td>mode spectateur (<em>Spectator Class</em> du <a href="levels-gamemode.html#gamemode">GameMode</a>)</td></tr>
+      <tr><td><code>SpectatorPawn</code></td><td>vol libre sans collision</td><td>mode spectateur (<em>Spectator Class</em> du <a href="classes-framework.html#gamemode">GameMode</a>)</td></tr>
       <tr><td><code>Character</code></td><td>+ <code>CapsuleComponent</code>, <code>SkeletalMesh</code>, <code>CharacterMovementComponent</code></td><td>humanoïdes qui marchent, sautent, nagent</td></tr>
       <tr><td><code>WheeledVehiclePawn</code></td><td>véhicule à roues (physique Chaos)</td><td>voitures, camions</td></tr>
     </tbody>
   </table>
 
   <h3>La possession</h3>
-  <p>Le <code>PlayerController</code> persiste ; c'est le Pawn qu'il tient en main qui change. À l'apparition, le <a href="levels-gamemode.html#gamemode">GameMode</a> fait spawner la <em>Default Pawn Class</em> à l'emplacement d'un <a href="levels-gamemode.html#playerstart">PlayerStart</a>, puis le Controller le <code>Possess</code>.</p>
+  <p>Le <code>PlayerController</code> persiste ; c'est le Pawn qu'il tient en main qui change. À l'apparition, le <a href="classes-framework.html#gamemode">GameMode</a> fait spawner la <em>Default Pawn Class</em> à l'emplacement d'un <a href="classes-framework.html#playerstart">PlayerStart</a>, puis le Controller le <code>Possess</code>.</p>
   <figure>
     <svg viewBox="0 0 620 190" role="img" aria-label="Un PlayerController possède un Pawn à la fois">
       <defs><marker id="bppawn-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
@@ -188,6 +162,148 @@
     <p>Le Mapping Context s'ajoute typiquement dans <code>BeginPlay</code> du <code>PlayerController</code> (ou du personnage), via <code>Add Mapping Context</code> sur le sous-système <code>Enhanced Input Local Player Subsystem</code> — sans ça, les Input Actions restent silencieuses.</p>
   </div>
 
+  <h3>La chaîne de traitement d'une touche</h3>
+  <p>Entre l'appui physique et le Blueprint, la valeur traverse deux étages configurables dans l'<em>Input Mapping Context</em> : des <strong>Modifiers</strong> qui la transforment, des <strong>Triggers</strong> qui décident <em>quand</em> elle compte.</p>
+  <figure>
+    <svg viewBox="0 0 680 195" role="img" aria-label="Touche physique, Modifiers, Triggers puis Input Action">
+      <defs><marker id="bpin1-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+        <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
+      <rect class="svg-bg" x="0" y="0" width="680" height="195" rx="6"/>
+      <rect class="svg-box" x="15" y="30" width="135" height="70" rx="6"/>
+      <text class="svg-t" x="82" y="55" text-anchor="middle">Touche physique</text>
+      <text class="svg-tm" x="82" y="73" text-anchor="middle">clavier · souris</text>
+      <text class="svg-tm" x="82" y="88" text-anchor="middle">manette · tactile</text>
+      <path d="M150 65 H178" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpin1-arr)"/>
+
+      <rect class="svg-box-w" x="180" y="30" width="135" height="70" rx="6"/>
+      <text class="svg-t" x="247" y="55" text-anchor="middle">Modifiers</text>
+      <text class="svg-tm" x="247" y="73" text-anchor="middle">transforment</text>
+      <text class="svg-tm" x="247" y="88" text-anchor="middle">la valeur</text>
+      <path d="M315 65 H343" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpin1-arr)"/>
+
+      <rect class="svg-box-a" x="345" y="30" width="135" height="70" rx="6"/>
+      <text class="svg-t" x="412" y="55" text-anchor="middle">Triggers</text>
+      <text class="svg-tm" x="412" y="73" text-anchor="middle">décident</text>
+      <text class="svg-tm" x="412" y="88" text-anchor="middle">quand</text>
+      <path d="M480 65 H508" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpin1-arr)"/>
+
+      <rect class="svg-box-g" x="510" y="30" width="155" height="70" rx="6"/>
+      <text class="svg-t" x="587" y="55" text-anchor="middle">Input Action</text>
+      <text class="svg-tm" x="587" y="73" text-anchor="middle">la valeur finale</text>
+      <text class="svg-tm" x="587" y="88" text-anchor="middle">arrive au Blueprint</text>
+
+      <text class="svg-tm" x="247" y="130" text-anchor="middle">Negate · Swizzle · Dead Zone · Scalar · Smooth</text>
+      <text class="svg-tm" x="412" y="160" text-anchor="middle">Down · Pressed · Released · Hold · Pulse · Tap · Chord · Combo</text>
+    </svg>
+    <figcaption>Les modifiers s'appliquent en premier, les triggers jugent ensuite la valeur obtenue ; l'Input Action émet alors l'un de ses cinq états.</figcaption>
+  </figure>
+
+  <h3>Les Modifiers : manipuler la valeur</h3>
+  <table>
+    <thead><tr><th>Modifier</th><th>Fait</th><th>Quand l'utiliser</th></tr></thead>
+    <tbody>
+      <tr><td><code>Negate</code></td><td>inverse le signe de la valeur</td><td>la touche Q d'un axe gauche / droite ; l'inversion de l'axe Y de la caméra</td></tr>
+      <tr><td><code>Swizzle Input Axis Values</code></td><td>échange les composantes X, Y, Z</td><td>mapper des valeurs sur des axes différents (une touche « avant » qui alimente l'axe Y)</td></tr>
+      <tr><td><code>Dead Zone</code></td><td>ignore les valeurs sous un seuil</td><td>les sticks analogiques, qui ne reviennent pas parfaitement à 0</td></tr>
+      <tr><td><code>Scalar</code></td><td>multiplie la valeur</td><td>régler la sensibilité de la souris</td></tr>
+      <tr><td><code>Smooth</code></td><td>lisse la valeur dans le temps</td><td>adoucir une visée nerveuse</td></tr>
+      <tr><td><code>FOV Scaling</code></td><td>adapte la sensibilité au champ de vision</td><td>garder la même sensation en vue zoomée</td></tr>
+      <tr><td><code>To World Space</code></td><td>convertit l'entrée en repère monde</td><td>déplacer selon le monde plutôt que selon l'acteur</td></tr>
+    </tbody>
+  </table>
+  <div class="callout info">
+    <span class="label">L'ordre compte</span>
+    <p>Les modifiers s'appliquent <strong>de haut en bas</strong>. Un <code>Dead Zone</code> placé après un <code>Scalar</code> ne filtre pas les mêmes valeurs que s'il était placé avant.</p>
+  </div>
+
+  <h3>Les Triggers : quand traiter la valeur</h3>
+  <table>
+    <thead><tr><th>Trigger</th><th>Se déclenche…</th><th>Exemple</th></tr></thead>
+    <tbody>
+      <tr><td>(aucun) / <code>Down</code></td><td>à chaque frame tant que la touche est enfoncée</td><td>un sprint, une visée maintenue</td></tr>
+      <tr><td><code>Pressed</code></td><td>une seule fois, à l'appui</td><td>un saut, une interaction</td></tr>
+      <tr><td><code>Released</code></td><td>une seule fois, au relâchement</td><td>valider un choix au lâcher de touche</td></tr>
+      <tr><td><code>Hold</code></td><td>quand la durée de maintien atteint le seuil</td><td>une action longue (maintenir E 0,6 s pour interagir)</td></tr>
+      <tr><td><code>Hold and Release</code></td><td>au relâchement, si le seuil a été atteint</td><td>un tir chargé</td></tr>
+      <tr><td><code>Pulse</code></td><td>à intervalle régulier, pendant le maintien</td><td>une arme automatique</td></tr>
+      <tr><td><code>Tap</code></td><td>au relâchement, si l'appui a été bref</td><td>une esquive ; un appui bref distingué d'un appui long</td></tr>
+      <tr><td><code>Chord Action</code></td><td>si une autre action est déclenchée en même temps</td><td>une combinaison de touches</td></tr>
+      <tr><td><code>Combo</code></td><td>quand une séquence d'actions est réussie</td><td>un enchaînement de combat</td></tr>
+    </tbody>
+  </table>
+  <div class="callout tip">
+    <span class="label">Deux triggers sur une même touche</span>
+    <p>Pour utiliser deux Triggers sur une même touche (appui bref = esquive, appui long = sprint), créer <strong>deux Input Actions</strong> associées à cette touche, chacune avec son trigger.</p>
+  </div>
+
+  <h3>Les états d'un trigger</h3>
+  <p>Le nœud <code>Enhanced Input Action</code> expose cinq pins d'exécution : l'état de l'évaluation du trigger, pas seulement son aboutissement.</p>
+  <table>
+    <thead><tr><th>Pin</th><th>Signifie</th><th>Exemple</th></tr></thead>
+    <tbody>
+      <tr><td><code>Triggered</code></td><td>les conditions du trigger sont réunies</td><td>l'action : sauter, tirer, ramasser</td></tr>
+      <tr><td><code>Started</code></td><td>l'évaluation commence</td><td>amorcer : jouer un son d'armement, afficher une jauge</td></tr>
+      <tr><td><code>Ongoing</code></td><td>l'évaluation est en cours, pas encore satisfaite</td><td>faire progresser une jauge de charge</td></tr>
+      <tr><td><code>Canceled</code></td><td>l'évaluation s'arrête sans avoir abouti</td><td>défaire : vider la jauge, jouer un son d'annulation</td></tr>
+      <tr><td><code>Completed</code></td><td>l'évaluation se termine après avoir abouti</td><td>remettre l'état à zéro</td></tr>
+    </tbody>
+  </table>
+  <div class="callout tip">
+    <span class="label">Plus de Do Once, de timer ni de booléen</span>
+    <p>Ces cinq états remplacent les béquilles habituelles (<code>Do Once</code>, un timer pour mesurer un maintien, un booléen « est en train de charger ») : le moteur sait déjà où en est l'action.</p>
+  </div>
+
+  <h3>Les Mapping Contexts : plusieurs IMC, même touche</h3>
+  <p>Un <code>Input Mapping Context</code> relie les touches physiques à vos Input Actions. Il s'ajoute et se retire <strong>à l'exécution</strong>, sur le <em>Local Player</em>. Plusieurs contextes peuvent coexister ; chacun a une <strong>priorité</strong>.</p>
+  <figure>
+    <svg viewBox="0 0 690 245" role="img" aria-label="Deux Mapping Contexts de priorités différentes pour les touches E et Espace">
+      <defs><marker id="bpin2-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+        <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
+      <rect class="svg-bg" x="0" y="0" width="690" height="245" rx="6"/>
+      <rect class="svg-box" x="25" y="38" width="60" height="36" rx="6"/>
+      <text class="svg-t" x="55" y="61" text-anchor="middle">E</text>
+      <rect class="svg-box" x="15" y="165" width="80" height="36" rx="6"/>
+      <text class="svg-t" x="55" y="188" text-anchor="middle">ESPACE</text>
+      <path d="M85 56 H168" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpin2-arr)"/>
+      <path d="M95 183 H168" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpin2-arr)"/>
+
+      <rect class="svg-box-w" x="170" y="15" width="310" height="90" rx="6"/>
+      <text class="svg-t" x="325" y="38" text-anchor="middle">IMC_Grab · priorité 1</text>
+      <text class="svg-tm" x="325" y="55" text-anchor="middle">évalué en premier</text>
+      <text class="svg-tm" x="325" y="76" text-anchor="middle">E → IA_Grab : la touche est consommée ici</text>
+      <text class="svg-tm" x="325" y="94" text-anchor="middle">ESPACE : non mappé dans ce contexte</text>
+
+      <path d="M325 105 V138" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3" fill="none" style="marker-end:url(#bpin2-arr)"/>
+      <text class="svg-tm" x="340" y="126">les touches non mappées redescendent</text>
+
+      <rect class="svg-box-a" x="170" y="140" width="310" height="90" rx="6"/>
+      <text class="svg-t" x="325" y="163" text-anchor="middle">IMC_Default · priorité 0</text>
+      <text class="svg-tm" x="325" y="180" text-anchor="middle">évalué ensuite</text>
+      <text class="svg-tm" x="325" y="201" text-anchor="middle">E → IA_Interact : masqué par IMC_Grab</text>
+      <text class="svg-tm" x="325" y="219" text-anchor="middle">ESPACE → IA_Jump : arrive jusqu'ici</text>
+
+      <path d="M480 56 H518" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpin2-arr)"/>
+      <rect class="svg-box-g" x="520" y="38" width="155" height="36" rx="6"/>
+      <text class="svg-t" x="597" y="61" text-anchor="middle">IA_Grab se déclenche</text>
+      <path d="M480 183 H518" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpin2-arr)"/>
+      <rect class="svg-box-g" x="520" y="165" width="155" height="36" rx="6"/>
+      <text class="svg-t" x="597" y="188" text-anchor="middle">IA_Jump se déclenche</text>
+    </svg>
+    <figcaption>E est consommée par le contexte prioritaire : <code>IA_Interact</code> n'est jamais vue. ESPACE n'y est pas mappée : elle redescend et déclenche <code>IA_Jump</code>.</figcaption>
+  </figure>
+  <div class="callout warn">
+    <span class="label">Un contexte prioritaire ne désactive pas les autres</span>
+    <p>Il ne masque que les touches <strong>qu'il mappe lui-même</strong> ; tout le reste passe au travers. Un contexte prioritaire qui ne mappe que E laisse donc le personnage sauter. Erreur fréquente : croire qu'ajouter un contexte coupe les précédents.</p>
+  </div>
+  <div class="callout info">
+    <span class="label">Un contexte représente un mode, pas un objet</span>
+    <p>À pied, E ouvre une porte ; en véhicule, E sort du véhicule ; en télékinésie, E attrape. Ce n'est pas au Blueprint de trier, c'est au contexte. Et comme l'IMC vit sur le Local Player et non sur le Pawn, il <strong>survit au changement de Pawn</strong> : pratique en montant dans un véhicule, piégeux si l'on oublie de retirer un contexte avant de changer de personnage.</p>
+  </div>
+  <div class="callout tip">
+    <span class="label">Add et Remove vont par deux</span>
+    <p>Exemple type : ajouter <code>IMC_Grab</code> quand un objet saisissable entre dans la sphère de détection, le retirer dès qu'on s'en éloigne — la touche de saisie n'existe que pendant ce temps. Un contexte ajouté et jamais retiré provoque des comportements incompréhensibles plus tard (le personnage qui saisit des objets alors qu'il n'y a plus rien à portée) : écrire le <code>Remove Mapping Context</code> en même temps que le <code>Add</code>.</p>
+  </div>
+
   <h2 id="collisions">Boîtes de collision</h2>
   <p>La capsule du personnage n'est qu'un cas particulier : n'importe quel Actor peut recevoir des <strong>formes de collision</strong> invisibles en jeu. Elles servent à deux choses différentes : <strong>bloquer</strong> (un mur, le sol) ou <strong>détecter</strong> (une zone de déclenchement, un objet à ramasser).</p>
   <table>
@@ -220,6 +336,7 @@
       <tr><td><code>Collision Presets</code></td><td>combinaisons prêtes : <code>BlockAll</code>, <code>OverlapAllDynamic</code>, <code>Trigger</code>, <code>Pawn</code>, <code>NoCollision</code>… ou <code>Custom</code> pour tout régler à la main</td></tr>
       <tr><td><code>Collision Enabled</code></td><td><code>No Collision</code>, <code>Query Only</code> (overlaps, traces), <code>Physics Only</code>, <code>Query and Physics</code></td></tr>
       <tr><td><code>Generate Overlap Events</code></td><td>doit être coché <strong>sur les deux</strong> composants pour recevoir les événements d'overlap</td></tr>
+      <tr><td><code>Can Character Step Up On</code></td><td>un Character peut-il monter dessus comme sur une marche ? (<em>Yes</em> / <em>No</em> / <em>Owner</em>) — à mettre sur <em>No</em> pour un petit objet physique que le personnage ne doit pas escalader</td></tr>
       <tr><td><code>Simulation Generates Hit Events</code></td><td>nécessaire pour <code>On Component Hit</code> quand l'objet simule la physique</td></tr>
       <tr><td>Canaux personnalisés</td><td><em>Project Settings → Collision</em> : nouveaux Object Channels (ex. <code>Projectile</code>) ou Trace Channels (ex. <code>Interact</code>)</td></tr>
     </tbody>
@@ -246,7 +363,7 @@
 
   <div class="callout tip">
     <span class="label">Pour aller plus loin</span>
-    <p>Canaux et presets personnalisés, collision des meshes, traces, physique, Physical Material, ragdoll : tout cela est détaillé dans <a href="collisions-physique.html">8 · Collisions & physique</a>.</p>
+    <p>Canaux et presets personnalisés, collision des meshes, traces, physique, Physical Material, ragdoll : tout cela est détaillé dans <a href="collisions-physique.html">7 · Collisions & physique</a>.</p>
   </div>
 
   <footer class="pg">

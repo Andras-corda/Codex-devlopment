@@ -15,7 +15,7 @@
 <aside class="side" id="side"></aside>
 
 <main>
-  <h1>9 · Fonctions, events & timers</h1>
+  <h1>8 · Fonctions, events & timers</h1>
   <p class="lead">Organiser le code d'un Blueprint et le faire réagir dans le temps : <strong>fonctions</strong> pour calculer, <strong>events</strong> pour réagir, <strong>macros</strong> pour factoriser des bouts de flux, <strong>timers</strong> pour planifier. Le tableau comparatif d'ensemble est dans l'<a href="index.html#event-fonction-macro">accueil</a> ; cette page détaille chacun.</p>
 
   <h2 id="fonctions" data-group="Fonctions">Fonctions</h2>
@@ -30,7 +30,7 @@
       <tr><td><em>Access Specifier</em></td><td><em>Public</em> (appelable de partout), <em>Protected</em> (ce Blueprint et ses enfants), <em>Private</em> (ce Blueprint seulement)</td></tr>
       <tr><td><em>Pure</em> / <em>Const</em></td><td><em>Pure</em> retire les pins d'exécution (calcul sans effet de bord, réévalué à chaque lecture) ; <em>Const</em> interdit à la fonction de modifier les variables du Blueprint</td></tr>
       <tr><td><em>Call In Editor</em></td><td>ajoute un bouton dans les Details d'une instance placée dans le niveau : lancer la fonction sans jouer (regénérer un décor, ranger des Actors)</td></tr>
-      <tr><td>Override / <code>Parent:</code></td><td>un Blueprint enfant redéfinit la fonction — voir <a href="oop.html#polymorphisme">Polymorphisme</a></td></tr>
+      <tr><td>Override / <code>Parent:</code></td><td>un Blueprint enfant redéfinit la fonction — voir <a href="ui-structures-interfaces.html#polymorphisme">Polymorphisme</a></td></tr>
       <tr><td>Blueprint Function Library</td><td>asset qui contient des fonctions <strong>statiques</strong> (sans instance), appelables depuis n'importe quel Blueprint : conversions, calculs utilitaires. Elles n'ont pas de <em>self</em> — tout ce dont elles ont besoin leur est passé en paramètre</td></tr>
     </tbody>
   </table>
@@ -52,7 +52,7 @@
       <tr><td><code>Event Tick</code></td><td>chaque frame, avec <em>Delta Seconds</em></td></tr>
       <tr><td><code>Event End Play</code></td><td>l'Actor quitte le jeu (destruction, changement de niveau, fin de partie) — le bon endroit pour se désabonner</td></tr>
       <tr><td><code>Event AnyDamage</code></td><td>l'Actor reçoit des dégâts (<em>Damage</em>, <em>Damage Type</em>, <em>Instigated By</em>, <em>Damage Causer</em>)</td></tr>
-      <tr><td><code>Event ActorBeginOverlap</code> / <code>Event Hit</code></td><td>collision — voir <a href="collisions-physique.html#evenements">Pourquoi mon événement ne part pas</a></td></tr>
+      <tr><td><code>Event ActorBeginOverlap</code> / <code>Event Hit</code></td><td>collision — voir <a href="collisions-physique.html#evenements">Hit, Overlap et événements qui ne partent pas</a></td></tr>
       <tr><td>Événement d'input</td><td>une <em>Input Action</em> est déclenchée — voir <a href="personnage.html#input">Enhanced Input</a></td></tr>
     </tbody>
   </table>
@@ -79,7 +79,51 @@
   </div>
 
   <h2 id="handler" data-group="Événements">Event Dispatcher & event handler</h2>
-  <p>Le <strong>dispatcher</strong> annonce, le <strong>handler</strong> réagit. Le principe et le tableau de la mise en place sont dans <a href="index.html#dispatchers">Event Dispatchers</a> ; voici le vocabulaire et ce qui se passe réellement.</p>
+  <p>Un <strong>Event Dispatcher</strong> est un événement qu'un Blueprint <strong>annonce</strong> sans savoir qui écoute. D'autres Blueprints s'y <strong>abonnent</strong> et réagissent chacun à leur façon : c'est l'inverse d'un appel direct, l'émetteur ne dépend de personne. Le <strong>dispatcher</strong> annonce, le <strong>handler</strong> réagit.</p>
+  <figure>
+    <img src="../assets/gifs/event-dispatcher-unreal.gif" width="960" height="540" loading="lazy" alt="Animation : un Event Dispatcher déclaré sur l'émetteur est appelé, et chaque Blueprint abonné réagit à sa façon">
+    <figcaption>Un Event Dispatcher en action : l'émetteur annonce, chaque abonné réagit à sa façon — l'émetteur ne connaît aucun d'eux.</figcaption>
+  </figure>
+
+  <h3>Mise en place en quatre étapes</h3>
+  <table>
+  <thead>
+    <tr>
+      <th>Étape</th>
+      <th>Emplacement</th>
+      <th>Action dans l'Éditeur &amp; Code</th>
+      <th>Rôle technique &amp; Pièges</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>1. Déclarer</strong></td>
+      <td>Émetteur<br>(ex: <code>BP_Boss</code>)</td>
+      <td>Panneau <em>My Blueprint</em> → section <em>Event Dispatchers</em> → bouton <code>+</code>. Nommer l'événement (ex: <code>OnDeath</code>). Ajouter des paramètres d'entrée dans les détails si nécessaire (ex: <code>OnHealthChanged(NewHealth)</code>).</td>
+      <td>Définit la "signature" (les informations qui seront envoyées). À ce stade, le dispatcher est juste une boîte vide en attente d'abonnés.</td>
+    </tr>
+    <tr>
+      <td><strong>2. Diffuser</strong></td>
+      <td>Émetteur</td>
+      <td>Glisser le dispatcher dans le graphe et choisir <code>Call</code>. Relier ce nœud au moment fatidique (ex: quand la vie tombe à 0).</td>
+      <td>Déclenche instantanément et simultanément la fonction de tous les Blueprints qui écoutent cet événement. Si personne n'écoute, le flux continue sans erreur.</td>
+    </tr>
+    <tr>
+      <td><strong>3. S'abonner</strong></td>
+      <td>Abonné<br>(ex: <code>WBP_HUD</code>)</td>
+      <td>À partir d'une <strong>référence valide</strong> de l'émetteur, tirer un fil et créer le nœud <code>Bind Event to [Nom]</code>. Relier la broche carrée rouge (<em>Event</em>) à un <code>Custom Event</code> créé pour l'occasion. <br><em>Astuce :</em> Glisser le dispatcher depuis la référence et choisir <code>Assign</code> crée le nœud Bind et le Custom Event d'un seul coup.</td>
+      <td><strong>Le piège :</strong> Le nœud <code>Bind</code> doit absolument être exécuté par le flux blanc (ex: au <em>Begin Play</em>) pour que l'écoute commence. La signature du <code>Custom Event</code> connecté doit correspondre au millimètre près à celle déclarée à l'étape 1.</td>
+    </tr>
+    <tr>
+      <td><strong>4. Se désabonner</strong></td>
+      <td>Abonné</td>
+      <td>À partir de la référence de l'émetteur, utiliser le nœud <code>Unbind Event from...</code> ou <code>Unbind All Events</code>.</td>
+      <td>Permet d'arrêter d'écouter l'émetteur. Essentiel pour la propreté du code ou pour éviter qu'un objet détruit ou désactivé ne continue de réagir en tâche de fond (fuites de mémoire logiques).</td>
+    </tr>
+  </tbody>
+</table>
+
+  <h3>Vocabulaire</h3>
   <table>
     <thead><tr><th>Terme</th><th>Ce que c'est</th><th>Nœud</th></tr></thead>
     <tbody>
@@ -92,7 +136,9 @@
       <tr><td>Se désabonner</td><td>cesser d'écouter</td><td><code>Unbind Event from…</code> / <code>Unbind All Events</code></td></tr>
     </tbody>
   </table>
-  <p>Les dispatchers du moteur s'utilisent de la même façon : <code>On Component Begin Overlap</code>, <code>On Clicked</code> (bouton), <code>On Destroyed</code>, <code>On Take Any Damage</code>… On s'y abonne par <code>Bind Event to…</code> ou <em>Assign</em> depuis la référence de l'objet.</p>
+  <p>Les dispatchers du moteur s'utilisent de la même façon : <code>On Component Begin Overlap</code>, <code>On Clicked</code> (bouton), <code>On Destroyed</code>, <code>On Take Any Damage</code>… On s'y abonne par <code>Bind Event to…</code> ou <em>Assign</em> depuis la référence de l'objet. Le bon moment pour s'abonner est souvent <code>BeginPlay</code> (ou <code>Event Construct</code> pour un widget).</p>
+
+  <h3>Pièges</h3>
   <table>
     <thead><tr><th>Piège</th><th>Cause</th><th>Correction</th></tr></thead>
     <tbody>
@@ -102,6 +148,16 @@
       <tr><td>La broche rouge refuse de se brancher</td><td>signature du handler différente de celle du dispatcher</td><td>utiliser <em>Assign</em>, ou aligner les entrées</td></tr>
       <tr><td>Besoin d'une réponse de l'abonné</td><td>un dispatcher n'a pas de valeur de retour</td><td>le handler écrit dans une variable de l'émetteur, ou passer par une <a href="ui-structures-interfaces.html#interfaces">interface</a></td></tr>
       <tr><td>Ordre d'appel inattendu</td><td>aucun ordre garanti entre abonnés</td><td>ne jamais en dépendre ; enchaîner explicitement si besoin</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Communiquer entre Blueprints</h3>
+  <table>
+    <thead><tr><th>Communiquer entre Blueprints</th><th>Sens</th><th>Quand</th></tr></thead>
+    <tbody>
+      <tr><td>Appel direct / <code>Cast To</code></td><td>A → B connu</td><td>A connaît précisément la classe de B</td></tr>
+      <tr><td><a href="ui-structures-interfaces.html#interfaces">Blueprint Interface</a></td><td>A → n'importe quel B</td><td>même demande, cibles de classes différentes</td></tr>
+      <tr><td>Event Dispatcher</td><td>A → tous les abonnés</td><td>A annonce un fait ; le nombre et la nature des abonnés sont inconnus</td></tr>
     </tbody>
   </table>
 
@@ -150,6 +206,43 @@
   <div class="callout warn">
     <span class="label">Une macro utilisée 40 fois, c'est 40 copies</span>
     <p>Chaque usage ajoute son contenu au Blueprint : une grosse macro très répétée alourdit la compilation et le Blueprint. Dès qu'il n'y a plus qu'un seul chemin d'exécution à la sortie, une fonction est le bon choix.</p>
+  </div>
+
+  <h3 id="macrolib">Blueprint Macro Library</h3>
+  <p>Une macro locale ne sert qu'à son Blueprint. Pour la partager, on la range dans une <strong>Blueprint Macro Library</strong> : un asset qui ne contient que des macros, visibles ensuite dans la palette de tous les Blueprints compatibles — comme <code>For Each Loop</code> ou <code>Do Once</code>.</p>
+  <table>
+    <thead><tr><th>Étape</th><th>Comment</th></tr></thead>
+    <tbody>
+      <tr><td>1. Créer</td><td>Content Browser → <em>Blueprint → Blueprint Macro Library</em>, nommée <code>BPML_Utils</code>. Unreal demande une <strong>classe parente</strong></td></tr>
+      <tr><td>2. Choisir le parent</td><td><code>Object</code> : utilisable dans tous les Blueprints, mais sans accès aux fonctions d'Actor. <code>Actor</code> : les macros peuvent appeler <code>Get Actor Location</code>, <code>Destroy Actor</code>… mais la bibliothèque ne se propose que dans les Blueprints qui héritent d'Actor</td></tr>
+      <tr><td>3. Écrire</td><td><em>Macros → +</em>, avec ses entrées / sorties d'exécution et de données, comme une macro locale. Une bibliothèque n'a ni variables membres, ni Event Graph</td></tr>
+      <tr><td>4. Utiliser</td><td>clic droit dans un graphe compatible, chercher le nom de la macro. Elle apparaît comme un nœud avec ses pins d'exécution nommés</td></tr>
+    </tbody>
+  </table>
+  <table>
+    <thead><tr><th>Macros du moteur (<em>StandardMacros</em>)</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>For Loop</code>, <code>For Each Loop</code> (+ <em>with Break</em>), <code>While Loop</code></td><td>les boucles — voir <a href="index.html#boucles">Boucles</a></td></tr>
+      <tr><td><code>Do Once</code>, <code>Do N</code></td><td>n'exécuter qu'une fois (ou N fois), avec une entrée <em>Reset</em></td></tr>
+      <tr><td><code>Gate</code>, <code>MultiGate</code>, <code>FlipFlop</code></td><td>ouvrir et fermer un flux, l'aiguiller en séquence, alterner A / B</td></tr>
+      <tr><td><code>Is Valid</code></td><td>deux sorties d'exécution, <em>Is Valid</em> et <em>Is Not Valid</em></td></tr>
+    </tbody>
+  </table>
+  <table>
+    <thead><tr><th>Bon candidat pour sa propre bibliothèque</th><th>Pourquoi une macro</th></tr></thead>
+    <tbody>
+      <tr><td><code>IsAlive</code> : Actor valide <em>et</em> vivant → sorties <em>Alive</em> / <em>Dead</em> / <em>Invalid</em></td><td>trois suites différentes, impossible avec une fonction (voir le schéma ci-dessus)</td></tr>
+      <tr><td><code>DoOnceWithCooldown</code> : un <code>Do Once</code> suivi d'un <code>Delay</code> puis de son <em>Reset</em></td><td>un motif de flux répété partout (attaque, interaction), qui contient un nœud latent</td></tr>
+      <tr><td><code>ForEachWithIndex</code> : parcourir un tableau en exposant l'indice</td><td>entrée <em>wildcard</em> : marche avec n'importe quel type de tableau</td></tr>
+    </tbody>
+  </table>
+  <div class="callout info">
+    <span class="label">Macro Library, Function Library ou composant ?</span>
+    <p>La <strong>Macro Library</strong> partage du <em>flux</em> (plusieurs sorties d'exécution, nœuds latents, wildcards). La <a href="ui-structures-interfaces.html#function-library">Function Library</a> partage des <em>calculs</em> et des <em>actions</em> statiques avec une seule sortie. Un <a href="classes-framework.html#composants">Actor Component</a> partage un <em>comportement avec un état</em> (de la santé, un inventaire).</p>
+  </div>
+  <div class="callout warn">
+    <span class="label">Modifier une macro recompile ses utilisateurs</span>
+    <p>Le contenu d'une macro est copié dans chaque Blueprint qui l'utilise : changer un pin de la bibliothèque oblige tous ces Blueprints à se recompiler, et peut casser leurs connexions. Figer le nom et les pins d'une macro partagée avant de l'utiliser partout.</p>
   </div>
 
   <h2 id="timers" data-group="Timers">Timers : Set Timer by Event / by Function Name</h2>
@@ -306,7 +399,7 @@
 
   <footer class="pg">
     <span><a href="collisions-physique.html">← Collisions & physique</a></span>
-    <span><a href="index.html">Retour à l'accueil Blueprint</a></span>
+    <span><a href="classes-framework.html">Suivant : Game Framework & classes →</a></span>
   </footer>
 </main>
 </div>

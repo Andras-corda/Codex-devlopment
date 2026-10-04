@@ -43,18 +43,18 @@ window.SITE_CONFIG = {
     {
       id: "blueprint",
       label: "Blueprint",
-      tagline: "Visual scripting Unreal Engine — personnage 3e personne et caméra, Blend Space, niveaux & sublevels, Game Instance/GameMode, UI, structures, interfaces, OOP, materials & VFX.",
+      tagline: "Visual scripting Unreal Engine — personnage 3e personne et caméra, Blend Space, niveaux & streaming, UI, structures, Data Tables, orienté objet & interfaces, materials & VFX, collisions, events & timers, Game Framework.",
       home: "index.html",
       pages: [
         { id: "variables",  title: "1 · Variables & types",         href: "variables-types.html" },
         { id: "personnage", title: "2 · Personnage & Input",        href: "personnage.html" },
         { id: "animbp",     title: "3 · Animation Blueprint",       href: "animation-blueprint.html" },
-        { id: "levels",     title: "4 · Levels & Game Framework",   href: "levels-gamemode.html" },
-        { id: "ui",         title: "5 · UI, Structs & Interfaces",  href: "ui-structures-interfaces.html" },
-        { id: "oop",        title: "6 · Orienté objet",             href: "oop.html" },
-        { id: "feedback",   title: "7 · Materials, SFX & VFX",      href: "feedback.html" },
-        { id: "physics",    title: "8 · Collisions & physique",     href: "collisions-physique.html" },
-        { id: "events",     title: "9 · Fonctions, events & timers", href: "fonctions-events-timers.html" }
+        { id: "levels",     title: "4 · Levels",                    href: "levels.html" },
+        { id: "ui",         title: "5 · UI, données & orienté objet", href: "ui-structures-interfaces.html" },
+        { id: "feedback",   title: "6 · Materials, SFX & VFX",      href: "feedback.html" },
+        { id: "physics",    title: "7 · Collisions & physique",     href: "collisions-physique.html" },
+        { id: "events",     title: "8 · Fonctions, events & timers", href: "fonctions-events-timers.html" },
+        { id: "framework",  title: "9 · Game Framework & classes",   href: "classes-framework.html" }
       ]
     },
     {

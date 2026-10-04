@@ -407,7 +407,7 @@
     <p>Un Array d'Arrays (ou une Map dont la valeur est un Array) n'existe pas directement en Blueprint : envelopper le tableau intérieur dans une <a href="ui-structures-interfaces.html#structures">structure</a>. Les <code>Set</code> et <code>Map</code> ne sont pas répliqués en multijoueur — seul l'<code>Array</code> l'est.</p>
   </div>
 
-  <h2 id="event-fonction-macro" data-group="Organiser un graphe">Events, fonctions, macros, collapsed nodes & dispatchers</h2>
+  <h2 id="event-fonction-macro" data-group="Organiser un graphe">Events, fonctions, macros & collapsed nodes</h2>
   <p>Quatre façons d'organiser un graphe. Elles se ressemblent visuellement mais ne se comportent pas pareil : c'est surtout le <strong>temps</strong> (peut-on attendre ?) et le <strong>retour</strong> (peut-on renvoyer une valeur ?) qui les distinguent.</p>
   <table>
   <thead>
@@ -487,100 +487,45 @@
     <p>Sélectionner des nœuds → clic droit → <code>Collapse Nodes</code> les range dans un seul nœud gris (double-clic pour entrer, <code>Expand Node</code> pour défaire) : aucune différence à l'exécution. <code>Collapse to Function</code> et <code>Collapse to Macro</code> font la même chose mais produisent une vraie fonction ou macro, réutilisable ailleurs. Le macro est « inliné » : chaque usage recopie son contenu à la compilation.</p>
   </div>
 
-  <h3 id="dispatchers">Event Dispatchers</h3>
-  <p>Un <strong>Event Dispatcher</strong> est un événement qu'un Blueprint <strong>annonce</strong> sans savoir qui écoute. D'autres Blueprints s'y <strong>abonnent</strong> et réagissent chacun à leur façon. C'est l'inverse d'un appel direct : l'émetteur ne dépend de personne.</p>
-  <figure>
-    <img src="../assets/gifs/event-dispatcher-unreal.gif" width="960" height="540" loading="lazy" alt="Animation : un Event Dispatcher déclaré sur l'émetteur est appelé, et chaque Blueprint abonné réagit à sa façon">
-    <figcaption>Un Event Dispatcher en action : l'émetteur annonce, chaque abonné réagit à sa façon — l'émetteur ne connaît aucun d'eux.</figcaption>
-  </figure>
-  <table>
-  <thead>
-    <tr>
-      <th>Étape</th>
-      <th>Emplacement</th>
-      <th>Action dans l'Éditeur &amp; Code</th>
-      <th>Rôle technique &amp; Pièges</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><strong>1. Déclarer</strong></td>
-      <td>Émetteur<br>(ex: <code>BP_Boss</code>)</td>
-      <td>Panneau <em>My Blueprint</em> → section <em>Event Dispatchers</em> → bouton <code>+</code>. Nommer l'événement (ex: <code>OnDeath</code>). Ajouter des paramètres d'entrée dans les détails si nécessaire (ex: <code>OnHealthChanged(NewHealth)</code>).</td>
-      <td>Définit la "signature" (les informations qui seront envoyées). À ce stade, le dispatcher est juste une boîte vide en attente d'abonnés.</td>
-    </tr>
-    <tr>
-      <td><strong>2. Diffuser</strong></td>
-      <td>Émetteur</td>
-      <td>Glisser le dispatcher dans le graphe et choisir <code>Call</code>. Relier ce nœud au moment fatidique (ex: quand la vie tombe à 0).</td>
-      <td>Déclenche instantanément et simultanément la fonction de tous les Blueprints qui écoutent cet événement. Si personne n'écoute, le flux continue sans erreur.</td>
-    </tr>
-    <tr>
-      <td><strong>3. S'abonner</strong></td>
-      <td>Abonné<br>(ex: <code>BP_UI_Zone</code>)</td>
-      <td>À partir d'une <strong>référence valide</strong> de l'émetteur, tirer un fil et créer le nœud <code>Bind Event to [Nom]</code>. Relier la broche carrée rouge (<em>Event</em>) à un <code>Custom Event</code> créé pour l'occasion. <br><em>Astuce :</em> Glisser le dispatcher depuis la référence et choisir <code>Assign</code> crée le nœud Bind et le Custom Event d'un seul coup.</td>
-      <td><strong>Le piège :</strong> Le nœud <code>Bind</code> doit absolument être exécuté par le flux blanc (ex: au <em>Begin Play</em>) pour que l'écoute commence. La signature du <code>Custom Event</code> connecté doit correspondre au millimètre près à celle déclarée à l'étape 1.</td>
-    </tr>
-    <tr>
-      <td><strong>4. Se désabonner</strong></td>
-      <td>Abonné</td>
-      <td>À partir de la référence de l'émetteur, utiliser le nœud <code>Unbind Event from...</code> ou <code>Unbind All Events</code>.</td>
-      <td>Permet d'arrêter d'écouter l'émetteur. Essentiel pour la propreté du code ou pour éviter qu'un objet détruit ou désactivé ne continue de réagir en tâche de fond (fuites de mémoire logiques).</td>
-    </tr>
-  </tbody>
-</table>
-  <div class="callout tip">
-    <span class="label">Vous en utilisez déjà</span>
-    <p><code>On Component Begin Overlap</code>, <code>On Clicked</code> d'un bouton, <code>On Destroyed</code>… sont des Event Dispatchers fournis par le moteur : on peut s'y abonner depuis un autre Blueprint avec <code>Bind Event to On Component Begin Overlap</code>. Le bon moment pour s'abonner est souvent <code>BeginPlay</code> (ou <code>Event Construct</code> pour un widget).</p>
-  </div>
-  <table>
-    <thead><tr><th>Communiquer entre Blueprints</th><th>Sens</th><th>Quand</th></tr></thead>
-    <tbody>
-      <tr><td>Appel direct / <code>Cast To</code></td><td>A → B connu</td><td>A connaît précisément la classe de B</td></tr>
-      <tr><td><a href="ui-structures-interfaces.html#interfaces">Blueprint Interface</a></td><td>A → n'importe quel B</td><td>même demande, cibles de classes différentes</td></tr>
-      <tr><td>Event Dispatcher</td><td>A → tous les abonnés</td><td>A annonce un fait ; le nombre et la nature des abonnés sont inconnus</td></tr>
-    </tbody>
-  </table>
-
   <h2 id="pages" data-group="Le guide">Les pages couvertes</h2>
   <table>
     <thead><tr><th>Page</th><th>Sert à</th></tr></thead>
     <tbody>
       <tr>
-        <td><a href="variables-types.html">1 · Variables, types & tags</a></td>
-        <td>chaque type en détail (Boolean, Integer, Float, String/Name/Text, Vector, Rotator, Transform, références), Actor Tags & Gameplay Tags</td>
+        <td><a href="variables-types.html">1 · Variables, types, cast & tags</a></td>
+        <td>chaque type en détail (Boolean, Integer, Float, String/Name/Text, Vector, Rotator, Transform), conversions et parsing, références, Cast To, Actor Tags & Gameplay Tags</td>
       </tr>
       <tr>
         <td><a href="personnage.html">2 · Personnage & Input</a></td>
-        <td>composants d'un Character 3e personne, Pawn & possession, caméra (SpringArm, réglages, IA_Look), Enhanced Input (Input Actions & Mapping Context), boîtes de collision</td>
+        <td>composants d'un Character 3e personne, Pawn & possession, caméra (SpringArm, réglages, IA_Look), Enhanced Input (Modifiers, Triggers, états, priorité des Mapping Contexts), boîtes de collision</td>
       </tr>
       <tr>
         <td><a href="animation-blueprint.html">3 · Animation Blueprint</a></td>
         <td>Blend Space, Event Graph vs AnimGraph, State Machine, Layered blend per bone, cached poses, Anim Notify & Notify State, retargeting Mixamo</td>
       </tr>
       <tr>
-        <td><a href="levels-gamemode.html">4 · Levels & Game Framework</a></td>
-        <td>Game Mode, PlayerStart & respawn, Game Instance, SaveGame, niveaux & sublevels, méthodes de streaming, Level Blueprint</td>
+        <td><a href="levels.html">4 · Levels</a></td>
+        <td>niveaux & sublevels, Open Level, méthodes de streaming (Always Loaded, Blueprint, volumes, World Partition), Level Blueprint, World Settings</td>
       </tr>
       <tr>
-        <td><a href="ui-structures-interfaces.html">5 · UI, Structs & Interfaces</a></td>
-        <td>Widget Blueprints (UMG), structures, Blueprint Interfaces, énumérations</td>
+        <td><a href="ui-structures-interfaces.html">5 · UI, données & orienté objet</a></td>
+        <td>Widget Blueprints (UMG : création, catalogue des widgets, slots, visibilité, animations, événements, focus, drag & drop, menus), structures, Data Tables, Data Assets, énumérations, héritage, polymorphisme, classes abstraites, Blueprint Interfaces, Function Library</td>
       </tr>
       <tr>
-        <td><a href="oop.html">6 · Orienté objet</a></td>
-        <td>héritage (Create Child Blueprint), polymorphisme (Override), classes abstraites, hiérarchie des classes d'acteurs</td>
-      </tr>
-      <tr>
-        <td><a href="feedback.html">7 · Materials, SFX & VFX</a></td>
+        <td><a href="feedback.html">6 · Materials, SFX & VFX</a></td>
         <td>Dynamic Material Instance, intégrer des sons et des particules (Niagara/Cascade) depuis un Blueprint</td>
       </tr>
       <tr>
-        <td><a href="collisions-physique.html">8 · Collisions & physique</a></td>
-        <td>Object Types et canaux custom, presets, collision des meshes, traces, simulation, forces, contraintes, ragdoll, Physical Material, débogage</td>
+        <td><a href="collisions-physique.html">7 · Collisions & physique</a></td>
+        <td>Object Types et canaux custom, presets, formes de collision, Mobility, collision des meshes, traces, Hit/Overlap, simulation, tunneling & CCD, forces, contraintes, ragdoll, Physical Material, débogage</td>
       </tr>
       <tr>
-        <td><a href="fonctions-events-timers.html">9 · Fonctions, events & timers</a></td>
-        <td>fonctions, Custom Events, Event Dispatcher & event handler, macros, Set Timer by Event / by Function Name (pause, reprise), exécution à la frame suivante</td>
+        <td><a href="fonctions-events-timers.html">8 · Fonctions, events & timers</a></td>
+        <td>fonctions, Custom Events, Event Dispatcher & event handler, macros et Macro Library, Set Timer by Event / by Function Name (pause, reprise), exécution à la frame suivante</td>
+      </tr>
+      <tr>
+        <td><a href="classes-framework.html">9 · Game Framework & classes</a></td>
+        <td>Actor et cycle de vie, Actor Component & Scene Component, Pawn / Character, PlayerController & AIController, caméra, HUD, GameModeBase vs GameMode, GameState & PlayerState, Game Instance, World, Gameplay Statics, subsystems, où ranger une donnée</td>
       </tr>
     </tbody>
   </table>

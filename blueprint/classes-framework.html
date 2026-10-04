@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Codex — Blueprint · Game Framework & classes</title>
+<meta name="description" content="Les classes de base d'un projet Unreal : Actor et son cycle de vie, Actor Component et Scene Component, Pawn et Character, PlayerController, GameModeBase et GameMode, Game Instance, GameState et PlayerState, HUD, caméra, AIController, World, Gameplay Statics et subsystems — qui fait quoi, combien de temps ça vit, où ranger une donnée.">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body data-lang="blueprint" data-page="framework">
+
+<div class="topbar" id="topbar"></div>
+
+<div class="wrap">
+<aside class="side" id="side"></aside>
+
+<main>
+  <h1>9 · Game Framework & classes</h1>
+  <p class="lead">Les briques sur lesquelles repose tout projet Unreal : l'<strong>Actor</strong> et ses <strong>composants</strong>, le <strong>Pawn / Character</strong> qu'on contrôle, le <strong>PlayerController</strong> qui le tient en main, les classes de règles (<strong>GameModeBase</strong>, <strong>GameState</strong>, <strong>GameInstance</strong>) et ce qui les entoure (<strong>HUD</strong>, caméra, <strong>World</strong>, <strong>subsystems</strong>). Cette page est la <em>carte</em> du Gameplay Framework d'Unreal : le détail du Pawn et de la caméra est dans <a href="personnage.html#pawn">2 · Personnage & Input</a>, celui des niveaux dans <a href="levels.html">4 · Levels</a>.</p>
+
+  <h2 id="vue" data-group="Vue d'ensemble">Qui fait quoi, qui vit combien de temps</h2>
+  <figure>
+    <svg viewBox="0 0 640 260" role="img" aria-label="Game Instance au-dessus du niveau, qui contient GameMode, GameState, PlayerController, Pawn et ses composants">
+      <defs><marker id="bpfw1-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+        <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
+      <rect class="svg-bg" x="0" y="0" width="640" height="260" rx="6"/>
+
+      <rect class="svg-box-g" x="20" y="15" width="600" height="46" rx="6"/>
+      <text class="svg-t" x="320" y="36" text-anchor="middle">Game Instance</text>
+      <text class="svg-tm" x="320" y="52" text-anchor="middle">créée au lancement, survit à tous les changements de niveau</text>
+
+      <rect class="svg-box" x="20" y="78" width="600" height="168" rx="6"/>
+      <text class="svg-t" x="320" y="98" text-anchor="middle">Niveau courant</text>
+
+      <rect class="svg-box-w" x="40" y="112" width="120" height="50" rx="6"/>
+      <text class="svg-t" x="100" y="134" text-anchor="middle">GameMode</text>
+      <text class="svg-tm" x="100" y="150" text-anchor="middle">les règles</text>
+
+      <rect class="svg-box-w" x="175" y="112" width="125" height="50" rx="6"/>
+      <text class="svg-t" x="237" y="134" text-anchor="middle">GameState</text>
+      <text class="svg-tm" x="237" y="150" text-anchor="middle">l'état partagé</text>
+
+      <rect class="svg-box-a" x="320" y="112" width="130" height="50" rx="6"/>
+      <text class="svg-t" x="385" y="134" text-anchor="middle">PlayerController</text>
+      <text class="svg-tm" x="385" y="150" text-anchor="middle">le joueur</text>
+
+      <path d="M450 137 H488" stroke="var(--link)" stroke-width="2" fill="none" style="marker-end:url(#bpfw1-arr)"/>
+      <rect class="svg-box-g" x="490" y="112" width="120" height="50" rx="6"/>
+      <text class="svg-t" x="550" y="134" text-anchor="middle">Pawn / Character</text>
+      <text class="svg-tm" x="550" y="150" text-anchor="middle">le corps</text>
+
+      <path d="M550 162 V186" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpfw1-arr)"/>
+      <rect class="svg-box" x="490" y="188" width="120" height="46" rx="6"/>
+      <text class="svg-t" x="550" y="208" text-anchor="middle">Components</text>
+      <text class="svg-tm" x="550" y="224" text-anchor="middle">capsule, mesh, caméra…</text>
+
+      <text class="svg-tm" x="250" y="205" text-anchor="middle">Le GameMode fait apparaître un PlayerController</text>
+      <text class="svg-tm" x="250" y="223" text-anchor="middle">et un Pawn pour chaque joueur qui rejoint la partie.</text>
+    </svg>
+    <figcaption>La flèche bleue est la <em>possession</em> : le PlayerController tient le Pawn, qui est un assemblage de composants.</figcaption>
+  </figure>
+  <table>
+    <thead><tr><th>Classe</th><th>Rôle</th><th>Durée de vie</th></tr></thead>
+    <tbody>
+      <tr><td><a href="#actor"><code>Actor</code></a></td><td>tout objet qui existe dans un niveau</td><td>jusqu'à <code>Destroy Actor</code> ou au déchargement du niveau</td></tr>
+      <tr><td><a href="#composants"><code>Actor Component</code></a></td><td>brique de logique, sans position</td><td>celle de son Actor</td></tr>
+      <tr><td><a href="#composants"><code>Scene Component</code></a></td><td>brique avec position et hiérarchie</td><td>celle de son Actor</td></tr>
+      <tr><td><a href="#pawn"><code>Pawn</code> / <code>Character</code></a></td><td>le corps qu'on contrôle</td><td>jusqu'à sa destruction (mort, changement de niveau)</td></tr>
+      <tr><td><a href="#controller"><code>PlayerController</code></a></td><td>le joueur : input, caméra, interface</td><td>tant que le joueur est connecté</td></tr>
+      <tr><td><a href="#gamemode"><code>GameModeBase</code></a></td><td>les règles du niveau</td><td>recréé à chaque changement de niveau</td></tr>
+      <tr><td><a href="#etat"><code>GameState</code></a></td><td>l'état collectif de la partie (score d'équipe, objectifs, liste des joueurs)</td><td>une par partie, créée par le GameMode</td></tr>
+      <tr><td><a href="#etat"><code>PlayerState</code></a></td><td>les données d'un joueur, visibles des autres</td><td>une par joueur qui rejoint la partie, créée par le GameMode</td></tr>
+      <tr><td><a href="#hud"><code>HUD</code></a></td><td>l'affichage 2D du joueur</td><td>une instance par joueur humain</td></tr>
+      <tr><td><a href="#camera"><code>PlayerCameraManager</code></a></td><td>le point de vue du joueur</td><td>un par joueur humain</td></tr>
+      <tr><td><a href="#world"><code>World</code></a></td><td>la carte chargée : niveaux, GameMode, GameState, Pawns, Controllers</td><td>tant que la carte est chargée</td></tr>
+      <tr><td><a href="#gameinstance"><code>GameInstance</code></a></td><td>l'état global du jeu</td><td>toute la session</td></tr>
+    </tbody>
+  </table>
+
+  <h3>L'arbre des classes dérivées</h3>
+  <figure>
+    <svg viewBox="0 0 640 270" role="img" aria-label="Arbre de dérivation : Actor et ses classes dérivées Pawn, Controller, Info, HUD et Camera">
+      <defs><marker id="bpfw4-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+        <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
+      <rect class="svg-bg" x="0" y="0" width="640" height="270" rx="6"/>
+
+      <rect class="svg-box-a" x="270" y="10" width="100" height="36" rx="6"/>
+      <text class="svg-t" x="320" y="33" text-anchor="middle">Actor</text>
+
+      <path d="M320 46 L64 63" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpfw4-arr)"/>
+      <path d="M320 46 L192 63" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpfw4-arr)"/>
+      <path d="M320 46 V63" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpfw4-arr)"/>
+      <path d="M320 46 L448 63" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpfw4-arr)"/>
+      <path d="M320 46 L576 63" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpfw4-arr)"/>
+
+      <rect class="svg-box-g" x="6" y="65" width="116" height="40" rx="6"/>
+      <text class="svg-t" x="64" y="90" text-anchor="middle">Pawn</text>
+      <rect class="svg-box-a" x="134" y="65" width="116" height="40" rx="6"/>
+      <text class="svg-t" x="192" y="90" text-anchor="middle">Controller</text>
+      <rect class="svg-box-w" x="262" y="65" width="116" height="40" rx="6"/>
+      <text class="svg-t" x="320" y="90" text-anchor="middle">Info</text>
+      <rect class="svg-box-w" x="390" y="65" width="116" height="40" rx="6"/>
+      <text class="svg-t" x="448" y="90" text-anchor="middle">HUD</text>
+      <rect class="svg-box-w" x="518" y="65" width="116" height="40" rx="6"/>
+      <text class="svg-t" x="576" y="90" text-anchor="middle">Camera</text>
+
+      <rect class="svg-box" x="6" y="125" width="116" height="36" rx="6"/>
+      <text class="svg-tm" x="64" y="147" text-anchor="middle">DefaultPawn</text>
+      <rect class="svg-box" x="6" y="169" width="116" height="36" rx="6"/>
+      <text class="svg-tm" x="64" y="191" text-anchor="middle">SpectatorPawn</text>
+      <rect class="svg-box" x="6" y="213" width="116" height="36" rx="6"/>
+      <text class="svg-tm" x="64" y="235" text-anchor="middle">Character</text>
+
+      <rect class="svg-box" x="134" y="125" width="116" height="36" rx="6"/>
+      <text class="svg-tm" x="192" y="147" text-anchor="middle">PlayerController</text>
+      <rect class="svg-box" x="134" y="169" width="116" height="36" rx="6"/>
+      <text class="svg-tm" x="192" y="191" text-anchor="middle">AIController</text>
+
+      <rect class="svg-box" x="262" y="125" width="116" height="36" rx="6"/>
+      <text class="svg-tm" x="320" y="147" text-anchor="middle">GameMode</text>
+      <rect class="svg-box" x="262" y="169" width="116" height="36" rx="6"/>
+      <text class="svg-tm" x="320" y="191" text-anchor="middle">GameState</text>
+      <rect class="svg-box" x="262" y="213" width="116" height="36" rx="6"/>
+      <text class="svg-tm" x="320" y="235" text-anchor="middle">PlayerState</text>
+
+      <rect class="svg-box" x="518" y="125" width="116" height="48" rx="6"/>
+      <text class="svg-tm" x="576" y="145" text-anchor="middle">PlayerCamera</text>
+      <text class="svg-tm" x="576" y="161" text-anchor="middle">Manager</text>
+    </svg>
+    <figcaption>Les classes du framework descendent toutes d'<code>Actor</code>. Sous chaque colonne, les classes que l'on dérive en pratique ; <code>Info</code> est le parent « invisible » de GameMode, GameState et PlayerState (le <code>Character</code> dérive de Pawn).</figcaption>
+  </figure>
+  <div class="callout info">
+    <span class="label">Blueprint, C++ ou les deux</span>
+    <p>Epic présente ces classes comme personnalisables en C++, en Blueprint ou — le plus courant — en combinant les deux : le C++ pour le socle (systèmes, performances), le Blueprint pour régler et assembler. Tout ce qui est décrit ici se fait en Blueprint en créant une classe fille de la classe voulue.</p>
+  </div>
+
+  <h2 id="hierarchie" data-group="Vue d'ensemble">Hiérarchie : Actors et Components</h2>
+  <p>Toutes les classes du moteur descendent de <code>UObject</code>. Deux branches à bien distinguer : les <strong>Actors</strong> (ce qu'on peut placer dans un niveau) et les <strong>Components</strong> (ce qui s'attache à un Actor, mais qui n'en est pas un).</p>
+  <figure>
+    <svg viewBox="0 0 620 260" role="img" aria-label="Hiérarchie des classes d'acteurs dans Unreal">
+      <defs><marker id="bpoop2-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+        <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
+      <rect class="svg-bg" x="0" y="0" width="620" height="260" rx="6"/>
+
+      <rect class="svg-box-w" x="20" y="25" width="120" height="55" rx="6"/>
+      <text class="svg-t" x="80" y="47" text-anchor="middle">UObject</text>
+      <text class="svg-tm" x="80" y="65" text-anchor="middle">base de tout</text>
+
+      <path class="svg-arrow" d="M140 52 H168" style="marker-end:url(#bpoop2-arr)"/>
+      <rect class="svg-box-a" x="170" y="25" width="120" height="55" rx="6"/>
+      <text class="svg-t" x="230" y="47" text-anchor="middle">AActor</text>
+      <text class="svg-tm" x="230" y="65" text-anchor="middle">placable</text>
+
+      <path class="svg-arrow" d="M290 52 H318" style="marker-end:url(#bpoop2-arr)"/>
+      <rect class="svg-box-g" x="320" y="25" width="120" height="55" rx="6"/>
+      <text class="svg-t" x="380" y="47" text-anchor="middle">APawn</text>
+      <text class="svg-tm" x="380" y="65" text-anchor="middle">possédable</text>
+
+      <path class="svg-arrow" d="M440 52 H468" style="marker-end:url(#bpoop2-arr)"/>
+      <rect class="svg-box-g" x="470" y="25" width="130" height="55" rx="6"/>
+      <text class="svg-t" x="535" y="47" text-anchor="middle">ACharacter</text>
+      <text class="svg-tm" x="535" y="65" text-anchor="middle">+ mouvement</text>
+
+      <path d="M80 80 V118" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3" fill="none" style="marker-end:url(#bpoop2-arr)"/>
+      <rect class="svg-box-w" x="20" y="120" width="160" height="55" rx="6"/>
+      <text class="svg-t" x="100" y="142" text-anchor="middle">UActorComponent</text>
+      <text class="svg-tm" x="100" y="160" text-anchor="middle">pas un Actor !</text>
+
+      <path d="M230 80 V118" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3" fill="none" style="marker-end:url(#bpoop2-arr)"/>
+      <rect class="svg-box-a" x="200" y="120" width="150" height="55" rx="6"/>
+      <text class="svg-t" x="275" y="142" text-anchor="middle">AController</text>
+      <text class="svg-tm" x="275" y="160" text-anchor="middle">→ APlayerController</text>
+
+      <text class="svg-tm" x="310" y="210" text-anchor="middle">Aussi dérivés d'AActor : AInfo (base d'AGameModeBase, AGameStateBase) et AHUD</text>
+      <text class="svg-tm" x="310" y="228" text-anchor="middle">— tous invisibles et sans position réelle dans le monde.</text>
+    </svg>
+    <figcaption>Un composant s'attache à un Actor mais descend directement d'UObject : il n'est jamais lui-même « placé » dans un niveau.</figcaption>
+  </figure>
+  <table>
+    <thead><tr><th>Classe</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>AActor</code></td><td>tout ce qui peut exister dans un niveau (position, rotation, échelle)</td></tr>
+      <tr><td><code>APawn</code></td><td>un Actor <strong>possédable</strong> par un <code>Controller</code> (joueur ou IA) — voir <a href="personnage.html#pawn">Pawn & possession</a></td></tr>
+      <tr><td><code>ACharacter</code></td><td>un Pawn avec <code>CharacterMovementComponent</code> déjà branché — voir <a href="personnage.html">2 · Personnage & Input</a></td></tr>
+      <tr><td><code>AController</code> / <code>APlayerController</code></td><td>possède un Pawn, reçoit l'input — jamais visible ni physique</td></tr>
+      <tr><td><code>AInfo</code></td><td>base des Actors « immatériels » comme <code>AGameModeBase</code> ou <code>AGameStateBase</code> — voir <a href="#gamemode">GameMode</a></td></tr>
+      <tr><td><code>UActorComponent</code></td><td>brique attachée à un Actor (<code>CapsuleComponent</code>, <code>SpringArm</code>…) — jamais autonome</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="actor" data-group="Actor">Actor</h2>
+  <p>Un <code>Actor</code> est tout ce qui peut <strong>exister dans un niveau</strong> : une porte, un coffre, un projectile, un point d'apparition, un manager invisible. C'est avant tout un <em>conteneur de composants</em> : sa position, son aspect et son comportement viennent de ce qu'on lui attache.</p>
+  <table>
+    <thead><tr><th>Un Actor apporte</th><th>Détail</th></tr></thead>
+    <tbody>
+      <tr><td>Un cycle de vie</td><td><code>Construction Script</code>, <code>BeginPlay</code>, <code>Tick</code>, <code>End Play</code> (voir ci-dessous)</td></tr>
+      <tr><td>Un emplacement</td><td>celui de son <a href="#racine">composant racine</a> : un Actor sans composant de type Scene n'a ni position ni échelle</td></tr>
+      <tr><td>Des composants</td><td>la liste <em>Components</em> en haut à gauche du Blueprint</td></tr>
+      <tr><td>Des tags</td><td><code>Actor Has Tag</code>, <code>Get All Actors with Tag</code> — voir <a href="variables-types.html#tags">Actor Tags</a></td></tr>
+      <tr><td>Un <code>Owner</code> et un <code>Instigator</code></td><td>l'Actor propriétaire, et le Pawn responsable d'une action (celui qui a tiré, qui a posé le piège)</td></tr>
+      <tr><td>Des événements</td><td><code>Event ActorBeginOverlap</code>, <code>Event Hit</code>, <code>Event AnyDamage</code> — voir <a href="collisions-physique.html#evenements">Hit, Overlap</a></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Cycle de vie</h3>
+  <figure>
+    <svg viewBox="0 0 640 150" role="img" aria-label="Cycle de vie d'un Actor : Construction Script, Begin Play, Tick à chaque frame, End Play">
+      <defs><marker id="bpfw2-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+        <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
+      <rect class="svg-bg" x="0" y="0" width="640" height="150" rx="6"/>
+
+      <rect class="svg-box-w" x="10" y="45" width="140" height="60" rx="6"/>
+      <text class="svg-t" x="80" y="70" text-anchor="middle">Construction</text>
+      <text class="svg-tm" x="80" y="88" text-anchor="middle">Construction Script</text>
+
+      <path d="M150 75 H168" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpfw2-arr)"/>
+      <rect class="svg-box-a" x="170" y="45" width="140" height="60" rx="6"/>
+      <text class="svg-t" x="240" y="70" text-anchor="middle">Begin Play</text>
+      <text class="svg-tm" x="240" y="88" text-anchor="middle">au lancement ou spawn</text>
+
+      <path d="M310 75 H328" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpfw2-arr)"/>
+      <rect class="svg-box-g" x="330" y="45" width="140" height="60" rx="6"/>
+      <text class="svg-t" x="400" y="70" text-anchor="middle">Tick</text>
+      <text class="svg-tm" x="400" y="88" text-anchor="middle">à chaque frame</text>
+      <path d="M440 43 C440 12, 360 12, 360 41" stroke="var(--link)" stroke-width="1.5" fill="none" style="marker-end:url(#bpfw2-arr)"/>
+
+      <path d="M470 75 H488" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpfw2-arr)"/>
+      <rect class="svg-box" x="490" y="45" width="140" height="60" rx="6"/>
+      <text class="svg-t" x="560" y="70" text-anchor="middle">End Play</text>
+      <text class="svg-tm" x="560" y="88" text-anchor="middle">destroy, fin de niveau</text>
+
+      <text class="svg-tm" x="320" y="132" text-anchor="middle">Construction et Begin Play : une fois. Tick : chaque frame, jusqu'à End Play.</text>
+    </svg>
+    <figcaption>Le Construction Script tourne aussi dans l'éditeur ; les trois autres étapes n'existent qu'en jeu.</figcaption>
+  </figure>
+  <table>
+    <thead><tr><th>Événement</th><th>Quand</th><th>On y met</th></tr></thead>
+    <tbody>
+      <tr><td><code>Construction Script</code></td><td>à la pose dans l'éditeur, à chaque modification d'une propriété ou déplacement, et au spawn, <strong>avant</strong> BeginPlay</td><td>l'apparence configurable (matériau, nombre de meshes, taille) — rien qui dépende d'autres Actors</td></tr>
+      <tr><td><code>Event BeginPlay</code></td><td>quand la partie démarre, ou au spawn de l'Actor ; tous ses composants sont prêts</td><td>références, abonnements aux dispatchers, <a href="fonctions-events-timers.html#timers">timers</a>, première configuration</td></tr>
+      <tr><td><code>Event Tick</code></td><td>chaque frame, avec <code>Delta Seconds</code></td><td>un mouvement continu — et rien d'autre, voir plus bas</td></tr>
+      <tr><td><code>Event End Play</code></td><td>avant que l'Actor quitte le monde ; le pin <em>End Play Reason</em> dit pourquoi (<em>Destroyed</em>, <em>Level Transition</em>, <em>End Play in Editor</em>, <em>Removed from World</em>, <em>Quit</em>)</td><td>se désabonner, annuler des timers, sauvegarder</td></tr>
+      <tr><td><code>Event Destroyed</code></td><td>uniquement sur <code>Destroy Actor</code></td><td>le même nettoyage, mais <code>End Play</code> couvre aussi les changements de niveau et la fin du jeu : à préférer</td></tr>
+    </tbody>
+  </table>
+  <div class="callout warn">
+    <span class="label">L'ordre des BeginPlay n'est pas garanti</span>
+    <p>Deux Actors posés dans le niveau ne démarrent pas dans un ordre prévisible : au <code>BeginPlay</code> de l'un, l'autre n'a peut-être pas encore fait le sien. Ne pas lire dans un Actor une valeur que le BeginPlay d'un autre doit initialiser ; passer par un <a href="fonctions-events-timers.html#handler">Event Dispatcher</a> ou par un <a href="fonctions-events-timers.html#nexttick">appel à la frame suivante</a>.</p>
+  </div>
+  <div class="callout tip">
+    <span class="label">Un Tick qu'on peut éteindre</span>
+    <p>Dans <em>Class Defaults → Tick</em> : <code>Start with Tick Enabled</code> (décocher si l'Actor n'en a pas besoin) et <code>Tick Interval</code> (en secondes : 0,2 = cinq fois par seconde). <code>Set Actor Tick Enabled</code> l'allume ou l'éteint en cours de jeu. Cent Actors qui tickent pour rien, c'est du coût gratuit à supprimer : préférer un événement, un Timeline ou un timer.</p>
+  </div>
+
+  <h3>Créer et détruire</h3>
+  <table>
+    <thead><tr><th>Nœud</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>Spawn Actor from Class</code></td><td>crée un Actor au vol : <em>Class</em>, <em>Spawn Transform</em>, <em>Collision Handling Override</em>, <em>Owner</em>. Les variables cochées <em>Expose on Spawn</em> deviennent des pins supplémentaires</td></tr>
+      <tr><td><code>Destroy Actor</code></td><td>détruit l'Actor et tous ses composants. Les variables qui le référençaient deviennent invalides : tester avec <code>Is Valid</code></td></tr>
+      <tr><td><code>Set Life Span</code> / <em>Initial Life Span</em></td><td>auto-destruction après N secondes (projectile, effet temporaire, douille)</td></tr>
+    </tbody>
+  </table>
+  <table>
+    <thead><tr><th><em>Collision Handling Override</em></th><th>Si le point de spawn est occupé</th></tr></thead>
+    <tbody>
+      <tr><td><em>Default</em></td><td>suit le réglage de la classe</td></tr>
+      <tr><td><em>Always Spawn, Ignore Collisions</em></td><td>apparaît quand même, dans l'obstacle</td></tr>
+      <tr><td><em>Try to Adjust Location, but Always Spawn</em></td><td>cherche un point libre proche ; apparaît à l'endroit demandé si elle n'en trouve pas</td></tr>
+      <tr><td><em>Try to Adjust Location, Don't Spawn if Still Colliding</em></td><td>cherche un point libre ; n'apparaît pas si elle n'en trouve pas</td></tr>
+      <tr><td><em>Do Not Spawn</em></td><td>n'apparaît pas si l'endroit est occupé</td></tr>
+    </tbody>
+  </table>
+  <div class="callout danger">
+    <span class="label">Un spawn peut échouer</span>
+    <p>Quand l'Actor n'apparaît pas, <code>Spawn Actor from Class</code> renvoie <em>None</em> (sans erreur visible). Tester la valeur de retour avec <code>Is Valid</code> avant de s'en servir — sinon des <em>Accessed None</em> plus loin dans le graphe.</p>
+  </div>
+
+  <h3>Position, attachement, visibilité</h3>
+  <table>
+    <thead><tr><th>Nœud</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>Get / Set Actor Location</code>, <code>Rotation</code>, <code>Transform</code></td><td>lit ou déplace le composant racine. Cases <em>Sweep</em> (s'arrêter contre un obstacle) et <em>Teleport</em> (ne pas transmettre de vitesse à la physique)</td></tr>
+      <tr><td><code>Add Actor World Offset</code> / <code>Local Offset</code></td><td>déplacer par un décalage plutôt qu'à une position absolue</td></tr>
+      <tr><td><code>Get Actor Forward Vector</code> (<code>Right</code>, <code>Up</code>)</td><td>la direction « devant » l'Actor, en monde</td></tr>
+      <tr><td><code>Attach Actor To Actor</code> / <code>To Component</code></td><td>colle un Actor à un autre (arme dans la main, objet porté). <em>Location / Rotation / Scale Rule</em> : <code>Keep Relative</code> (garde le décalage actuel), <code>Keep World</code> (reste où il est), <code>Snap to Target</code> (se cale sur le parent ou le socket)</td></tr>
+      <tr><td><code>Detach From Actor</code></td><td>le détache ; il garde sa position monde</td></tr>
+      <tr><td><code>Set Actor Hidden In Game</code></td><td>invisible, mais toujours là (collision, Tick)</td></tr>
+      <tr><td><code>Set Actor Enable Collision</code></td><td>coupe ou rétablit la collision de tout l'Actor</td></tr>
+    </tbody>
+  </table>
+  <div class="callout info">
+    <span class="label">Sweep et Mobility</span>
+    <p>Déplacer un Actor dont le composant racine est en mobilité <em>Static</em> ne marche pas en jeu (avertissement dans le log) : voir <a href="collisions-physique.html#modele">Mobility</a>. Et <code>Set Actor Location</code> sans <em>Sweep</em> traverse les murs : la collision n'est testée qu'avec la case cochée.</p>
+  </div>
+
+  <h3>Retrouver des Actors</h3>
+  <table>
+    <thead><tr><th>Nœud</th><th>À savoir</th></tr></thead>
+    <tbody>
+      <tr><td><code>Get All Actors of Class</code></td><td>parcourt tout le niveau : correct une fois au <code>BeginPlay</code>, jamais dans un Tick. Garder le résultat dans une variable</td></tr>
+      <tr><td><code>Get Actor of Class</code></td><td>le premier trouvé (aucun ordre garanti) — pratique quand il n'y en a qu'un</td></tr>
+      <tr><td><code>Get All Actors with Tag</code></td><td>par <a href="variables-types.html#tags">tag</a>, sans connaître la classe</td></tr>
+      <tr><td><code>Get All Actors with Interface</code></td><td>tous ceux qui implémentent une <a href="ui-structures-interfaces.html#interfaces">interface</a></td></tr>
+      <tr><td><code>Get Owner</code> / <code>Get Instigator</code></td><td>remonter à l'Actor propriétaire, ou au Pawn responsable</td></tr>
+    </tbody>
+  </table>
+  <div class="callout tip">
+    <span class="label">Owner ou Instigator ?</span>
+    <p>L'<strong>Owner</strong> est « à qui appartient cet Actor » (une arme appartient à son porteur) ; l'<strong>Instigator</strong> est « qui a causé cet Actor ou ces dégâts » (le Pawn qui a tiré, même si la balle appartient à l'arme). Ce dernier se retrouve dans les nœuds de dégâts (<em>Event Instigator</em>, <em>Damage Causer</em>).</p>
+  </div>
+
+  <h2 id="composants" data-group="Composants">Actor Component & Scene Component</h2>
+  <p>Un Actor se fabrique en lui <strong>attachant des composants</strong>. Il en existe deux familles, selon qu'ils ont une <em>place dans l'espace</em> ou non.</p>
+  <figure>
+    <svg viewBox="0 0 640 185" role="img" aria-label="Actor Component, Scene Component, Primitive Component : chaque niveau ajoute une capacité">
+      <defs><marker id="bpfw3-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+        <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
+      <rect class="svg-bg" x="0" y="0" width="640" height="185" rx="6"/>
+      <text class="svg-tm" x="320" y="28" text-anchor="middle">Chaque niveau hérite du précédent et ajoute une capacité</text>
+
+      <rect class="svg-box-w" x="20" y="45" width="150" height="55" rx="6"/>
+      <text class="svg-t" x="95" y="68" text-anchor="middle">Actor Component</text>
+      <text class="svg-tm" x="95" y="86" text-anchor="middle">logique seule</text>
+
+      <path d="M170 72 H208" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpfw3-arr)"/>
+      <rect class="svg-box-a" x="210" y="45" width="150" height="55" rx="6"/>
+      <text class="svg-t" x="285" y="68" text-anchor="middle">Scene Component</text>
+      <text class="svg-tm" x="285" y="86" text-anchor="middle">+ Transform, attachement</text>
+
+      <path d="M360 72 H398" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpfw3-arr)"/>
+      <rect class="svg-box-g" x="400" y="45" width="190" height="55" rx="6"/>
+      <text class="svg-t" x="495" y="68" text-anchor="middle">Primitive Component</text>
+      <text class="svg-tm" x="495" y="86" text-anchor="middle">+ rendu et collision</text>
+
+      <text class="svg-tm" x="95" y="128" text-anchor="middle">CharacterMovement,</text>
+      <text class="svg-tm" x="95" y="146" text-anchor="middle">ProjectileMovement</text>
+      <text class="svg-tm" x="285" y="128" text-anchor="middle">Camera, SpringArm,</text>
+      <text class="svg-tm" x="285" y="146" text-anchor="middle">Audio, Light</text>
+      <text class="svg-tm" x="495" y="128" text-anchor="middle">Static / Skeletal Mesh,</text>
+      <text class="svg-tm" x="495" y="146" text-anchor="middle">Box / Sphere / Capsule</text>
+      <text class="svg-tm" x="320" y="173" text-anchor="middle">Les flèches vont du parent vers l'enfant ; en dessous, des exemples de chaque niveau.</text>
+    </svg>
+    <figcaption>Tout composant visible ou solide est un Primitive Component ; une caméra ou un SpringArm est un Scene Component (une position, rien à dessiner) ; un composant de mouvement est un Actor Component (aucune position à lui).</figcaption>
+  </figure>
+  <table>
+    <thead><tr><th></th><th>Actor Component</th><th>Scene Component</th></tr></thead>
+    <tbody>
+      <tr><td>Position (Transform)</td><td>aucune</td><td>oui, <strong>relative</strong> à son parent</td></tr>
+      <tr><td>Hiérarchie</td><td>à plat, dans la liste</td><td>arbre : un composant s'attache à un autre</td></tr>
+      <tr><td>Visible / solide</td><td>non</td><td>non (sauf Primitive Component)</td></tr>
+      <tr><td>Événements</td><td colspan="2"><code>Event BeginPlay</code>, <code>Event Tick</code>, <code>Event End Play</code> — comme un Actor</td></tr>
+      <tr><td>Quand l'utiliser</td><td>un comportement réutilisable : santé, inventaire, interaction, mouvement</td><td>un point dans l'espace : pivot, point de spawn, bras de caméra, emplacement d'arme</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="racine">Le composant racine</h3>
+  <p>Un Actor a un seul <strong>composant racine</strong> (<em>Root Component</em>), tout en haut de la hiérarchie : <em>son</em> transform <strong>est</strong> celui de l'Actor. Les autres composants lui sont attachés et se déplacent avec lui. Sans composant Scene, Unreal en crée un invisible : <code>DefaultSceneRoot</code>.</p>
+  <table>
+    <thead><tr><th>Actor</th><th>Racine</th></tr></thead>
+    <tbody>
+      <tr><td>Actor vide</td><td><code>DefaultSceneRoot</code> — un simple point</td></tr>
+      <tr><td><code>Character</code></td><td><code>CapsuleComponent</code> : le mesh, la caméra et le SpringArm sont ses enfants</td></tr>
+      <tr><td>Porte, coffre, pickup</td><td>un <code>Static Mesh</code> ou une <code>Box Collision</code> glissée sur <code>DefaultSceneRoot</code> pour la remplacer</td></tr>
+    </tbody>
+  </table>
+  <div class="callout tip">
+    <span class="label">Choisir la bonne racine</span>
+    <p>Faire du composant qui doit <strong>collisionner et bouger</strong> la racine : c'est lui que <code>Set Actor Location</code> déplace et que la physique pousse. Une racine <code>DefaultSceneRoot</code> sous un mesh en simulation physique donne un Actor dont le mesh part tout seul pendant que l'Actor reste en place.</p>
+  </div>
+
+  <h3>Transform relatif ou monde</h3>
+  <table>
+    <thead><tr><th>Nœud</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>Set Relative Location</code> / <code>Rotation</code></td><td>par rapport au <strong>parent</strong> : « 50 cm devant la main ». Suit le parent quand il bouge</td></tr>
+      <tr><td><code>Set World Location</code> / <code>Rotation</code></td><td>position absolue dans le monde, quel que soit le parent</td></tr>
+      <tr><td><code>Add Local Offset</code> / <code>Add Local Rotation</code></td><td>décalage dans le repère du composant</td></tr>
+      <tr><td><code>Attach Component To Component</code></td><td>l'attacher à un autre, avec les mêmes règles que pour un Actor (<code>Keep Relative</code>, <code>Keep World</code>, <code>Snap to Target</code>) et un <em>Socket Name</em> optionnel</td></tr>
+      <tr><td><code>Get Socket Location</code></td><td>la position monde d'un <em>socket</em> d'un mesh (main, bouche du canon)</td></tr>
+      <tr><td><code>Set Visibility</code></td><td>afficher ou masquer ce composant (et ses enfants, avec <em>Propagate to Children</em>)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Un composant sur mesure</h3>
+  <p>Le grand intérêt des Actor Components : écrire <strong>une fois</strong> un comportement et le brancher sur n'importe quel Actor — sans hériter d'une classe commune.</p>
+  <table>
+    <thead><tr><th>Étape</th><th>Comment</th></tr></thead>
+    <tbody>
+      <tr><td>1. Créer</td><td>Content Browser → <em>Blueprint Class</em> → <code>Actor Component</code>, nommé <code>BP_HealthComponent</code> (ou <code>AC_Health</code>)</td></tr>
+      <tr><td>2. Écrire</td><td>variables <code>Health</code> et <code>MaxHealth</code> (<em>Instance Editable</em>), fonctions <code>TakeDamage</code> et <code>Heal</code>, dispatchers <code>OnHealthChanged</code> et <code>OnDeath</code></td></tr>
+      <tr><td>3. Brancher</td><td>dans n'importe quel Blueprint : <em>Components → Add</em> → <code>BP_HealthComponent</code>. Ses variables <em>Instance Editable</em> se règlent par Actor</td></tr>
+      <tr><td>4. Utiliser</td><td>depuis l'extérieur : <code>Get Component by Class</code> (ou directement la variable du composant). Depuis le composant : <code>Get Owner</code> pour revenir à son Actor</td></tr>
+    </tbody>
+  </table>
+  <div class="callout tip">
+    <span class="label">Composition ou héritage ?</span>
+    <p>Un <code>BP_Hero</code> et un <code>BP_Enemy</code> ont chacun besoin de points de vie. Les faire hériter d'un <code>BP_Creature</code> marche tant que tout le monde entre dans l'arbre ; dès qu'une <em>porte destructible</em> ou une <em>tourelle</em> en a besoin aussi, elles n'ont pas ce parent. Un <code>HealthComponent</code> se pose sur n'importe qui. Voir aussi <a href="ui-structures-interfaces.html#heritage">héritage</a> et <a href="ui-structures-interfaces.html#interfaces">interfaces</a>.</p>
+  </div>
+  <table>
+    <thead><tr><th>Nœud</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>Add Component by Class</code></td><td>ajoute un composant à un Actor <strong>en jeu</strong> (une aura, un buff qui apporte son propre comportement). Pins <em>Class</em>, <em>Manual Attachment</em>, <em>Relative Transform</em></td></tr>
+      <tr><td><code>Get Component by Class</code></td><td>le premier composant de cette classe sur l'Actor, ou <em>None</em> — à tester avec <code>Is Valid</code></td></tr>
+      <tr><td><code>Get Components by Class</code> / <code>by Tag</code></td><td>tous les composants correspondants, en tableau</td></tr>
+      <tr><td><code>Destroy Component</code></td><td>retire un composant sans détruire l'Actor</td></tr>
+      <tr><td><code>Activate</code> / <code>Deactivate</code></td><td>l'allume ou l'éteint (case <em>Auto Activate</em> au départ) ; <code>Set Component Tick Enabled</code> pour son Tick</td></tr>
+    </tbody>
+  </table>
+  <div class="callout info">
+    <span class="label">Composants hérités, composants de mouvement</span>
+    <p>Dans un Blueprint enfant, les composants du parent apparaissent marqués <em>(Inherited)</em> : on peut régler leurs propriétés, mais pas les supprimer. Les <strong>composants de mouvement</strong> (<code>CharacterMovementComponent</code>, <code>ProjectileMovementComponent</code>, <code>RotatingMovementComponent</code>…) sont des Actor Components : ils n'ont pas de position, mais déplacent le <em>composant racine</em> de l'Actor — d'où l'importance de bien choisir la racine.</p>
+  </div>
+
+  <h2 id="pawn" data-group="Pawn, Character & Controller">Pawn & Character : quel parent choisir ?</h2>
+  <p>Les détails (possession, composants du personnage, caméra) sont dans <a href="personnage.html#pawn">2 · Personnage & Input</a>. Pour choisir la classe parente d'un nouveau Blueprint :</p>
+  <table>
+    <thead><tr><th>Je veux…</th><th>Parent</th></tr></thead>
+    <tbody>
+      <tr><td>un objet qu'on pose, qu'on ramasse, qui s'ouvre, un projectile, un manager invisible</td><td><code>Actor</code></td></tr>
+      <tr><td>un corps que le joueur ou l'IA contrôle, sans marche humanoïde : véhicule, tourelle, drone, caméra de stratégie</td><td><code>Pawn</code></td></tr>
+      <tr><td>un humanoïde qui marche, saute, nage, avec capsule et mesh</td><td><code>Character</code></td></tr>
+      <tr><td>un comportement à brancher sur plusieurs classes sans rapport (santé, inventaire)</td><td><a href="#composants"><code>Actor Component</code></a></td></tr>
+      <tr><td>des données seules, sans présence dans le niveau</td><td><a href="ui-structures-interfaces.html#dataassets">Data Asset</a> ou <a href="ui-structures-interfaces.html#datatables">Data Table</a></td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="controller" data-group="Pawn, Character & Controller">PlayerController</h2>
+  <p>Le <code>PlayerController</code> est <strong>le joueur</strong>, par opposition à son corps : il reçoit l'input, gère la caméra, affiche l'interface. Quand le Pawn meurt, le Controller reste — c'est la raison d'être de la séparation.</p>
+  <table>
+    <thead><tr><th>Domaine</th><th>Nœuds</th></tr></thead>
+    <tbody>
+      <tr><td>Contrôle</td><td><code>Possess</code>, <code>UnPossess</code>, <code>Get Controlled Pawn</code> — voir <a href="personnage.html#pawn">la possession</a></td></tr>
+      <tr><td>Input</td><td>le sous-système Enhanced Input appartient au <em>joueur local</em> : <code>Get Enhanced Input Local Player Subsystem</code> → <code>Add Mapping Context</code> (voir <a href="personnage.html#input">Enhanced Input</a>)</td></tr>
+      <tr><td>Orientation</td><td><code>Get / Set Control Rotation</code>, <code>Add Yaw Input</code>, <code>Add Pitch Input</code> : la direction « visée » du joueur, indépendante de celle du corps. Le SpringArm la lit avec <em>Use Pawn Control Rotation</em> (voir <a href="personnage.html#camera">Caméra</a>)</td></tr>
+      <tr><td>Caméra</td><td><code>Get Player Camera Manager</code>, <code>Set View Target with Blend</code> (basculer vers une autre caméra avec un fondu : cinématique, caméra fixe)</td></tr>
+      <tr><td>Interface</td><td><code>Create Widget</code> (<em>Owning Player</em>), <code>Set Input Mode …</code>, <code>Set Show Mouse Cursor</code> — voir <a href="ui-structures-interfaces.html#widgets">UMG</a></td></tr>
+      <tr><td>Souris dans le monde</td><td><code>Get Hit Result Under Cursor by Channel</code>, <code>Deproject Mouse Position to World</code>, <code>Project World Location to Widget Position</code></td></tr>
+    </tbody>
+  </table>
+  <table>
+    <thead><tr><th>Où mettre la logique ?</th><th>Dans</th></tr></thead>
+    <tbody>
+      <tr><td>ce que fait le corps : sauter, tirer, subir des dégâts, ses animations</td><td>le <strong>Pawn</strong> / Character</td></tr>
+      <tr><td>ce qui doit survivre à la mort ou à un changement de corps : HUD, menu pause, Mapping Contexts, choix de personnage</td><td>le <strong>PlayerController</strong></td></tr>
+      <tr><td>le score ou le nom visibles par les autres joueurs (réseau)</td><td>le <code>PlayerState</code> — voir <a href="#etat">GameState</a></td></tr>
+      <tr><td>qui apparaît où et quand</td><td>le <strong>GameMode</strong></td></tr>
+    </tbody>
+  </table>
+  <div class="callout info">
+    <span class="label">Get Player Controller et l'index</span>
+    <p><code>Get Player Controller (Player Index = 0)</code> renvoie le joueur <em>local</em> principal ; les index suivants servent à l'écran partagé. En multijoueur réseau, un client ne possède que <strong>son</strong> Controller (le serveur les a tous). </p>
+  </div>
+
+  <h3>AIController</h3>
+  <p>Le <code>Controller</code> a deux déclinaisons : le <code>PlayerController</code>, piloté par un humain, et l'<code>AIController</code>, piloté par du code. Les deux possèdent un Pawn de la même façon (<code>Possess</code>) : un Pawn ne sait pas qui le dirige, c'est ce qui permet de donner le même personnage à un joueur ou à une IA.</p>
+  <table>
+    <thead><tr><th></th><th><code>PlayerController</code></th><th><code>AIController</code></th></tr></thead>
+    <tbody>
+      <tr><td>Reçoit ses ordres de</td><td>l'input du joueur</td><td>un <em>Behavior Tree</em> ou du code</td></tr>
+      <tr><td>Caméra, HUD</td><td>oui (un <a href="#hud">HUD</a> et un <a href="#camera">gestionnaire de caméra</a>)</td><td>non</td></tr>
+      <tr><td>Nœuds typiques</td><td><code>Add Mapping Context</code>, <code>Create Widget</code></td><td><code>Run Behavior Tree</code>, <code>AI Move To</code>, <code>Get Blackboard</code></td></tr>
+      <tr><td>Prise de contrôle</td><td>par le GameMode au spawn, ou <em>Auto Possess Player</em></td><td><em>Auto Possess AI</em> + <em>AI Controller Class</em> sur le Pawn (voir <a href="personnage.html#pawn">la possession</a>)</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="camera" data-group="Pawn, Character & Controller">Caméra : Camera Manager</h2>
+  <p>La caméra n'est pertinente que pour un joueur humain. Deux acteurs s'en partagent le travail : un <strong>composant caméra</strong> sur un Actor (un point de vue possible) et le <code>PlayerCameraManager</code> du PlayerController (celui qui décide <em>quelle</em> vue est affichée, et la gère).</p>
+  <table>
+    <thead><tr><th>Élément</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>CameraComponent</code></td><td>un point de vue attaché à un Actor : la caméra de suivi du personnage, une caméra fixe posée dans le niveau — voir <a href="personnage.html#camera">Caméra : SpringArm & CameraComponent</a></td></tr>
+      <tr><td><code>PlayerCameraManager</code></td><td>possédé par le PlayerController ; calcule la vue finale et gère les transitions. Sa classe se règle dans le PlayerController (<em>Player Camera Manager Class</em>)</td></tr>
+      <tr><td><em>View Target</em></td><td>l'Actor dont on regarde par les yeux. Par défaut, le Pawn possédé — d'où la caméra qui suit le personnage sans rien configurer</td></tr>
+      <tr><td><code>Set View Target with Blend</code> (PlayerController)</td><td>passer à la caméra d'un autre Actor en fondu : cinématique, caméra fixe de couloir, vue d'un terminal</td></tr>
+      <tr><td><code>Get Player Camera Manager</code></td><td>y accéder (position de la caméra, champ de vision, fondu au noir, secousses)</td></tr>
+    </tbody>
+  </table>
+  <div class="callout tip">
+    <span class="label">Caméra qui ne bouge pas avec le Pawn</span>
+    <p>Posséder un Pawn change le <em>View Target</em> : la vue colle au nouveau Pawn. Pour garder une caméra fixe pendant que le joueur contrôle son personnage, il faut lui donner explicitement le View Target avec <code>Set View Target with Blend</code> — la possession ne le reprend qu'à la prochaine prise de contrôle.</p>
+  </div>
+
+  <h2 id="hud" data-group="Pawn, Character & Controller">HUD et interface</h2>
+  <p>L'interface regroupe les menus, les affichages tête haute et les éléments superposés au jeu. Il existe deux outils, d'âges différents :</p>
+  <table>
+    <thead><tr><th></th><th><code>HUD</code> (classe)</th><th>UMG (<a href="ui-structures-interfaces.html#widgets">Widget Blueprint</a>)</th></tr></thead>
+    <tbody>
+      <tr><td>Principe</td><td>dessiner à l'écran image par image, par code : <code>Event Receive Draw HUD</code> puis <code>Draw Text</code>, <code>Draw Texture</code>, <code>Draw Rect</code>, <code>Draw Line</code></td><td>assembler des widgets dans un Designer, et réagir à des événements</td></tr>
+      <tr><td>Instance</td><td>une par joueur humain, qui dessine dans <strong>son</strong> viewport (écran partagé compris) ; classe choisie par <em>HUD Class</em> du <a href="#gamemode">GameMode</a></td><td>autant que voulu, créées avec <code>Create Widget</code></td></tr>
+      <tr><td>Bon pour</td><td>un affichage de débogage, un viseur, des repères tracés à la volée</td><td>tout le reste : barres de vie, inventaire, menus, boîtes de dialogue</td></tr>
+    </tbody>
+  </table>
+  <div class="callout info">
+    <span class="label">Le HUD d'aujourd'hui, c'est surtout UMG</span>
+    <p>La classe <code>HUD</code> reste le point d'attache « un affichage par joueur » du framework (<code>Get HUD</code> depuis le PlayerController), mais on y crée souvent juste les widgets UMG. Où que soit créé le widget, son <em>Owning Player</em> est le PlayerController : c'est ce qui le rattache au bon joueur et au bon écran.</p>
+  </div>
+
+  <h2 id="gamemode" data-group="Règles & persistance">GameModeBase & GameMode</h2>
+  <p>Le <code>GameMode</code> définit les <strong>règles de la partie</strong> pour le niveau courant. Il est créé <strong>après le chargement du niveau</strong> et du World : c'est le premier Actor de la partie, et il fait naître à son tour le GameState et un PlayerState par joueur. Il n'existe que sur le serveur (en multijoueur) et n'est pas conservé d'un niveau à l'autre.</p>
+  <p>Un Blueprint dérivé de <code>GameModeBase</code> fixe les classes par défaut utilisées pour <strong>chaque joueur</strong> qui rejoint la partie :</p>
+  <table>
+    <thead><tr><th>Classe par défaut</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>Default Pawn Class</code></td><td>le Pawn/Character spawné pour le joueur, à l'emplacement d'un <a href="#playerstart">PlayerStart</a> (voir aussi <a href="personnage.html#pawn">Pawn & possession</a>)</td></tr>
+      <tr><td><code>HUD Class</code></td><td>l'interface affichée à l'écran</td></tr>
+      <tr><td><code>PlayerController Class</code></td><td>le contrôleur qui reçoit l'input du joueur</td></tr>
+      <tr><td><code>Spectator Class</code></td><td>Pawn utilisé en mode spectateur</td></tr>
+      <tr><td><code>Game State Class</code> / <code>Player State Class</code></td><td>voir <a href="#etat">GameState</a></td></tr>
+    </tbody>
+  </table>
+  <table>
+    <thead><tr><th>Assigner le GameMode</th><th>Où</th></tr></thead>
+    <tbody>
+      <tr><td>à un seul niveau</td><td><em>World Settings → Game Mode → GameMode Override</em> (voir <a href="levels.html#reglages">World Settings</a>)</td></tr>
+      <tr><td>à tout le projet</td><td><em>Edit → Project Settings → Maps & Modes → Default GameMode</em></td></tr>
+    </tbody>
+  </table>
+  <div class="callout tip">
+    <span class="label">Un GameMode par niveau</span>
+    <p>L'override par niveau prend le pas sur le défaut du projet — utile pour un menu (pas de personnage) vs un niveau de jeu (personnage 3e personne).</p>
+  </div>
+
+  <p>Reste une question de départ : <strong>de quelle classe dériver ?</strong> Le menu de création propose <code>Game Mode Base</code> ; <code>GameMode</code> (sans « Base ») en hérite et y ajoute la notion de <em>manche</em>.</p>
+  <table>
+    <thead><tr><th></th><th><code>GameModeBase</code></th><th><code>GameMode</code></th></tr></thead>
+    <tbody>
+      <tr><td>Fournit</td><td>classes par défaut, spawn et respawn des joueurs, <code>Choose Player Start</code></td><td>tout ça, <strong>plus</strong> une machine d'états de match</td></tr>
+      <tr><td>États de match</td><td>aucun</td><td><em>Waiting to Start</em> → <em>In Progress</em> → <em>Waiting Post Match</em> → <em>Leaving Map</em> (et <em>Aborted</em>)</td></tr>
+      <tr><td>Nœuds en plus</td><td></td><td><code>Start Match</code>, <code>End Match</code>, <code>Has Match Started</code>, <code>Is Match In Progress</code>, événements <code>Ready to Start Match</code> / <code>Ready to End Match</code>, option <em>Delayed Start</em></td></tr>
+      <tr><td>État de partie associé</td><td><code>GameStateBase</code></td><td><code>GameState</code></td></tr>
+      <tr><td>Convient à</td><td>un jeu solo, un jeu en niveaux, un prototype</td><td>un jeu à manches : lobby, échauffement, partie, tableau des scores</td></tr>
+    </tbody>
+  </table>
+  <div class="callout warn">
+    <span class="label">Rester dans la même famille</span>
+    <p>Un <code>GameMode</code> s'utilise avec un <code>GameState</code>, un <code>GameModeBase</code> avec un <code>GameStateBase</code>. Mélanger les deux casse le démarrage du match — le symptôme habituel est un joueur qui reste en spectateur. À vérifier dans <em>Classes par défaut</em> du GameMode quand le personnage n'apparaît pas.</p>
+  </div>
+  <div class="callout info">
+    <span class="label">Côté client, pas de GameMode</span>
+    <p>Le GameMode n'existe que sur le serveur : <code>Get Game Mode</code> renvoie <em>None</em> sur un client en réseau (en solo, il fonctionne partout). Un état que les clients doivent lire se met dans le <code>GameState</code>.</p>
+  </div>
+
+  <h2 id="etat" data-group="Règles & persistance">GameState & PlayerState</h2>
+  <p>Deux Actors sans corps qui portent l'<strong>état de la partie</strong> et que le moteur <strong>réplique</strong> entre serveur et clients. Le GameMode les crée au démarrage ; leur rôle est de séparer ce qui est <em>collectif</em> de ce qui est <em>individuel</em>. Ils n'ont vraiment d'importance qu'en multijoueur ; en solo, une variable de la <a href="#gameinstance">GameInstance</a> suffit souvent.</p>
+  <table>
+    <thead><tr><th></th><th><code>GameState</code></th><th><code>PlayerState</code></th></tr></thead>
+    <tbody>
+      <tr><td>Combien</td><td>un par partie</td><td>un par joueur qui rejoint</td></tr>
+      <tr><td>Créé par</td><td>le GameMode (<em>Game State Class</em>)</td><td>le GameMode (<em>Player State Class</em>)</td></tr>
+      <tr><td>Contient</td><td>les données collectives : score d'équipe, objectifs, temps de partie, <strong>liste des PlayerStates</strong> (variable <em>Player Array</em>)</td><td>les données d'un joueur : nom, score, et ce que l'on veut lui associer — santé, munitions, inventaire</td></tr>
+      <tr><td>Accès</td><td><code>Get Game State</code> (n'importe où) ; <em>Player Array</em> pour parcourir les joueurs</td><td><code>Get Player State</code> depuis un PlayerController ou un Pawn</td></tr>
+      <tr><td>Lien avec le Controller</td><td></td><td>appartient au <em>Controller</em> : il survit à la mort du Pawn, pas à la déconnexion</td></tr>
+    </tbody>
+  </table>
+  <div class="callout tip">
+    <span class="label">Pawn ou PlayerState ?</span>
+    <p>Epic cite la santé, les munitions et l'inventaire comme données de PlayerState. Cela vaut quand elles doivent <strong>survivre au Pawn</strong> (on garde son inventaire en réapparaissant) ou être <strong>vues des autres joueurs</strong> (tableau des scores). Une jauge qui repart à plein à chaque vie reste plus simplement dans le Pawn ou son <a href="#composants">composant de santé</a>. En solo, rien n'est répliqué : GameState et PlayerState servent alors surtout de rangement propre.</p>
+  </div>
+
+  <h2 id="playerstart" data-group="Règles & persistance">PlayerStart & apparition du joueur</h2>
+  <p>Un <code>PlayerStart</code> est un Actor posé dans le niveau (une capsule verte avec une flèche : la capsule donne la taille du joueur, la flèche son orientation au spawn). Il marque <strong>où</strong> un joueur apparaît ; le GameMode en choisit un à chaque fois qu'il doit créer ou recréer un Pawn.</p>
+  <figure>
+    <svg viewBox="0 0 740 130" role="img" aria-label="Du PlayerStart à la possession du Pawn">
+      <defs><marker id="bpps-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+        <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
+      <rect class="svg-bg" x="0" y="0" width="740" height="130" rx="6"/>
+      <rect class="svg-box" x="20" y="30" width="150" height="60" rx="6"/>
+      <text class="svg-t" x="95" y="55" text-anchor="middle">Joueur connecté</text>
+      <text class="svg-tm" x="95" y="73" text-anchor="middle">ou Restart Player</text>
+      <path class="svg-arrow" d="M170 60 H198" style="marker-end:url(#bpps-arr)"/>
+
+      <rect class="svg-box-a" x="200" y="30" width="150" height="60" rx="6"/>
+      <text class="svg-t" x="275" y="55" text-anchor="middle">Choose Player Start</text>
+      <text class="svg-tm" x="275" y="73" text-anchor="middle">choisit un point libre</text>
+      <path class="svg-arrow" d="M350 60 H378" style="marker-end:url(#bpps-arr)"/>
+
+      <rect class="svg-box-g" x="380" y="30" width="150" height="60" rx="6"/>
+      <text class="svg-t" x="455" y="55" text-anchor="middle">Spawn Default Pawn</text>
+      <text class="svg-tm" x="455" y="73" text-anchor="middle">à la transform du point</text>
+      <path class="svg-arrow" d="M530 60 H558" style="marker-end:url(#bpps-arr)"/>
+
+      <rect class="svg-box-w" x="560" y="30" width="150" height="60" rx="6"/>
+      <text class="svg-t" x="635" y="55" text-anchor="middle">Possess</text>
+      <text class="svg-tm" x="635" y="73" text-anchor="middle">prise de contrôle</text>
+    </svg>
+    <figcaption>Le même chemin sert à la première apparition et à chaque respawn.</figcaption>
+  </figure>
+  <table>
+    <thead><tr><th>Situation</th><th>Comportement</th></tr></thead>
+    <tbody>
+      <tr><td>Plusieurs PlayerStart</td><td><code>Choose Player Start</code> prend l'un de ceux qui ne sont pas obstrués, au hasard — aucun ordre garanti</td></tr>
+      <tr><td>Aucun PlayerStart</td><td>le joueur apparaît à l'origine du monde (0, 0, 0), avec un avertissement dans le log</td></tr>
+      <tr><td>Champ <code>Player Start Tag</code></td><td>un nom libre sur chaque PlayerStart, pour les distinguer (checkpoint, équipe, entrée de zone)</td></tr>
+      <tr><td>Play From Here</td><td>l'éditeur crée un <code>PlayerStartPIE</code> temporaire à l'endroit choisi, sans toucher à ceux du niveau</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Respawn & choix personnalisé</h3>
+  <table>
+    <thead><tr><th>Nœud (GameMode)</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>Restart Player</code> (Controller)</td><td>choisit un PlayerStart et spawne la <em>Default Pawn Class</em> — l'appel de respawn standard</td></tr>
+      <tr><td><code>Restart Player at Player Start</code></td><td>respawn à un PlayerStart précis (un checkpoint)</td></tr>
+      <tr><td><code>Restart Player at Transform</code></td><td>respawn à une position et une rotation arbitraires</td></tr>
+      <tr><td><code>Choose Player Start</code> (à surcharger)</td><td>renvoie l'Actor qui servira de point d'apparition : équipe du joueur, dernier checkpoint, point le plus éloigné des ennemis…</td></tr>
+    </tbody>
+  </table>
+  <div class="callout tip">
+    <span class="label">Mort & respawn</span>
+    <p>À la mort : <code>UnPossess</code> puis détruire (ou laisser en <a href="collisions-physique.html#ragdoll">ragdoll</a>) l'ancien Pawn, <em>puis</em> <code>Restart Player</code>. Appeler Restart Player sans nettoyer l'ancien Pawn laisse un cadavre inerte dans le niveau et peut dupliquer le personnage.</p>
+  </div>
+  <div class="callout info">
+    <span class="label">Checkpoints</span>
+    <p>Poser plusieurs PlayerStart avec des <code>Player Start Tag</code> différents. Un trigger de checkpoint écrit son tag dans la <a href="#gameinstance">GameInstance</a> (et dans un <a href="#savegame">SaveGame</a> pour survivre à la fermeture). Dans le <code>Choose Player Start</code> surchargé : <code>Get All Actors of Class</code> (PlayerStart), boucle, renvoyer celui dont le tag correspond — sinon le premier de la liste.</p>
+  </div>
+
+  <h2 id="gameinstance" data-group="Règles & persistance">Game Instance</h2>
+  <p>Créée une fois au lancement, détruite à la fermeture : la <code>GameInstance</code> est le seul objet qui voit passer tous les niveaux. C'est un gestionnaire sans corps, <strong>non répliqué</strong> : le serveur et chaque client ont la leur, indépendante — elle ne sert donc pas à partager une donnée entre joueurs (c'est le rôle du GameState). On la crée en <em>Blueprint Class → GameInstance</em> et on la déclare dans <em>Project Settings → Maps & Modes → Game Instance Class</em>. C'est aussi là qu'on branche le système de sauvegarde (<a href="#savegame">SaveGame</a>) et que vivent les <a href="#subsystems">subsystems</a> de jeu.</p>
+  <figure>
+    <svg viewBox="0 0 620 220" role="img" aria-label="Persistance de la Game Instance à travers les niveaux">
+      <rect class="svg-bg" x="0" y="0" width="620" height="220" rx="6"/>
+      <rect class="svg-box-g" x="140" y="20" width="340" height="50" rx="6"/>
+      <text class="svg-t" x="310" y="42" text-anchor="middle">Game Instance</text>
+      <text class="svg-tm" x="310" y="59" text-anchor="middle">créée une fois, dure toute la session</text>
+
+      <path class="svg-arrow" d="M240 70 V100" stroke="var(--muted)" stroke-width="1.5" fill="none"/>
+      <path class="svg-arrow" d="M380 70 V100" stroke="var(--muted)" stroke-width="1.5" fill="none"/>
+
+      <rect class="svg-box" x="60" y="100" width="240" height="100" rx="6"/>
+      <text class="svg-t" x="180" y="122" text-anchor="middle">Niveau « Menu »</text>
+      <text class="svg-tm" x="180" y="140" text-anchor="middle">GameMode : MenuGameMode</text>
+      <text class="svg-tm" x="180" y="156" text-anchor="middle">pas de Pawn</text>
+
+      <rect class="svg-box-a" x="320" y="100" width="240" height="100" rx="6"/>
+      <text class="svg-t" x="440" y="122" text-anchor="middle">Niveau « Jeu »</text>
+      <text class="svg-tm" x="440" y="140" text-anchor="middle">GameMode : JeuGameMode</text>
+      <text class="svg-tm" x="440" y="156" text-anchor="middle">Pawn = personnage 3e pers.</text>
+    </svg>
+    <figcaption>Chaque niveau recrée son GameMode ; la Game Instance au-dessus ne redémarre jamais entre les deux.</figcaption>
+  </figure>
+  <table>
+    <thead><tr><th>Élément</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>Event Init</code></td><td>au démarrage du jeu, avant tout niveau : charger la sauvegarde, lire les préférences</td></tr>
+      <tr><td><code>Event Shutdown</code></td><td>à la fermeture : dernière sauvegarde</td></tr>
+      <tr><td><code>Get Game Instance</code> + <code>Cast To BP_MyGameInstance</code></td><td>y accéder depuis n'importe où. Écrire ce cast une seule fois dans une <a href="ui-structures-interfaces.html#function-library">Function Library</a> (<code>GetMyGameInstance</code>)</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="savegame" data-group="Règles & persistance">Sauvegarder la partie (SaveGame)</h2>
+  <p>Une <code>GameInstance</code> vit le temps d'une session — elle ne survit pas à la fermeture du jeu. Pour persister des données <strong>entre deux sessions</strong> (sur le disque), Unreal fournit les <code>SaveGame</code> : une classe Blueprint dérivée de <code>SaveGameObject</code>, qui ne contient que des <strong>données</strong> (comme une <a href="ui-structures-interfaces.html#structures">Structure</a>), sérialisées automatiquement.</p>
+  <table>
+    <thead><tr><th>Étape</th><th>Nœud / élément</th></tr></thead>
+    <tbody>
+      <tr><td>1. Définir le contenu</td><td>créer un Blueprint <code>BP_SaveGame</code> (parent <code>SaveGame</code>) avec les variables à conserver (score, position, inventaire…)</td></tr>
+      <tr><td>2. Créer une sauvegarde</td><td><code>Create Save Game Object</code> (classe = <code>BP_SaveGame</code>), remplir ses variables, puis <code>Save Game to Slot</code> (nom de slot + index utilisateur)</td></tr>
+      <tr><td>3. Charger</td><td><code>Does Save Game Exist</code> (le slot existe-t-il ?) puis <code>Load Game from Slot</code> → cast vers <code>BP_SaveGame</code> pour relire ses variables</td></tr>
+      <tr><td>4. Supprimer</td><td><code>Delete Game in Slot</code></td></tr>
+    </tbody>
+  </table>
+  <div class="callout warn">
+    <span class="label">Que mettre dans un SaveGame</span>
+    <p>Uniquement des <strong>données</strong> (nombres, texte, structures, tableaux) — jamais une référence directe à un Actor du niveau (il n'existera plus au prochain lancement). Pour restaurer une position ou un inventaire, sauvegarder les <strong>valeurs</strong> puis reconstruire/repositionner les Actors correspondants au chargement.</p>
+  </div>
+  <div class="callout tip">
+    <span class="label">Où garder la référence</span>
+    <p>La <code>GameInstance</code> est l'endroit naturel pour garder l'objet <code>SaveGame</code> chargé en mémoire : elle survit aux changements de niveau, contrairement au GameMode.</p>
+  </div>
+
+  <h2 id="world" data-group="Outils transverses">World</h2>
+  <p>Le <code>World</code> est l'objet de plus haut niveau : <strong>la carte</strong> telle qu'elle est chargée. Il contient le <em>niveau persistant</em> (et les sublevels chargés par <a href="levels.html#streaming">streaming</a>), le GameMode, le GameState, et tient la liste des Pawns et des Controllers. Quand on ouvre un autre niveau, un nouveau World est créé ; l'éditeur et le jeu lancé depuis l'éditeur ont chacun le leur.</p>
+  <table>
+    <thead><tr><th>Ce qu'on y trouve</th><th>Comment l'atteindre</th></tr></thead>
+    <tbody>
+      <tr><td>Niveau persistant et sublevels</td><td>panneau <em>Levels</em> ; nœuds de streaming — voir <a href="levels.html#levels">Levels & Sublevels</a></td></tr>
+      <tr><td>GameMode, GameState</td><td><code>Get Game Mode</code>, <code>Get Game State</code></td></tr>
+      <tr><td>Les Pawns et les Controllers</td><td><code>Get Player Controller</code>, <code>Get Player Pawn</code>, ou <code>Get All Actors of Class</code> avec la classe voulue</td></tr>
+      <tr><td>Les réglages de la carte</td><td><em>World Settings</em> : <em>GameMode Override</em>, <em>Kill Z</em> (altitude en dessous de laquelle un Actor est détruit)…</td></tr>
+    </tbody>
+  </table>
+  <div class="callout info">
+    <span class="label">Le « World Context Object »</span>
+    <p>Beaucoup de nœuds (<code>Get Player Controller</code>, <code>Spawn Actor</code>, <code>Play Sound</code>…) ont besoin de savoir dans quel World ils agissent. Dans un Actor, c'est automatique (<em>self</em>) ; dans un objet sans monde, comme une <a href="ui-structures-interfaces.html#function-library">Function Library</a>, il faut fournir un objet de référence sur le pin <em>World Context Object</em>.</p>
+  </div>
+
+  <h2 id="statics" data-group="Outils transverses">Gameplay Statics</h2>
+  <p><code>Gameplay Statics</code> est une bibliothèque de fonctions utilitaires disponible depuis n'importe quel Blueprint : on ne la voit pas comme classe, mais ses fonctions remplissent les catégories <em>Game</em>, <em>Audio</em> ou <em>Utilities</em> de la palette. Elle regroupe ce que le framework a de plus courant.</p>
+  <table>
+    <thead><tr><th>Famille</th><th>Exemples</th></tr></thead>
+    <tbody>
+      <tr><td>Accès aux acteurs du framework</td><td><code>Get Player Controller</code>, <code>Get Player Pawn</code>, <code>Get Player Character</code>, <code>Get Player Camera Manager</code>, <code>Get Game Mode</code>, <code>Get Game State</code>, <code>Get Game Instance</code></td></tr>
+      <tr><td>Trouver des Actors</td><td><code>Get All Actors of Class</code>, <code>Get All Actors with Tag</code>, <code>Get Actor of Class</code></td></tr>
+      <tr><td>Son</td><td><code>Play Sound 2D</code>, <code>Play Sound at Location</code>, <code>Spawn Sound Attached</code></td></tr>
+      <tr><td>Dégâts</td><td><code>Apply Damage</code>, <code>Apply Point Damage</code>, <code>Apply Radial Damage</code> — reçus par <code>Event AnyDamage</code> / <code>Point Damage</code> / <code>Radial Damage</code></td></tr>
+      <tr><td>Monde et partie</td><td><code>Open Level</code>, <code>Set Game Paused</code>, <code>Get World Delta Seconds</code>, <code>Get Time Seconds</code></td></tr>
+      <tr><td>Créer</td><td><code>Begin Deferred Actor Spawn From Class</code> / <code>Finish Spawning Actor</code> pour régler un Actor avant que son Construction Script ne tourne</td></tr>
+    </tbody>
+  </table>
+  <p>Les effets de particules Niagara ont leur propre bibliothèque (<code>Spawn System at Location</code>) — voir <a href="feedback.html">Materials, SFX & VFX</a>.</p>
+
+  <h2 id="subsystems" data-group="Outils transverses">Subsystems</h2>
+  <p>Un <strong>subsystem</strong> est un service qui démarre et s'arrête avec un objet porteur — il évite d'écrire un « manager » à la main et de le poser dans un niveau. Le plus important pour le gameplay est le <code>Game Instance Subsystem</code> : il vit autant que la <a href="#gameinstance">GameInstance</a>, donc toute la session, à travers les niveaux.</p>
+  <table>
+    <thead><tr><th>Type de subsystem</th><th>Vit autant que…</th><th>Exemple</th></tr></thead>
+    <tbody>
+      <tr><td>Engine</td><td>le moteur</td><td>services globaux</td></tr>
+      <tr><td>Game Instance</td><td>la GameInstance</td><td>les services en ligne (amis, sessions, lobbies, classements), un gestionnaire de sauvegarde</td></tr>
+      <tr><td>World</td><td>le World chargé</td><td>un gestionnaire propre à un niveau</td></tr>
+      <tr><td>Local Player</td><td>le joueur local</td><td>l'<a href="personnage.html#input">Enhanced Input</a> (c'est lui qu'on appelle avec <code>Add Mapping Context</code>)</td></tr>
+    </tbody>
+  </table>
+  <div class="callout info">
+    <span class="label">Utilisés en Blueprint, définis en C++</span>
+    <p>Les subsystems du moteur s'appellent depuis un Blueprint avec un nœud <code>Get … Subsystem</code> (à chercher dans la palette). Écrire les siens se fait en général en C++ ; en Blueprint pur, on garde la GameInstance ou un <a href="#composants">composant</a> comme porte d'entrée.</p>
+  </div>
+
+  <h2 id="session" data-group="Récapitulatif">Une session type, du lancement au niveau de jeu</h2>
+  <p>Une session type, du lancement du jeu à un niveau de jeu avec personnage :</p>
+  <table>
+    <thead><tr><th>Étape</th><th>Ce qui se passe</th></tr></thead>
+    <tbody>
+      <tr><td>1. Lancement</td><td>la <code>GameInstance</code> se crée, reste en mémoire pour toute la session</td></tr>
+      <tr><td>2. Chargement du niveau</td><td>le <code>GameMode</code> du niveau spawn le <code>PlayerController</code> puis le <code>Character</code> (<code>Default Pawn Class</code>) à l'emplacement d'un <code>PlayerStart</code></td></tr>
+      <tr><td>3. Déplacement</td><td>le Mapping Context est actif ; <code>IA_Move</code> → <code>Add Movement Input</code> sur le <code>CharacterMovementComponent</code></td></tr>
+      <tr><td>4. Animation</td><td>l'Event Graph de l'Animation Blueprint calcule <code>Speed</code>/<code>Direction</code> ; le Blend Space renvoie la pose mélangée</td></tr>
+      <tr><td>5. Changement de zone</td><td>un un <code>Level Streaming Volume</code> charge le sublevel « Intérieur » et décharge « Extérieur » (voir <a href="levels.html#streaming">Méthodes de streaming</a>)</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="ou-ranger" data-group="Récapitulatif">Où ranger une donnée ?</h2>
+  <table>
+    <thead><tr><th>Donnée</th><th>Où</th><th>Pourquoi</th></tr></thead>
+    <tbody>
+      <tr><td>points de vie, munitions, cooldowns d'un corps</td><td>le Pawn, ou un <a href="#composants">composant</a></td><td>disparaissent avec lui, c'est voulu</td></tr>
+      <tr><td>HUD, menu pause, Mapping Contexts</td><td>PlayerController</td><td>survivent à la mort du Pawn</td></tr>
+      <tr><td>règles du niveau : nombre d'ennemis, temps de manche, qui apparaît où</td><td>GameMode</td><td>recréé avec le niveau, serveur seulement</td></tr>
+      <tr><td>chrono, score d'équipe, objectifs, liste des joueurs</td><td><a href="#etat">GameState</a></td><td>un par partie, répliqué aux clients</td></tr>
+      <tr><td>score, nom, inventaire ou munitions d'un joueur, qui survivent à la mort de son Pawn</td><td><a href="#etat">PlayerState</a></td><td>appartient au Controller, répliqué</td></tr>
+      <tr><td>inventaire, argent, progression, préférences, entre deux niveaux</td><td>GameInstance</td><td>survit aux changements de niveau</td></tr>
+      <tr><td>tout ce qui doit survivre à la fermeture du jeu</td><td><a href="#savegame">SaveGame</a></td><td>écrit sur disque</td></tr>
+      <tr><td>valeurs d'équilibrage : dégâts, prix, stats</td><td><a href="ui-structures-interfaces.html#datatables">Data Table</a> ou <a href="ui-structures-interfaces.html#dataassets">Data Asset</a></td><td>hors du graphe, modifiables sans recompiler</td></tr>
+    </tbody>
+  </table>
+
+  <footer class="pg">
+    <span><a href="fonctions-events-timers.html">← Fonctions, events & timers</a></span>
+    <span><a href="index.html">Retour à l'accueil Blueprint</a></span>
+  </footer>
+</main>
+</div>
+
+<script src="../assets/site.config.js"></script>
+<script src="../assets/nav.js"></script>
+</body>
+</html>

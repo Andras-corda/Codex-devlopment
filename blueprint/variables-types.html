@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Codex — Blueprint · Variables, types & tags</title>
-<meta name="description" content="Variables Blueprint type par type : Boolean (logique), Byte, Integer et Float (maths), String/Name/Text, Vector, Rotator, Transform, références d'objet et de classe, Actor Tags et Gameplay Tags.">
+<title>Codex — Blueprint · Variables, types, cast & tags</title>
+<meta name="description" content="Les types de variables Blueprint un par un (booléen, entier, flottant, String/Name/Text, vecteur, rotator, transform), conversions et parsing de texte, références, Cast To, Class et Soft Reference, Actor Tags et Gameplay Tags dans Unreal Engine.">
 <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body data-lang="blueprint" data-page="variables">
@@ -15,8 +15,8 @@
 <aside class="side" id="side"></aside>
 
 <main>
-  <h1>1 · Variables, types & tags</h1>
-  <p class="lead">Chaque type de variable Blueprint a sa couleur de pin, ses nœuds et ses pièges. Cette page les prend <strong>un par un</strong> — logique pour les booléens, maths pour les nombres, texte, espace 3D, références — puis termine par les <strong>tags</strong>, qui servent à étiqueter les Actors.</p>
+  <h1>1 · Variables, types, cast & tags</h1>
+  <p class="lead">Chaque type de variable Blueprint a sa couleur de pin, ses nœuds et ses pièges. Cette page les prend <strong>un par un</strong> — logique pour les booléens, maths pour les nombres, texte (avec <strong>conversions et parsing</strong>), espace 3D, références (avec le <strong>Cast</strong>) — puis termine par les <strong>tags</strong>, qui servent à étiqueter les Actors.</p>
 
   <h2 id="variables" data-group="Généralités">Créer et utiliser une variable</h2>
   <p>Panneau <em>My Blueprint → Variables → +</em>, puis choisir le type dans <em>Details</em>. L'icône à droite du type la transforme en <a href="index.html#collections">Array, Set ou Map</a>.</p>
@@ -115,6 +115,7 @@
       <tr><td><code>==</code> (option <em>Ignore Case</em>)</td><td>comparer deux Strings</td></tr>
     </tbody>
   </table>
+  <p>Passer d'un texte à un nombre et lire un texte structuré (<code>"12;5;40"</code>) : voir <a href="#conversions">Convertir et parser</a>.</p>
 
   <h2 id="name" data-group="Texte">Name — identifiants</h2>
   <p><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#b06fe0;vertical-align:middle;margin-right:6px"></span>Pin <strong>violet</strong>. Un <strong>nom qui identifie quelque chose</strong>, pas un texte à lire. Unreal les stocke une seule fois dans une table interne : les comparer revient à comparer deux nombres, donc c'est très rapide.</p>
@@ -149,6 +150,79 @@
       <tr><td>déboguer, construire, découper du texte</td><td><code>String</code></td></tr>
       <tr><td>identifier (socket, ligne, niveau, tag)</td><td><code>Name</code></td></tr>
       <tr><td>afficher au joueur</td><td><code>Text</code></td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="conversions" data-group="Texte">Convertir et parser</h2>
+  <p><strong>Convertir</strong>, c'est changer le type d'une valeur (un nombre en texte, un entier en décimal). <strong>Parser</strong>, c'est lire un texte pour en extraire des valeurs (<code>"12;5;40"</code> → trois nombres). Unreal convertit tout seul ce qui est sans risque (Integer → Float, n'importe quoi → String pour un <code>Print String</code>) et réclame un nœud explicite quand de l'information peut se perdre ou que le texte peut être invalide.</p>
+  <table>
+    <thead><tr><th>De → vers</th><th>Nœud</th><th>À savoir</th></tr></thead>
+    <tbody>
+      <tr><td>Integer → Float</td><td>automatique</td><td>sans perte pour les valeurs courantes</td></tr>
+      <tr><td>Float → Integer</td><td><code>Truncate</code>, <code>Round</code>, <code>Floor</code>, <code>Ceil</code></td><td>pas équivalents : pour −1,7, <code>Truncate</code> donne −1, <code>Floor</code> donne −2, <code>Round</code> −2</td></tr>
+      <tr><td>nombre, Boolean, Vector… → String</td><td><code>To String (…)</code> (ou un fil direct vers <code>Print String</code>)</td><td>pour le débogage et les clés techniques</td></tr>
+      <tr><td>nombre → Text</td><td><code>To Text (Integer)</code> / <code>To Text (Float)</code></td><td>options de décimales et de séparateur de milliers ; formaté selon la langue du joueur</td></tr>
+      <tr><td>String → Integer</td><td><code>String to Int</code></td><td>un texte non numérique donne <strong>0</strong>, sans erreur</td></tr>
+      <tr><td>String → Float</td><td><code>String to Float</code></td><td>idem : <code>0.0</code> si le texte n'est pas un nombre</td></tr>
+      <tr><td>String ↔ Name</td><td><code>String to Name</code> / <code>To String (Name)</code></td><td>un Name est insensible à la casse (voir <a href="#name">Name</a>)</td></tr>
+      <tr><td>String ↔ Text</td><td><code>To Text (String)</code> / <code>To String (Text)</code></td><td>un Text ne se manipule pas : repasser par une String pour le découper</td></tr>
+      <tr><td>String → Vector</td><td><code>String to Vector</code></td><td>attend le format que produit <code>To String</code> : <code>X=1.0 Y=2.0 Z=3.0</code></td></tr>
+      <tr><td>Enum ↔ Byte</td><td>conversions de l'<a href="ui-structures-interfaces.html#enums">énumération</a></td><td>l'indice numérique de la valeur (0, 1, 2…)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Parser un texte</h3>
+  <figure>
+    <svg viewBox="0 0 640 195" role="img" aria-label="Le texte 12;5;40 est découpé par Parse Into Array puis chaque morceau est converti en entier">
+      <defs><marker id="bpcv-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+        <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
+      <rect class="svg-bg" x="0" y="0" width="640" height="195" rx="6"/>
+      <rect class="svg-box-w" x="10" y="30" width="100" height="60" rx="6"/>
+      <text class="svg-t" x="60" y="55" text-anchor="middle">String</text>
+      <text class="svg-tm" x="60" y="73" text-anchor="middle">12;5;40</text>
+      <path d="M110 60 H138" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpcv-arr)"/>
+
+      <rect class="svg-box-a" x="140" y="30" width="145" height="60" rx="6"/>
+      <text class="svg-t" x="212" y="55" text-anchor="middle">Parse Into Array</text>
+      <text class="svg-tm" x="212" y="73" text-anchor="middle">Delimiter = ";"</text>
+      <path d="M285 60 H313" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpcv-arr)"/>
+
+      <rect class="svg-box" x="315" y="30" width="140" height="60" rx="6"/>
+      <text class="svg-t" x="385" y="55" text-anchor="middle">Array de String</text>
+      <text class="svg-tm" x="385" y="73" text-anchor="middle">"12"  "5"  "40"</text>
+      <path d="M455 60 H483" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpcv-arr)"/>
+
+      <rect class="svg-box-g" x="485" y="30" width="145" height="60" rx="6"/>
+      <text class="svg-t" x="557" y="55" text-anchor="middle">String to Int</text>
+      <text class="svg-tm" x="557" y="73" text-anchor="middle">dans un For Each</text>
+      <path d="M557 90 V118" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpcv-arr)"/>
+
+      <rect class="svg-box-a" x="485" y="120" width="145" height="55" rx="6"/>
+      <text class="svg-t" x="557" y="144" text-anchor="middle">Array d'Integer</text>
+      <text class="svg-tm" x="557" y="162" text-anchor="middle">12, 5, 40</text>
+    </svg>
+    <figcaption>Découper d'abord, convertir ensuite : chaque élément du tableau de String passe par <code>String to Int</code> avant d'être ajouté (<code>Add</code>) à un tableau d'entiers.</figcaption>
+  </figure>
+  <table>
+    <thead><tr><th>Nœud</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>Parse Into Array</code></td><td>coupe une String à chaque <em>Delimiter</em> (un ou plusieurs caractères) et renvoie un tableau ; <em>Cull Empty Strings</em> écarte les morceaux vides</td></tr>
+      <tr><td><code>Split</code></td><td>coupe en <strong>deux</strong> au premier délimiteur (<em>Left</em> / <em>Right</em> ; <em>Search from End</em> part de la fin) — idéal pour une paire <code>"Nom=Hache"</code></td></tr>
+      <tr><td><code>Left</code>, <code>Right</code>, <code>Mid</code>, <code>Get Substring</code></td><td>extraire un morceau par sa position</td></tr>
+      <tr><td><code>Find Substring</code></td><td>position d'un fragment (−1 s'il est absent) — à tester avant de découper</td></tr>
+      <tr><td><code>Trim</code>, <code>Replace</code></td><td>nettoyer avant de convertir : espaces, retours à la ligne, séparateurs parasites</td></tr>
+      <tr><td><code>Is Numeric</code></td><td>le texte est-il un nombre ? — le garde-fou à poser avant <code>String to Int</code></td></tr>
+      <tr><td><code>Join String Array</code></td><td>le chemin inverse : un tableau de String recollé avec un séparateur</td></tr>
+    </tbody>
+  </table>
+  <table>
+    <thead><tr><th>Piège</th><th>Correction</th></tr></thead>
+    <tbody>
+      <tr><td><code>String to Int</code> sur <code>"abc"</code> renvoie 0 — impossible de distinguer d'un vrai <code>"0"</code></td><td>tester <code>Is Numeric</code> d'abord, et traiter le cas faux</td></tr>
+      <tr><td>un retour à la ligne ou un espace traîne (<code>"40\r"</code>, <code>" 5"</code>)</td><td><code>Trim</code> avant de convertir</td></tr>
+      <tr><td>un nombre à virgule décimale (<code>"3,5"</code>)</td><td>le point est le séparateur reconnu : remplacer la virgule, ou écrire les données avec un point</td></tr>
+      <tr><td>parser ce qu'affiche un <code>Text</code> (<code>"1 000,5"</code>)</td><td>jamais : le Text est formaté selon la langue. Garder la valeur numérique à côté, et parser des Strings techniques</td></tr>
+      <tr><td>un fichier entier à lire (dialogues, statistiques)</td><td>importer une <a href="ui-structures-interfaces.html#datatables">Data Table</a> (CSV / JSON) plutôt que de tout parser à la main</td></tr>
     </tbody>
   </table>
 
@@ -215,8 +289,74 @@
   </table>
   <div class="callout danger">
     <span class="label">Accessed None</span>
-    <p>Utiliser une référence vide (Actor détruit, variable jamais remplie) donne l'erreur <em>Accessed None trying to read property…</em>. Protéger avec <code>Is Valid</code> (la version macro, avec pins d'exécution <em>Is Valid</em> / <em>Is Not Valid</em>). Pour accéder aux variables propres à <code>BP_Character</code> depuis une référence générique (<code>Actor</code>), il faut un <code>Cast To BP_Character</code> — ou une <a href="ui-structures-interfaces.html#interfaces">interface</a>.</p>
+    <p>Utiliser une référence vide (Actor détruit, variable jamais remplie) donne l'erreur <em>Accessed None trying to read property…</em>. Protéger avec <code>Is Valid</code> (la version macro, avec pins d'exécution <em>Is Valid</em> / <em>Is Not Valid</em>). Pour accéder aux variables propres à <code>BP_Character</code> depuis une référence générique (<code>Actor</code>), il faut un <a href="#cast"><code>Cast To BP_Character</code></a> — ou une <a href="ui-structures-interfaces.html#interfaces">interface</a>.</p>
   </div>
+
+  <h2 id="cast" data-group="Références">Cast To : changer le type d'une référence</h2>
+  <p>Une référence « générique » (<code>Actor</code>, <code>Pawn</code>, <code>Object</code>) ne donne accès qu'à ce que sa classe connaît. Pour lire <code>Health</code> ou appeler une fonction définie dans <code>BP_Enemy</code>, il faut dire à Unreal : « cet Actor est en réalité un BP_Enemy ». C'est le rôle de <code>Cast To BP_Enemy</code> : il <strong>vérifie</strong> la classe réelle de l'objet à l'exécution et, si elle correspond, renvoie la <strong>même</strong> référence, retypée.</p>
+  <figure>
+    <svg viewBox="0 0 640 190" role="img" aria-label="Cast To BP_Enemy : succès vers As BP_Enemy, échec vers Cast Failed">
+      <defs><marker id="bpcast-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+        <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
+      <rect class="svg-bg" x="0" y="0" width="640" height="190" rx="6"/>
+      <rect class="svg-box-w" x="15" y="65" width="130" height="60" rx="6"/>
+      <text class="svg-t" x="80" y="90" text-anchor="middle">Other Actor</text>
+      <text class="svg-tm" x="80" y="108" text-anchor="middle">de type Actor</text>
+      <path d="M145 95 H183" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpcast-arr)"/>
+
+      <rect class="svg-box-a" x="185" y="65" width="160" height="60" rx="6"/>
+      <text class="svg-t" x="265" y="90" text-anchor="middle">Cast To BP_Enemy</text>
+      <text class="svg-tm" x="265" y="108" text-anchor="middle">teste la vraie classe</text>
+
+      <path d="M345 85 C 372 85, 372 52, 400 52" stroke="var(--link)" stroke-width="2" fill="none" style="marker-end:url(#bpcast-arr)"/>
+      <path d="M345 105 C 372 105, 372 138, 400 138" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3" fill="none" style="marker-end:url(#bpcast-arr)"/>
+
+      <rect class="svg-box-g" x="402" y="22" width="220" height="60" rx="6"/>
+      <text class="svg-t" x="512" y="47" text-anchor="middle">As BP_Enemy</text>
+      <text class="svg-tm" x="512" y="65" text-anchor="middle">accès à Health, Die()…</text>
+      <rect class="svg-box" x="402" y="108" width="220" height="60" rx="6"/>
+      <text class="svg-t" x="512" y="133" text-anchor="middle">Cast Failed</text>
+      <text class="svg-tm" x="512" y="151" text-anchor="middle">ce n'est pas un ennemi</text>
+    </svg>
+    <figcaption>Deux sorties : la classe correspond, on obtient une référence typée ; sinon le flux part sur <em>Cast Failed</em> — ce n'est pas une erreur.</figcaption>
+  </figure>
+  <table>
+    <thead><tr><th>Élément</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td>Entrée <em>Object</em></td><td>la référence à tester (<code>Other Actor</code>, <code>Get Player Pawn</code>…). Une référence <em>None</em> fait échouer le cast, sans erreur</td></tr>
+      <tr><td>Sortie d'exécution + <code>As BP_Enemy</code></td><td>cast réussi : la référence retypée, avec toutes les variables et fonctions de la classe</td></tr>
+      <tr><td><code>Cast Failed</code></td><td>cast raté : l'objet n'est pas de cette classe (ni d'une classe enfant)</td></tr>
+      <tr><td><em>Pure Cast</em> (clic droit → <em>Convert to Pure Cast</em>)</td><td>supprime les pins d'exécution : renvoie la référence ou <em>None</em>. Compact, mais à faire suivre d'un <code>Is Valid</code></td></tr>
+      <tr><td>Cast vers un <strong>parent</strong></td><td>réussit pour tous les enfants : <code>Cast To Character</code> accepte <code>BP_Hero</code> et <code>BP_Enemy</code> ; <code>Cast To Actor</code> réussit toujours</td></tr>
+    </tbody>
+  </table>
+  <table>
+    <thead><tr><th>Source de la référence</th><th>Cast typique</th></tr></thead>
+    <tbody>
+      <tr><td><code>Other Actor</code> d'un overlap ou d'un hit</td><td><code>Cast To BP_Hero</code> : est-ce le joueur ?</td></tr>
+      <tr><td><code>Get Player Pawn</code> / <code>Get Player Character</code></td><td><code>Cast To BP_Hero</code> pour lire ses variables propres</td></tr>
+      <tr><td><code>Get Game Instance</code>, <code>Get Game Mode</code></td><td><code>Cast To BP_MyGameInstance</code> / <code>BP_MyGameMode</code> — voir <a href="classes-framework.html#gameinstance">Game Instance</a></td></tr>
+      <tr><td><code>Try Get Pawn Owner</code> (Animation Blueprint)</td><td><code>Cast To BP_Hero</code>, une fois, à l'<a href="animation-blueprint.html">initialisation</a></td></tr>
+      <tr><td><code>Load Game from Slot</code></td><td><code>Cast To BP_SaveGame</code> — voir <a href="classes-framework.html#savegame">SaveGame</a></td></tr>
+    </tbody>
+  </table>
+  <div class="callout warn">
+    <span class="label">Un cast crée une dépendance forte</span>
+    <p>Un nœud <code>Cast To BP_Enemy</code> fait référence à la classe <code>BP_Enemy</code> : charger le Blueprint qui l'appelle charge aussi <code>BP_Enemy</code> — avec ses meshes, ses sons, ses propres casts. Des casts vers des Blueprints lourds, répétés partout, font tout charger d'un coup. Pour voir les dépendances d'un asset : <em>clic droit → Reference Viewer</em> et <em>Size Map</em>. Pour les réduire : caster vers une <strong>classe parente légère</strong> (<code>Character</code>, ou un <code>BP_EnemyBase</code> sans assets), passer par une <a href="ui-structures-interfaces.html#interfaces">interface</a>, ou s'abonner à un <a href="fonctions-events-timers.html#handler">Event Dispatcher</a>.</p>
+  </div>
+  <div class="callout tip">
+    <span class="label">Caster une fois, pas à chaque frame</span>
+    <p>Un cast raté est normal (un overlap avec n'importe quoi déclenche un cast raté) : brancher <em>Cast Failed</em> sur rien suffit pour ignorer. En revanche, caster sur <code>Event Tick</code> refait la vérification à chaque frame pour rien : faire le cast <strong>une fois</strong> (<code>BeginPlay</code>, <code>Event Possessed</code>), puis garder le résultat dans une <a href="#object">variable</a> typée.</p>
+  </div>
+  <table>
+    <thead><tr><th>Besoin</th><th>Outil</th></tr></thead>
+    <tbody>
+      <tr><td>accéder aux variables propres d'une classe précise</td><td><code>Cast To</code></td></tr>
+      <tr><td>demander la même action à des classes sans parent commun</td><td><a href="ui-structures-interfaces.html#interfaces">Blueprint Interface</a> (<code>Does Implement Interface</code>)</td></tr>
+      <tr><td>savoir « est-ce un ennemi ? » sans charger sa classe</td><td><a href="#tags">tag</a> (<code>Actor Has Tag</code>)</td></tr>
+      <tr><td>prévenir sans connaître les destinataires</td><td><a href="fonctions-events-timers.html#handler">Event Dispatcher</a></td></tr>
+    </tbody>
+  </table>
 
   <h2 id="class" data-group="Références">Class Reference & Soft Reference</h2>
   <table>
@@ -234,6 +374,10 @@
 
   <h2 id="tags" data-group="Tags">Actor Tags & Component Tags</h2>
   <p>Un <strong>tag</strong> est une étiquette (un <code>Name</code>) posée sur un Actor ou un composant, pour le reconnaître sans connaître sa classe : <code>Player</code>, <code>Enemy</code>, <code>Interactable</code>, <code>Flammable</code>. Chaque Actor a un tableau <code>Tags</code> (<em>Details → Actor → Tags</em>), chaque composant aussi (<em>Component Tags</em>).</p>
+  <figure>
+    <img src="../assets/gifs/tags-unreal.gif" width="960" height="540" loading="lazy" alt="Animation : les tags dans Unreal — Actor Tags, Component Tags (un point faible reconnu avec Component Has Tag) et le choix entre Actor Tags, Component Tags et Gameplay Tags">
+    <figcaption>Les tags en action : sur un Actor, sur un composant (une zone « point faible » reconnue par <code>Component Has Tag</code>), puis lequel choisir entre Actor Tags, Component Tags et <a href="#gameplay-tags">Gameplay Tags</a>.</figcaption>
+  </figure>
   <table>
     <thead><tr><th>Nœud</th><th>Rôle</th></tr></thead>
     <tbody>

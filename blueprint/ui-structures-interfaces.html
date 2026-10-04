@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Codex — Blueprint · UI, Structs & Interfaces</title>
-<meta name="description" content="Widget Blueprints (UMG), Blueprint Structures, Data Assets et Primary Data Assets, Blueprint Interfaces, énumérations (enum) et Blueprint Function Library dans Unreal Engine.">
+<title>Codex — Blueprint · UI, données & orienté objet</title>
+<meta name="description" content="Widget Blueprints (UMG : création, catalogue des widgets, événements, focus, drag & drop, menus), Blueprint Structures, Data Tables, Data Assets et Primary Data Assets, énumérations, héritage, polymorphisme et classes abstraites, Blueprint Interfaces et Blueprint Function Library dans Unreal Engine.">
 <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body data-lang="blueprint" data-page="ui">
@@ -15,11 +15,21 @@
 <aside class="side" id="side"></aside>
 
 <main>
-  <h1>5 · UI, Structs & Interfaces</h1>
-  <p class="lead">Afficher une interface (<strong>Widget Blueprint</strong>), regrouper des données (<strong>Structure</strong>, <strong>Data Asset</strong>), faire communiquer des Blueprints sans les lier (<strong>Blueprint Interface</strong>), nommer des états (<strong>Enumeration</strong>) et partager des fonctions utilitaires (<strong>Blueprint Function Library</strong>).</p>
+  <h1>5 · UI, données & orienté objet</h1>
+  <p class="lead">Afficher une interface (<strong>Widget Blueprint</strong>), regrouper des données (<strong>Structure</strong>, <strong>Data Table</strong>, <strong>Data Asset</strong>, <strong>Enumeration</strong>), structurer ses classes (<strong>héritage</strong>, <strong>polymorphisme</strong>, <strong>Blueprint Interface</strong>) et partager des fonctions utilitaires (<strong>Blueprint Function Library</strong>).</p>
 
   <h2 id="widgets" data-group="Interface utilisateur">Widget Blueprint (UMG)</h2>
   <p>Un <strong>Widget Blueprint</strong> (préfixe <code>WBP_</code>, <em>User Interface → Widget Blueprint</em>) décrit un morceau d'interface : HUD, menu pause, barre de vie, inventaire. Il a deux onglets : le <strong>Designer</strong> (on place les éléments visuellement) et le <strong>Graph</strong> (la logique, comme un Blueprint normal).</p>
+  <table>
+    <thead><tr><th>Étape</th><th>Comment</th></tr></thead>
+    <tbody>
+      <tr><td>1. Créer</td><td>Content Browser → <em>Add → User Interface → Widget Blueprint</em>, puis choisir la <strong>classe parente</strong> : <code>User Widget</code> dans l'immense majorité des cas (le plugin <em>Common UI</em>, à activer, ajoute des parents pensés pour la manette et les menus empilés). Préfixe <code>WBP_</code></td></tr>
+      <tr><td>2. Dessiner</td><td>onglet <em>Designer</em> : glisser des widgets depuis la Palette dans la <em>Hierarchy</em> ou sur la zone de dessin</td></tr>
+      <tr><td>3. Programmer</td><td>onglet <em>Graph</em> : événements, fonctions et variables du widget, comme dans un Actor</td></tr>
+      <tr><td>4. Afficher</td><td>depuis un autre Blueprint : <code>Create Widget</code> puis <code>Add to Viewport</code> (voir plus bas) — un Widget Blueprint ne se pose pas dans le niveau</td></tr>
+    </tbody>
+  </table>
+  <p>Les widgets les plus courants, en un coup d'œil (le catalogue complet est dans <a href="#umg-palette">Les widgets de la Palette</a>) :</p>
   <table>
     <thead><tr><th>Widget</th><th>Rôle</th></tr></thead>
     <tbody>
@@ -71,10 +81,276 @@
   </table>
 
   <h3>Mettre à jour l'UI : binding ou événement</h3>
-  <p>Un élément peut être <strong>bindé</strong> (bouton <em>Bind</em> à côté d'une propriété dans le Designer) : une fonction est alors appelée <strong>à chaque frame</strong> pour recalculer la valeur. Simple, mais coûteux quand les widgets se multiplient. L'alternative <strong>événementielle</strong> : le personnage prévient le widget seulement quand la valeur change (appel direct via la référence, ou un <a href="index.html#dispatchers">Event Dispatcher</a> <code>OnHealthChanged</code> auquel le widget s'abonne).</p>
+  <p>Un élément peut être <strong>bindé</strong> (bouton <em>Bind</em> à côté d'une propriété dans le Designer) : une fonction est alors appelée <strong>à chaque frame</strong> pour recalculer la valeur. Simple, mais coûteux quand les widgets se multiplient. L'alternative <strong>événementielle</strong> : le personnage prévient le widget seulement quand la valeur change (appel direct via la référence, ou un <a href="fonctions-events-timers.html#handler">Event Dispatcher</a> <code>OnHealthChanged</code> auquel le widget s'abonne).</p>
   <div class="callout info">
     <span class="label">Event Construct vs Event Pre Construct</span>
     <p><code>Event Construct</code> tourne quand le widget est créé en jeu (équivalent de BeginPlay). <code>Event Pre Construct</code> tourne aussi <strong>dans l'éditeur</strong> — pratique pour prévisualiser un widget réutilisable paramétré (texte d'un bouton, couleur) directement dans le Designer. Pour accéder à un élément depuis le Graph, cocher <code>Is Variable</code> sur celui-ci.</p>
+  </div>
+
+  <h3>Le Designer en un coup d'œil</h3>
+  <table>
+    <thead><tr><th>Panneau</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><em>Palette</em></td><td>la liste des widgets à glisser sur la zone de dessin (onglet <em>User Created</em> : vos propres widgets)</td></tr>
+      <tr><td><em>Hierarchy</em></td><td>l'arbre des widgets, comme les composants d'un Actor : l'ordre compte (le dernier est dessiné par-dessus)</td></tr>
+      <tr><td><em>Details</em></td><td>les réglages du widget sélectionné : <em>Slot</em> (sa place dans son parent), apparence, visibilité, événements (<code>On Clicked</code>…), case <em>Is Variable</em></td></tr>
+      <tr><td><em>Animations</em></td><td>la timeline en bas : les animations du widget (voir plus bas)</td></tr>
+      <tr><td>Bascule <em>Designer / Graph</em></td><td>en haut à droite : dessiner ou programmer</td></tr>
+      <tr><td><em>Screen Size</em> (zone de dessin)</td><td>simule une résolution ou un ratio : vérifier qu'un HUD tient en 16:9 comme en ultra-large</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Hiérarchie, slots et tailles</h3>
+  <figure>
+    <svg viewBox="0 0 640 215" role="img" aria-label="Arbre de widgets : un Canvas Panel qui contient un Overlay (barre de vie) et un Vertical Box (menu)">
+      <rect class="svg-bg" x="0" y="0" width="640" height="215" rx="6"/>
+      <path d="M320 55 L140 85" stroke="var(--muted)" stroke-width="1.5" fill="none"/>
+      <path d="M320 55 L500 85" stroke="var(--muted)" stroke-width="1.5" fill="none"/>
+      <path d="M140 125 L75 155" stroke="var(--muted)" stroke-width="1.5" fill="none"/>
+      <path d="M140 125 L205 155" stroke="var(--muted)" stroke-width="1.5" fill="none"/>
+      <path d="M500 125 L435 155" stroke="var(--muted)" stroke-width="1.5" fill="none"/>
+      <path d="M500 125 L565 155" stroke="var(--muted)" stroke-width="1.5" fill="none"/>
+
+      <rect class="svg-box-a" x="240" y="15" width="160" height="40" rx="6"/>
+      <text class="svg-t" x="320" y="40" text-anchor="middle">Canvas Panel</text>
+
+      <rect class="svg-box-g" x="60" y="85" width="160" height="40" rx="6"/>
+      <text class="svg-t" x="140" y="110" text-anchor="middle">Overlay</text>
+      <rect class="svg-box-g" x="420" y="85" width="160" height="40" rx="6"/>
+      <text class="svg-t" x="500" y="110" text-anchor="middle">Vertical Box</text>
+
+      <rect class="svg-box-w" x="20" y="155" width="110" height="40" rx="6"/>
+      <text class="svg-t" x="75" y="180" text-anchor="middle">Progress Bar</text>
+      <rect class="svg-box-w" x="150" y="155" width="110" height="40" rx="6"/>
+      <text class="svg-t" x="205" y="180" text-anchor="middle">Text</text>
+      <rect class="svg-box-w" x="380" y="155" width="110" height="40" rx="6"/>
+      <text class="svg-t" x="435" y="180" text-anchor="middle">Bouton Jouer</text>
+      <rect class="svg-box-w" x="510" y="155" width="110" height="40" rx="6"/>
+      <text class="svg-t" x="565" y="180" text-anchor="middle">Bouton Quitter</text>
+    </svg>
+    <figcaption>Les panneaux (Canvas Panel, Overlay, Vertical Box) contiennent des enfants et décident de leur place ; les widgets feuilles (barre, texte, bouton) affichent. À gauche une barre de vie, à droite un menu.</figcaption>
+  </figure>
+  <p>Un enfant ne choisit pas seul sa position : c'est son <strong>slot</strong> (le « emplacement » que lui donne son parent) qui la règle, et les propriétés du slot dépendent du type de parent.</p>
+  <table>
+    <thead><tr><th>Parent</th><th>Réglages du slot</th></tr></thead>
+    <tbody>
+      <tr><td><code>Canvas Panel</code></td><td><em>Anchors</em>, <em>Position X/Y</em>, <em>Size X/Y</em>, <em>Alignment</em> (le point du widget qui se pose sur la position), <em>Size To Content</em>, <em>ZOrder</em></td></tr>
+      <tr><td><code>Vertical</code> / <code>Horizontal Box</code></td><td><em>Padding</em> (marge), <em>Size</em> : <em>Auto</em> (juste ce qu'il faut) ou <em>Fill</em> (se partage l'espace restant, au prorata de la valeur donnée), <em>Horizontal / Vertical Alignment</em></td></tr>
+      <tr><td><code>Overlay</code></td><td><em>Padding</em> et alignements : tous les enfants se superposent dans la même zone</td></tr>
+      <tr><td><code>Size Box</code>, <code>Scale Box</code></td><td>forcer une largeur / hauteur ; agrandir ou réduire son contenu pour qu'il tienne dans la zone</td></tr>
+    </tbody>
+  </table>
+  <div class="callout tip">
+    <span class="label">Boxes plutôt que positions fixes</span>
+    <p>Un menu fait de boutons placés au pixel dans un Canvas Panel se casse à la première résolution différente. Le mettre dans un <code>Vertical Box</code> (boutons en <em>Fill</em> ou <em>Auto</em>, avec du <em>Padding</em>) l'organise tout seul. Réserver le Canvas aux éléments ancrés à un bord de l'écran. Pour la taille générale de l'UI, voir <em>Project Settings → Engine → User Interface</em> (courbe de DPI).</p>
+  </div>
+
+  <h3>Visibilité</h3>
+  <table>
+    <thead><tr><th>Valeur</th><th>Affiché</th><th>Prend de la place</th><th>Reçoit les clics</th></tr></thead>
+    <tbody>
+      <tr><td><code>Visible</code></td><td>oui</td><td>oui</td><td>oui</td></tr>
+      <tr><td><code>Collapsed</code></td><td>non</td><td><strong>non</strong> (les voisins comblent le vide)</td><td>non</td></tr>
+      <tr><td><code>Hidden</code></td><td>non</td><td>oui (le trou reste)</td><td>non</td></tr>
+      <tr><td><code>Hit Test Invisible</code></td><td>oui</td><td>oui</td><td>ni lui ni ses enfants</td></tr>
+      <tr><td><code>Self Hit Test Invisible</code></td><td>oui</td><td>oui</td><td>pas lui, mais ses enfants oui</td></tr>
+    </tbody>
+  </table>
+  <div class="callout info">
+    <span class="label">Image décorative devant un bouton</span>
+    <p>Un widget <code>Image</code> posé par-dessus un bouton <em>capte</em> les clics à sa place. Le passer en <code>Hit Test Invisible</code> laisse le clic traverser jusqu'au bouton. Dans le Graph : <code>Set Visibility</code> (nœud du widget).</p>
+  </div>
+
+  <h3>Animations de widget</h3>
+  <p>L'onglet <em>Animations</em> (en bas du Designer) sert à animer un widget sans Timeline : <em>+ Animation</em>, puis <em>+ Track</em> pour choisir un widget, et des clés sur ses propriétés (<em>Render Opacity</em> pour un fondu, <em>Render Transform</em> pour un déplacement ou un zoom, une couleur). Chaque animation devient une <strong>variable</strong> du widget, utilisable dans le Graph.</p>
+  <table>
+    <thead><tr><th>Nœud</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>Play Animation</code></td><td>lance l'animation : <em>Start at Time</em>, <em>Num Loops to Play</em> (0 = en boucle), <em>Play Mode</em> (<em>Forward</em>, <em>Reverse</em>, <em>Ping Pong</em>), <em>Playback Speed</em></td></tr>
+      <tr><td><code>Stop Animation</code></td><td>l'arrête</td></tr>
+      <tr><td><code>Bind Event to Animation Finished</code></td><td>exécute un événement quand elle se termine : le moyen d'enchaîner</td></tr>
+    </tbody>
+  </table>
+  <div class="callout tip">
+    <span class="label">Fermer un menu en douceur</span>
+    <p>Jouer l'animation de fondu en <em>Reverse</em>, et brancher <code>Remove from Parent</code> sur son <em>Animation Finished</em> : retirer le widget tout de suite couperait l'animation avant qu'elle soit visible.</p>
+  </div>
+
+  <h3>Widgets réutilisables</h3>
+  <p>Un Widget Blueprint peut en contenir d'autres : <code>WBP_HealthBar</code>, une fois créé, se glisse depuis l'onglet <em>User Created</em> de la Palette dans le HUD, dans un menu, dans une liste. Même principe qu'un composant d'Actor : écrire une fois, utiliser partout.</p>
+  <table>
+    <thead><tr><th>Outil</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td>Variables <em>Instance Editable</em></td><td>réglables dans les <em>Details</em> du widget enfant, une valeur différente par usage (le texte d'un bouton, une couleur)</td></tr>
+      <tr><td><em>Expose on Spawn</em></td><td>la variable devient un pin sur <code>Create Widget</code></td></tr>
+      <tr><td><code>Event Pre Construct</code></td><td>applique ces variables dans le Designer, pour voir le résultat sans lancer le jeu</td></tr>
+      <tr><td><em>Event Dispatchers</em> du widget</td><td>l'enfant annonce « confirmé », « fermé » ; le parent s'abonne par le bouton <em>+</em> d'événements dans les Details (voir <a href="fonctions-events-timers.html#handler">Dispatchers</a>)</td></tr>
+      <tr><td><code>Named Slot</code></td><td>une zone vide que le parent remplit lui-même — pour un cadre générique (fenêtre avec titre) dont le contenu change</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Listes et widgets dans le monde</h3>
+  <table>
+    <thead><tr><th>Besoin</th><th>Outil</th></tr></thead>
+    <tbody>
+      <tr><td>inventaire ou liste dont les éléments se répètent</td><td><code>List View</code> / <code>Tile View</code> : un widget d'<em>entrée</em> qui implémente l'interface <code>User Object List Entry</code>, rempli dans <code>On List Item Object Set</code> ; les éléments se donnent par <code>Add Item</code> et sont des <strong>objets</strong> (pas des structures — envelopper les données dans un petit objet, ou un <a href="#dataassets">Data Asset</a>). Seules les lignes visibles sont créées : à préférer à cent widgets dans un <code>Vertical Box</code></td></tr>
+      <tr><td>barre de vie flottant au-dessus d'un ennemi</td><td>un <code>Widget Component</code> ajouté à l'Actor : <em>Widget Class</em>, <em>Space</em> (<em>Screen</em> reste face à la caméra, <em>World</em> est un panneau dans le monde), <em>Draw Size</em>. Le widget se récupère par <code>Get User Widget Object</code> puis <code>Cast</code></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Exemple : une barre de vie</h3>
+  <table>
+    <thead><tr><th>Étape</th><th>Comment</th></tr></thead>
+    <tbody>
+      <tr><td>1. Le widget</td><td><code>WBP_HealthBar</code> avec une <code>Progress Bar</code> (<em>Is Variable</em>, nommée <code>HealthBar</code>) et une fonction <code>SetPercent</code> qui appelle <code>Set Percent</code> sur elle</td></tr>
+      <tr><td>2. Le HUD</td><td><code>WBP_HUD</code> contient un <code>WBP_HealthBar</code> ancré en haut à gauche ; le PlayerController crée le HUD au <code>BeginPlay</code> et garde la référence (voir <a href="#widgets">Afficher un widget</a>)</td></tr>
+      <tr><td>3. La source</td><td>le <a href="classes-framework.html#composants">HealthComponent</a> du personnage appelle son dispatcher <code>OnHealthChanged</code> à chaque changement</td></tr>
+      <tr><td>4. Le lien</td><td>au démarrage, le HUD (ou le PlayerController) s'abonne à <code>OnHealthChanged</code> ; l'événement appelle <code>SetPercent</code> avec <code>Health / MaxHealth</code>. Rien ne tourne à chaque frame</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="umg-palette" data-group="Interface utilisateur">Les widgets de la Palette</h2>
+  <p>La Palette range les widgets en onglets (<em>Common</em>, <em>Input</em>, <em>Panel</em>, <em>Primitive</em>, <em>Optimization</em>, <em>Special Effects</em>, <em>User Created</em>…) dont le contenu exact varie un peu d'une version à l'autre. Ils sont regroupés ici par <strong>rôle</strong>.</p>
+
+  <h3>Afficher</h3>
+  <table>
+    <thead><tr><th>Widget</th><th>Rôle</th><th>À retenir</th></tr></thead>
+    <tbody>
+      <tr><td><code>Text</code> (Text Block)</td><td>un texte</td><td>type <a href="variables-types.html#text">Text</a> (traduisible) ; taille, police, couleur, ombre dans <em>Appearance</em> ; <code>Set Text</code> pour le changer</td></tr>
+      <tr><td><code>Rich Text Block</code></td><td>un texte avec des passages stylés (gras, couleur, icône en ligne)</td><td>les styles se définissent dans une Data Table de styles ; balises du type <code>&lt;Warning&gt;…&lt;/&gt;</code> dans le texte</td></tr>
+      <tr><td><code>Image</code></td><td>une texture, un matériau ou une couleur unie</td><td>propriété <em>Brush</em> (image, taille, <em>Tint</em>) ; <code>Set Brush from Texture</code> pour la changer en jeu</td></tr>
+      <tr><td><code>Progress Bar</code></td><td>une jauge</td><td><em>Percent</em> de 0 à 1 (<code>Set Percent</code>), sens de remplissage, images de fond et de remplissage ; <em>Marquee</em> pour une attente sans valeur</td></tr>
+      <tr><td><code>Border</code></td><td>un cadre qui contient <strong>un</strong> enfant</td><td>fond coloré ou image derrière un contenu, avec <em>Padding</em> — base d'un panneau</td></tr>
+      <tr><td><code>Spacer</code></td><td>un vide de taille fixe</td><td>écarter deux éléments d'une boîte</td></tr>
+      <tr><td><code>Throbber</code> / <code>Circular Throbber</code></td><td>un indicateur de chargement animé</td><td>écrans d'attente</td></tr>
+      <tr><td><code>Background Blur</code></td><td>floute ce qui est derrière</td><td>fond d'un menu pause ; coûteux sur de grandes surfaces</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Saisir et interagir</h3>
+  <table>
+    <thead><tr><th>Widget</th><th>Événements / réglages clés</th><th>Usage</th></tr></thead>
+    <tbody>
+      <tr><td><code>Button</code></td><td><code>On Clicked</code>, <code>On Pressed</code>, <code>On Released</code>, <code>On Hovered</code>, <code>On Unhovered</code> ; <em>Style</em> : un aspect <em>Normal</em>, <em>Hovered</em>, <em>Pressed</em>, <em>Disabled</em></td><td>contient un enfant (souvent un Text) ; <code>Set Is Enabled</code> pour le griser</td></tr>
+      <tr><td><code>Check Box</code></td><td><code>On Check State Changed</code> ; <em>Is Checked</em></td><td>options à cocher</td></tr>
+      <tr><td><code>Slider</code></td><td><code>On Value Changed</code> ; valeur de 0 à 1 par défaut (min / max réglables)</td><td>volume, luminosité</td></tr>
+      <tr><td><code>Spin Box</code></td><td><code>On Value Changed</code> ; saisie ou glissé</td><td>champ numérique</td></tr>
+      <tr><td><code>Editable Text</code> / <code>Editable Text Box</code></td><td><code>On Text Changed</code>, <code>On Text Committed</code> (avec la raison : Entrée, perte de focus…)</td><td>nom du joueur, recherche ; version <em>Multi-Line</em> pour plusieurs lignes</td></tr>
+      <tr><td><code>Combo Box (String)</code></td><td><code>Add Option</code> ; <code>On Selection Changed</code></td><td>liste déroulante : résolution, langue</td></tr>
+      <tr><td><code>Input Key Selector</code></td><td><code>On Key Selected</code></td><td>réaffecter une touche dans un écran d'options</td></tr>
+      <tr><td><code>Expandable Area</code></td><td>en-tête + corps repliable</td><td>sections d'options</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Disposer</h3>
+  <table>
+    <thead><tr><th>Widget</th><th>Disposition</th></tr></thead>
+    <tbody>
+      <tr><td><code>Canvas Panel</code></td><td>positions libres avec ancres — HUD plein écran</td></tr>
+      <tr><td><code>Horizontal Box</code> / <code>Vertical Box</code></td><td>en ligne / en colonne</td></tr>
+      <tr><td><code>Wrap Box</code></td><td>en ligne, qui passe à la ligne quand la place manque (liste d'étiquettes)</td></tr>
+      <tr><td><code>Grid Panel</code> / <code>Uniform Grid Panel</code></td><td>grille aux cellules choisies / de même taille (inventaire)</td></tr>
+      <tr><td><code>Overlay</code></td><td>superposé, dans la même zone</td></tr>
+      <tr><td><code>Scroll Box</code></td><td>défilement quand le contenu dépasse (liste, journal) ; <code>Scroll Widget Into View</code> pour amener un enfant à l'écran</td></tr>
+      <tr><td><code>Widget Switcher</code></td><td>un seul enfant visible à la fois : <code>Set Active Widget Index</code> — onglets, pages d'options</td></tr>
+      <tr><td><code>Size Box</code>, <code>Scale Box</code></td><td>forcer une taille ; adapter le contenu à l'espace disponible</td></tr>
+      <tr><td><code>Safe Zone</code></td><td>garde le contenu dans la zone sûre des téléviseurs et consoles</td></tr>
+      <tr><td><code>Named Slot</code></td><td>zone laissée libre pour le widget parent — voir <a href="#widgets">Widgets réutilisables</a></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Listes, performances, effets</h3>
+  <table>
+    <thead><tr><th>Widget</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>List View</code>, <code>Tile View</code>, <code>Tree View</code></td><td>listes, grilles et arbres de données, dont seules les lignes visibles sont créées</td></tr>
+      <tr><td><code>Dynamic Entry Box</code></td><td>une boîte dont on ajoute des enfants d'une classe donnée avec <code>Create Entry</code> — rangées d'icônes, liste de joueurs</td></tr>
+      <tr><td><code>Retainer Box</code>, <code>Invalidation Box</code></td><td>mettent en cache le rendu d'un panneau qui change rarement</td></tr>
+      <tr><td><em>User Created</em></td><td>vos propres Widget Blueprints, réutilisables comme n'importe quel widget</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="umg-interaction" data-group="Interface utilisateur">Événements, focus et drag & drop</h2>
+  <h3>Réagir à la souris et au clavier</h3>
+  <p>Au-delà des événements de chaque widget (<code>On Clicked</code>…), un Widget Blueprint peut <strong>surcharger</strong> les fonctions d'entrée de toute la surface : <em>My Blueprint → Functions → Override</em>.</p>
+  <table>
+    <thead><tr><th>Fonction à surcharger</th><th>Appelée quand…</th></tr></thead>
+    <tbody>
+      <tr><td><code>On Mouse Button Down</code> / <code>Up</code></td><td>un bouton de souris est enfoncé / relâché sur le widget</td></tr>
+      <tr><td><code>On Mouse Enter</code> / <code>Leave</code> / <code>Move</code></td><td>le curseur entre, sort, bouge</td></tr>
+      <tr><td><code>On Key Down</code> / <code>Up</code></td><td>une touche est pressée alors que le widget a le focus</td></tr>
+      <tr><td><code>On Focus Received</code> / <code>Lost</code></td><td>le widget gagne ou perd le focus</td></tr>
+      <tr><td><code>Tick</code></td><td>chaque frame (à éviter, comme pour un Actor)</td></tr>
+    </tbody>
+  </table>
+  <p>La plupart renvoient un <strong>Event Reply</strong> : <code>Handled</code> (« j'ai traité cet input, ne le transmets pas ») ou <code>Unhandled</code> (« je ne m'en occupe pas, passe au suivant »). Oublier de répondre <em>Handled</em> laisse l'input continuer vers le jeu en dessous.</p>
+
+  <h3>Le focus et la manette</h3>
+  <table>
+    <thead><tr><th>Élément</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><em>Is Focusable</em></td><td>le widget peut recevoir le focus clavier / manette (un bouton l'est déjà)</td></tr>
+      <tr><td><code>Set Keyboard Focus</code> / <code>Set User Focus</code></td><td>donner le focus à un widget précis — le premier bouton d'un menu, pour que la manette puisse naviguer</td></tr>
+      <tr><td><code>Set Input Mode UI Only</code> → pin <em>In Widget to Focus</em></td><td>règle le mode d'input <strong>et</strong> le focus en un seul nœud</td></tr>
+      <tr><td><em>Navigation</em> (Details du widget)</td><td>où va le focus avec les flèches ou le stick : <em>Escape</em>, <em>Explicit</em>, <em>Wrap</em>, <em>Stop</em>… pour chaque direction</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Glisser-déposer</h3>
+  <table>
+    <thead><tr><th>Étape</th><th>Comment</th></tr></thead>
+    <tbody>
+      <tr><td>1. Détecter</td><td>dans <code>On Mouse Button Down</code>, <code>Detect Drag If Pressed</code> (touche : bouton gauche), dont le résultat est la valeur de retour</td></tr>
+      <tr><td>2. Créer l'opération</td><td><code>On Drag Detected</code> : <code>Create Drag And Drop Operation</code> avec un <em>Payload</em> (l'objet déplacé : un item, un Data Asset) et un <em>Default Drag Visual</em> (le widget qui suit le curseur)</td></tr>
+      <tr><td>3. Survoler</td><td><code>On Drag Over</code> sur la cible : afficher une surbrillance</td></tr>
+      <tr><td>4. Déposer</td><td><code>On Drop</code> sur la cible : lire le <em>Payload</em> de l'opération, mettre à jour les données, renvoyer <code>Handled</code></td></tr>
+      <tr><td>5. Annuler</td><td><code>On Drag Cancelled</code> : rien n'a accepté le dépôt</td></tr>
+    </tbody>
+  </table>
+  <div class="callout tip">
+    <span class="label">Le glisser-déposer déplace des données, pas un widget</span>
+    <p>L'opération transporte un <em>Payload</em> (la donnée) ; le widget visuel qui suit le curseur n'est qu'un décor. Mettre à jour le modèle (l'inventaire) au dépôt, puis laisser l'interface se redessiner d'après lui — c'est ce qui évite les doublons et les objets qui disparaissent.</p>
+  </div>
+
+  <h3>Infobulles, parler au widget</h3>
+  <table>
+    <thead><tr><th>Besoin</th><th>Comment</th></tr></thead>
+    <tbody>
+      <tr><td>Infobulle simple</td><td><em>Details → Behavior → Tool Tip Text</em></td></tr>
+      <tr><td>Infobulle riche (icône, statistiques)</td><td><em>Tool Tip Widget</em> : un Widget Blueprint à afficher (ou une fonction qui le crée)</td></tr>
+      <tr><td>Du jeu vers le widget</td><td>garder la référence renvoyée par <code>Create Widget</code> dans une variable et appeler ses fonctions ; <code>Get All Widgets of Class</code> si on ne l'a pas gardée</td></tr>
+      <tr><td>Du widget vers le jeu</td><td><code>Get Owning Player</code> / <code>Get Owning Player Pawn</code> (puis <a href="variables-types.html#cast">cast</a>), ou un <a href="fonctions-events-timers.html#handler">Event Dispatcher</a> du widget pour annoncer « bouton Jouer cliqué »</td></tr>
+      <tr><td>Retirer</td><td><code>Remove from Parent</code> sur le widget, <code>Remove All Widgets</code> pour tout, <code>Is in Viewport</code> pour savoir. <code>Event Destruct</code> s'exécute au retrait</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="umg-menus" data-group="Interface utilisateur">Exemples : menu principal et pause</h2>
+  <h3>Menu principal</h3>
+  <table>
+    <thead><tr><th>Étape</th><th>Comment</th></tr></thead>
+    <tbody>
+      <tr><td>1. Un niveau de menu</td><td><code>L_MainMenu</code>, avec un <a href="levels.html#reglages">GameMode Override</a> dont la <em>Default Pawn Class</em> est <em>None</em> : pas de personnage</td></tr>
+      <tr><td>2. Afficher</td><td>au <code>BeginPlay</code> du <a href="classes-framework.html#controller">PlayerController</a> : <code>Create Widget</code> (<code>WBP_MainMenu</code>) → <code>Add to Viewport</code> → <code>Set Input Mode UI Only</code> (avec <em>In Widget to Focus</em>) → <code>Set Show Mouse Cursor</code> coché</td></tr>
+      <tr><td>3. Jouer</td><td><code>On Clicked</code> du bouton : <code>Open Level (by Name)</code> vers le niveau de jeu — le widget disparaît avec l'ancien niveau</td></tr>
+      <tr><td>4. Options</td><td>un <code>Widget Switcher</code> entre le menu et la page d'options : <code>Set Active Widget Index</code></td></tr>
+      <tr><td>5. Quitter</td><td><code>Quit Game</code> (avec le PlayerController en <em>Specific Player</em>)</td></tr>
+      <tr><td>6. Au lancement du jeu</td><td>dans le niveau de jeu, repasser en <code>Set Input Mode Game Only</code> et masquer le curseur</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Menu pause</h3>
+  <table>
+    <thead><tr><th>Étape</th><th>Comment</th></tr></thead>
+    <tbody>
+      <tr><td>1. L'input</td><td>une <a href="personnage.html#input">Input Action</a> <code>IA_Pause</code>, avec l'option <em>Trigger When Paused</em> cochée — sinon, une fois le jeu en pause, elle ne peut plus le relancer</td></tr>
+      <tr><td>2. Ouvrir</td><td><code>Set Game Paused</code> (vrai), <code>Create Widget</code> + <code>Add to Viewport</code>, <code>Set Input Mode Game and UI</code> ou <em>UI Only</em>, curseur visible</td></tr>
+      <tr><td>3. Reprendre</td><td><code>Remove from Parent</code>, <code>Set Game Paused</code> (faux), retour en <code>Game Only</code>, curseur masqué</td></tr>
+      <tr><td>4. Retour au menu</td><td><code>Set Game Paused</code> (faux) <strong>avant</strong> <code>Open Level</code>, sinon le niveau suivant démarre en pause</td></tr>
+    </tbody>
+  </table>
+  <div class="callout info">
+    <span class="label">Voir ce qui capte un clic</span>
+    <p>Un bouton qui ne répond pas est presque toujours masqué par un autre widget visible. L'outil <em>Widget Reflector</em> (<em>Tools → Debug → Widget Reflector</em>, ou <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>W</kbd>) montre, en jeu, quel widget est sous le curseur, sa visibilité et sa hiérarchie.</p>
   </div>
 
   <h2 id="structures" data-group="Données & communication">Blueprint Structure</h2>
@@ -106,8 +382,73 @@
   </div>
   <div class="callout tip">
     <span class="label">Structures et Data Tables</span>
-    <p>Une <strong>Data Table</strong> utilise une structure comme type de ligne : on remplit (ou importe en CSV/JSON) toutes les données d'objets, d'ennemis ou de dialogues, puis on les lit avec <code>Get Data Table Row</code>. Les données sortent du graphe, le Blueprint ne garde qu'un identifiant (Row Name). Pour quelques éléments riches (meshes, sons, héritage), un <a href="#dataassets">Data Asset</a> convient mieux.</p>
+    <p>Une <strong>Data Table</strong> utilise une structure comme type de ligne : on remplit (ou importe en CSV/JSON) toutes les données d'objets, d'ennemis ou de dialogues, puis on les lit avec <code>Get Data Table Row</code> (voir <a href="#datatables">Data Table</a>). Les données sortent du graphe, le Blueprint ne garde qu'un identifiant (Row Name). Pour quelques éléments riches (meshes, sons, héritage), un <a href="#dataassets">Data Asset</a> convient mieux.</p>
   </div>
+
+  <h2 id="datatables">Data Table</h2>
+  <p>Une <strong>Data Table</strong> est un tableau de données : <strong>une ligne par élément</strong> (une arme, un ennemi, une réplique), dont les colonnes sont les membres d'une <a href="#structures">structure</a>. Chaque ligne a un <em>Row Name</em> unique, la clé qu'on utilise pour la retrouver. Le gros intérêt : tout l'équilibrage tient dans un tableur, hors des graphes.</p>
+  <figure>
+    <svg viewBox="0 0 640 200" role="img" aria-label="Une Data Table de trois armes ; Get Data Table Row avec Row Name Axe renvoie la structure de cette ligne">
+      <defs><marker id="bpdt-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+        <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
+      <rect class="svg-bg" x="0" y="0" width="640" height="200" rx="6"/>
+      <text class="svg-t" x="125" y="26" text-anchor="middle">DT_Weapons</text>
+      <rect class="svg-box" x="20" y="40" width="210" height="34" rx="6"/>
+      <text class="svg-tm" x="125" y="62" text-anchor="middle">Sword · Damage 25 · Prix 100</text>
+      <rect class="svg-box-a" x="20" y="80" width="210" height="34" rx="6"/>
+      <text class="svg-t" x="125" y="102" text-anchor="middle">Axe · Damage 40 · Prix 180</text>
+      <rect class="svg-box" x="20" y="120" width="210" height="34" rx="6"/>
+      <text class="svg-tm" x="125" y="142" text-anchor="middle">Bow · Damage 18 · Prix 150</text>
+
+      <path d="M230 97 H276" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpdt-arr)"/>
+      <rect class="svg-box-g" x="280" y="62" width="150" height="70" rx="6"/>
+      <text class="svg-t" x="355" y="86" text-anchor="middle">Get Data Table Row</text>
+      <text class="svg-tm" x="355" y="105" text-anchor="middle">Row Name = Axe</text>
+      <text class="svg-tm" x="355" y="121" text-anchor="middle">Row Found / Not Found</text>
+
+      <path d="M430 97 H476" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpdt-arr)"/>
+      <rect class="svg-box-w" x="480" y="62" width="140" height="70" rx="6"/>
+      <text class="svg-t" x="550" y="86" text-anchor="middle">Out Row</text>
+      <text class="svg-tm" x="550" y="105" text-anchor="middle">S_Weapon</text>
+      <text class="svg-tm" x="550" y="121" text-anchor="middle">Damage = 40</text>
+    </svg>
+    <figcaption>Le Blueprint ne retient que le nom de ligne (<code>Axe</code>) ; les valeurs sont dans la table.</figcaption>
+  </figure>
+  <table>
+    <thead><tr><th>Étape</th><th>Comment</th></tr></thead>
+    <tbody>
+      <tr><td>1. Le type de ligne</td><td>une <a href="#structures">Blueprint Structure</a> (<code>S_Weapon</code> : <code>Name</code>, <code>Damage</code>, <code>Price</code>, <code>Icon</code>…). En C++ elle dériverait de <code>FTableRowBase</code></td></tr>
+      <tr><td>2. La table</td><td>Content Browser → <em>Miscellaneous → Data Table</em> → choisir la structure comme <em>Row Structure</em> → <code>DT_Weapons</code>. Dans son éditeur, <em>Add</em> ajoute une ligne, dont on règle le <em>Row Name</em> et les valeurs</td></tr>
+      <tr><td>2 bis. Ou importer</td><td>glisser un fichier <strong>CSV</strong> ou <strong>JSON</strong> dans le Content Browser et choisir la structure. La première colonne est le Row Name. Pour obtenir les bons en-têtes, le plus sûr est d'<em>exporter</em> d'abord la table vide (<em>Export as CSV</em> dans l'éditeur) et de remplir ce fichier dans un tableur ; <em>Reimport</em> met la table à jour</td></tr>
+      <tr><td>3. Lire</td><td><code>Get Data Table Row</code> : <em>Data Table</em> + <em>Row Name</em> → pin <em>Out Row</em> (la structure) et deux sorties d'exécution, <em>Row Found</em> / <em>Row Not Found</em></td></tr>
+    </tbody>
+  </table>
+  <table>
+    <thead><tr><th>Nœud / type</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>Get Data Table Row</code></td><td>une ligne par son nom. Toujours brancher <em>Row Not Found</em> : une faute de frappe ne plante pas, elle ne trouve rien</td></tr>
+      <tr><td><code>Get Data Table Row Names</code></td><td>tous les noms de lignes, en tableau de <code>Name</code> — remplir un menu, tirer un butin au hasard</td></tr>
+      <tr><td><code>Data Table Row Handle</code> (type de variable)</td><td>une table <em>et</em> un nom de ligne dans une seule variable, avec une liste déroulante dans les <em>Details</em> : choisir l'arme d'un coffre sans taper son nom</td></tr>
+      <tr><td><em>Composite Data Table</em></td><td>fusionne plusieurs tables de même structure en une (un fichier par extension de contenu)</td></tr>
+    </tbody>
+  </table>
+  <div class="callout warn">
+    <span class="label">Une table se lit, elle ne se modifie pas</span>
+    <p><code>Get Data Table Row</code> renvoie une <strong>copie</strong> de la structure (voir <a href="#structures">Une structure se copie</a>) : la modifier ne change pas la table. Y ranger des valeurs d'équilibrage, pas un état de partie — ce qui évolue (munitions restantes) vit dans l'instance, comme pour un <a href="#dataassets">Data Asset</a>.</p>
+  </div>
+  <div class="callout tip">
+    <span class="label">Références dans une ligne</span>
+    <p>Un champ <em>Mesh</em> ou <em>Icon</em> en référence normale charge l'asset dès que la table est chargée, pour <strong>toutes</strong> les lignes. Pour une table de centaines d'objets, utiliser des <em>Soft Object References</em> (voir <a href="variables-types.html#class">Hard vs Soft</a>) et ne charger que la ligne utilisée.</p>
+  </div>
+  <table>
+    <thead><tr><th>Data Table</th><th>Data Asset</th></tr></thead>
+    <tbody>
+      <tr><td>beaucoup de lignes de même forme</td><td>quelques éléments, chacun différent</td></tr>
+      <tr><td>édition en tableur, import / export CSV et JSON</td><td>édition dans le panneau <em>Details</em></td></tr>
+      <tr><td>une seule structure pour toutes les lignes</td><td>peut avoir de l'héritage : un asset par type d'objet</td></tr>
+      <tr><td>retrouvé par <code>Row Name</code></td><td>référencé directement, ou par identifiant pour un <a href="#dataassets">Primary Data Asset</a></td></tr>
+    </tbody>
+  </table>
 
   <h2 id="dataassets">Data Asset & Primary Data Asset</h2>
   <p>Un <strong>Data Asset</strong> est un <em>fichier de données</em> à part entière : on définit une classe Blueprint qui décrit les champs (nom, dégâts, icône, mesh…), puis on crée <strong>un asset par élément</strong> (une épée, une hache…) et on en remplit les valeurs dans l'éditeur. Contrairement à une <a href="#structures">structure</a> (une valeur copiée dans une variable), c'est un objet partagé que n'importe quel Blueprint peut référencer.</p>
@@ -122,7 +463,7 @@
 
       <path d="M185 92 C 215 92, 220 55, 248 55" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpda-arr)"/>
       <path d="M185 112 C 215 112, 220 145, 248 145" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpda-arr)"/>
-      <text class="svg-tm" x="215" y="30" text-anchor="middle">un asset par arme</text>
+      <text class="svg-tm" x="190" y="30" text-anchor="middle">un asset par arme</text>
 
       <rect class="svg-box-g" x="250" y="30" width="150" height="50" rx="6"/>
       <text class="svg-t" x="325" y="52" text-anchor="middle">DA_Sword</text>
@@ -171,7 +512,7 @@
   </table>
   <div class="callout tip">
     <span class="label">Sauvegarder un identifiant, pas une référence</span>
-    <p>Dans un <a href="levels-gamemode.html#savegame">SaveGame</a>, stocker le <em>Primary Asset Id</em> de l'arme équipée (un simple texte), puis la recharger par <code>Async Load Primary Asset</code> au chargement de la partie. Une référence d'objet directe ne survivrait pas à la fermeture du jeu.</p>
+    <p>Dans un <a href="classes-framework.html#savegame">SaveGame</a>, stocker le <em>Primary Asset Id</em> de l'arme équipée (un simple texte), puis la recharger par <code>Async Load Primary Asset</code> au chargement de la partie. Une référence d'objet directe ne survivrait pas à la fermeture du jeu.</p>
   </div>
   <div class="callout info">
     <span class="label">Un Data Asset suffit souvent</span>
@@ -181,32 +522,12 @@
     <thead><tr><th>Besoin</th><th>Outil</th></tr></thead>
     <tbody>
       <tr><td>Regrouper quelques valeurs dans une variable</td><td><a href="#structures">Structure</a></td></tr>
-      <tr><td>Beaucoup de lignes identiques (équilibrage, butin, dialogues), éditables dans un tableur</td><td>Data Table (une structure comme type de ligne)</td></tr>
+      <tr><td>Beaucoup de lignes identiques (équilibrage, butin, dialogues), éditables dans un tableur</td><td><a href="#datatables">Data Table</a> (une structure comme type de ligne)</td></tr>
       <tr><td>Quelques éléments riches, avec meshes, sons, références, héritage</td><td>Data Asset</td></tr>
       <tr><td>Idem, à retrouver par type, charger à la demande ou référencer par identifiant</td><td>Primary Data Asset</td></tr>
       <tr><td>Une liste fermée de valeurs nommées</td><td><a href="#enums">Énumération</a></td></tr>
     </tbody>
   </table>
-
-  <h2 id="interfaces">Blueprint Interface</h2>
-  <p>Une <strong>Blueprint Interface</strong> (préfixe <code>BPI_</code>, <em>Blueprint → Blueprint Interface</em>) est une liste de <strong>signatures de fonctions sans corps</strong>. Chaque Blueprint qui l'implémente écrit sa propre version. L'appelant n'a pas besoin de connaître la classe exacte de sa cible : il envoie un <strong>message</strong>.</p>
-  <figure>
-    <img src="../assets/gifs/blueprint-interface-unreal.gif" width="960" height="540" loading="lazy" alt="Animation : une Blueprint Interface, un même message reçu par des classes différentes qui réagissent chacune à leur façon">
-    <figcaption>Une interface en action : un seul message, des comportements différents selon la classe qui le reçoit — et aucun <code>Cast To</code>.</figcaption>
-  </figure>
-  <table>
-    <thead><tr><th>Étape</th><th>Comment</th></tr></thead>
-    <tbody>
-      <tr><td>1. Déclarer</td><td>dans <code>BPI_Interactable</code>, ajouter une fonction <code>Interact</code> (entrées : <code>Instigator</code> ; sorties éventuelles)</td></tr>
-      <tr><td>2. Implémenter</td><td>dans <code>BP_Door</code> : <em>Class Settings → Implemented Interfaces → Add</em>. Une fonction <strong>sans sortie</strong> apparaît comme un événement (<code>Event Interact</code>) ; <strong>avec sortie</strong>, comme une fonction à surcharger</td></tr>
-      <tr><td>3. Appeler</td><td>sur n'importe quelle référence d'Actor : nœud <code>Interact (Message)</code> (icône d'enveloppe)</td></tr>
-      <tr><td>Tester</td><td><code>Does Implement Interface</code> → booléen, par exemple pour afficher « Appuyer sur E »</td></tr>
-    </tbody>
-  </table>
-  <div class="callout info">
-    <span class="label">Interface vs Cast vs Event Dispatcher</span>
-    <p>Un message envoyé à un Actor qui n'implémente pas l'interface <strong>ne fait rien, sans erreur</strong>. Un <code>Cast To BP_Door</code> fonctionne pour une seule classe et crée une <strong>dépendance forte</strong> (la classe castée est chargée en mémoire avec l'appelant). Un <strong>Event Dispatcher</strong> sert au sens inverse : un objet annonce « il s'est passé quelque chose » à ceux qui se sont abonnés, sans savoir qui ils sont.</p>
-  </div>
 
   <h2 id="enums">Énumérations (enum)</h2>
   <p>Une <strong>Enumeration</strong> (préfixe <code>E_</code>, <em>Blueprint → Enumeration</em>) est une liste fermée de valeurs nommées. C'est l'équivalent Blueprint d'un <code>enum class</code> C++ : sous le capot, un <code>UENUM(BlueprintType) enum class EItemType : uint8</code>. La valeur est stockée sur un <strong>octet</strong> (256 entrées max).</p>
@@ -230,6 +551,91 @@
   <div class="callout tip">
     <span class="label">Enum + Map + Struct</span>
     <p>Les trois se combinent bien : une Map <code>E_ItemType → S_ItemData</code> ou une Data Table dont une colonne est un enum. Et une enum fait une excellente <strong>variable d'état</strong> pour l'Animation Blueprint (transitions de la State Machine selon <code>E_PlayerState</code>). Ajouter une valeur <strong>à la fin</strong> de l'enum : insérer au milieu décale l'index numérique des valeurs suivantes (conversions en <code>Byte</code>, sauvegardes qui stockent cet index).</p>
+  </div>
+
+  <h2 id="heritage" data-group="Orienté objet">Héritage : Create Child Blueprint</h2>
+  <p>Un Blueprint enfant hérite de <strong>tout</strong> ce que son parent expose (variables, fonctions, événements non <code>private</code>) et peut en ajouter ou en modifier. Clic droit sur un Blueprint dans le Content Browser → <code>Create Child Blueprint Class</code>.</p>
+  <figure>
+    <svg viewBox="0 0 620 200" role="img" aria-label="Hiérarchie de classes Item / Consommable / Équipement">
+      <defs><marker id="bpoop1-arr" markerWidth="13" markerHeight="12" refX="10" refY="5" orient="auto">
+        <path d="M0 0 L10 5 L0 10" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
+      <rect class="svg-bg" x="0" y="0" width="620" height="200" rx="6"/>
+      <rect class="svg-box-w" x="210" y="20" width="200" height="55" rx="6"/>
+      <text class="svg-t" x="310" y="42" text-anchor="middle">BP_Item</text>
+      <text class="svg-tm" x="310" y="60" text-anchor="middle">Name, Value, bIsSellable</text>
+
+      <path d="M150 118 L272 80" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpoop1-arr)"/>
+      <path d="M470 118 L348 80" stroke="var(--muted)" stroke-width="1.5" fill="none" style="marker-end:url(#bpoop1-arr)"/>
+
+      <rect class="svg-box-a" x="40" y="120" width="220" height="65" rx="6"/>
+      <text class="svg-t" x="150" y="145" text-anchor="middle">BP_Consommable</text>
+      <text class="svg-tm" x="150" y="163" text-anchor="middle">+ HealAmount, Use()</text>
+
+      <rect class="svg-box-g" x="360" y="120" width="220" height="65" rx="6"/>
+      <text class="svg-t" x="470" y="145" text-anchor="middle">BP_Equipement</text>
+      <text class="svg-tm" x="470" y="163" text-anchor="middle">+ Stats, Equip()</text>
+    </svg>
+    <figcaption>Les flèches vont de l'enfant vers le parent (« hérite de »). Les deux enfants ont accès à Name/Value/bIsSellable sans les redéfinir, et ajoutent chacun leur spécialité.</figcaption>
+  </figure>
+  <table>
+    <thead><tr><th>Ce que l'enfant récupère</th><th>Détail</th></tr></thead>
+    <tbody>
+      <tr><td>Variables, fonctions, événements</td><td>tout ce qui n'est pas marqué <code>private</code> dans le parent</td></tr>
+      <tr><td>Composants</td><td>hérités, mais on peut en ajouter de nouveaux dans l'enfant</td></tr>
+      <tr><td>Graphes</td><td>l'Event Graph du parent s'exécute aussi ; l'enfant ajoute le sien par-dessus</td></tr>
+    </tbody>
+  </table>
+  <div class="callout tip">
+    <span class="label">Où couper la hiérarchie</span>
+    <p>Une bonne hiérarchie regroupe ce qui est <strong>vraiment commun</strong> dans le parent (un <code>BP_Item</code> a toujours un nom et une valeur) et laisse le spécifique aux enfants. Trop de niveaux d'héritage complique le suivi ; au-delà de 2-3 niveaux, une <a href="#interfaces">Interface</a> ou une <a href="variables-types.html#tags">composition par tags</a> devient souvent plus simple à maintenir.</p>
+  </div>
+
+  <h2 id="polymorphisme">Polymorphisme : Override</h2>
+  <p>Le polymorphisme permet à une même fonction d'avoir un comportement différent selon la classe qui l'exécute — chaque enfant peut <strong>surcharger</strong> (override) une fonction du parent pour en changer l'implémentation.</p>
+  <p>Dans l'onglet <em>My Blueprint</em>, le menu déroulant à côté de <em>Functions</em> propose <code>Override</code> : choisir la fonction du parent à redéfinir crée directement son nœud d'implémentation dans le Blueprint enfant.</p>
+  <table>
+    <thead><tr><th>Exemple</th><th>Move() dans chaque enfant de BP_Vehicle</th></tr></thead>
+    <tbody>
+      <tr><td><code>BP_Avion</code></td><td>vole — ignore la gravité, incline selon la vitesse</td></tr>
+      <tr><td><code>BP_Tank</code></td><td>roule au sol, tourne sur lui-même</td></tr>
+      <tr><td><code>BP_Bateau</code></td><td>flotte, ralentit hors de l'eau</td></tr>
+    </tbody>
+  </table>
+  <p>Un code qui appelle <code>Move()</code> sur une référence <code>BP_Vehicle</code> n'a pas besoin de savoir laquelle des trois classes c'est réellement : chacune répond avec <strong>sa propre</strong> version.</p>
+  <div class="callout info">
+    <span class="label">Appeler quand même la version du parent</span>
+    <p>Dans l'override, le nœud <code>Parent: NomDeLaFonction</code> (visible dans l'Event Graph de la fonction surchargée) appelle l'implémentation du parent en plus de la nouvelle logique — utile pour <strong>étendre</strong> un comportement plutôt que le remplacer entièrement.</p>
+  </div>
+
+  <h2 id="abstract">Classe abstraite</h2>
+  <p>Une classe abstraite sert de <strong>modèle</strong> pour ses enfants mais ne doit jamais exister telle quelle dans le jeu. <em>Class Settings → Generate Abstract Class</em> (coché) : plus aucun acteur de cette classe ne peut être posé dans un niveau ni <code>Spawn Actor from Class</code>, et ceux déjà présents sont supprimés au lancement (mais restent visibles dans l'éditeur).</p>
+  <div class="callout tip">
+    <span class="label">Quand cocher la case</span>
+    <p><code>BP_Item</code> ci-dessus est un bon candidat : un « Item » tout seul, sans être un Consommable ou un Équipement, n'a pas de sens dans le jeu. Rendre le parent abstrait force chaque objet réellement placé à être l'une des sous-classes concrètes.</p>
+  </div>
+
+  <h2 id="interfaces">Blueprint Interface</h2>
+  <p>Une <strong>Blueprint Interface</strong> (préfixe <code>BPI_</code>, <em>Blueprint → Blueprint Interface</em>) est une liste de <strong>signatures de fonctions sans corps</strong>. Chaque Blueprint qui l'implémente écrit sa propre version. L'appelant n'a pas besoin de connaître la classe exacte de sa cible : il envoie un <strong>message</strong>.</p>
+  <figure>
+    <img src="../assets/gifs/blueprint-interface-unreal.gif" width="960" height="540" loading="lazy" alt="Animation : une Blueprint Interface, un même message reçu par des classes différentes qui réagissent chacune à leur façon">
+    <figcaption>Une interface en action : un seul message, des comportements différents selon la classe qui le reçoit — et aucun <code>Cast To</code>.</figcaption>
+  </figure>
+  <table>
+    <thead><tr><th>Étape</th><th>Comment</th></tr></thead>
+    <tbody>
+      <tr><td>1. Déclarer</td><td>dans <code>BPI_Interactable</code>, ajouter une fonction <code>Interact</code> (entrées : <code>Instigator</code> ; sorties éventuelles)</td></tr>
+      <tr><td>2. Implémenter</td><td>dans <code>BP_Door</code> : <em>Class Settings → Implemented Interfaces → Add</em>. Une fonction <strong>sans sortie</strong> apparaît comme un événement (<code>Event Interact</code>) ; <strong>avec sortie</strong>, comme une fonction à surcharger</td></tr>
+      <tr><td>3. Appeler</td><td>sur n'importe quelle référence d'Actor : nœud <code>Interact (Message)</code> (icône d'enveloppe)</td></tr>
+      <tr><td>Tester</td><td><code>Does Implement Interface</code> → booléen, par exemple pour afficher « Appuyer sur E »</td></tr>
+    </tbody>
+  </table>
+  <div class="callout info">
+    <span class="label">Interface vs Cast vs Event Dispatcher</span>
+    <p>Un message envoyé à un Actor qui n'implémente pas l'interface <strong>ne fait rien, sans erreur</strong>. Un <code>Cast To BP_Door</code> fonctionne pour une seule classe et crée une <strong>dépendance forte</strong> (la classe castée est chargée en mémoire avec l'appelant). Un <strong>Event Dispatcher</strong> sert au sens inverse : un objet annonce « il s'est passé quelque chose » à ceux qui se sont abonnés, sans savoir qui ils sont.</p>
+  </div>
+  <div class="callout tip">
+    <span class="label">Interface ou héritage ?</span>
+    <p>L'<a href="#heritage">héritage</a> relie des classes qui <strong>partagent un parent</strong> (<code>BP_Item</code> → <code>BP_Consommable</code>). Une interface relie des classes <strong>sans parent commun</strong> mais qui savent faire la même chose : une porte, un coffre et un levier sont tous « interactifs » sans descendre de la même classe. Si le seul besoin est « envoyer ce message à n'importe qui », l'interface évite une hiérarchie artificielle.</p>
   </div>
 
   <h2 id="function-library" data-group="Code partagé">Blueprint Function Library</h2>
@@ -263,9 +669,9 @@
     <tbody>
       <tr><td>Function Library</td><td>un utilitaire sans état, utile à plusieurs Blueprints sans rapport entre eux</td></tr>
       <tr><td>Fonction dans un Blueprint</td><td>elle lit ou modifie les variables de cet objet</td></tr>
-      <tr><td>Fonction d'un parent (héritage)</td><td>un comportement commun à une famille de classes, surchargeable — voir <a href="oop.html">Orienté objet</a></td></tr>
+      <tr><td>Fonction d'un parent (héritage)</td><td>un comportement commun à une famille de classes, surchargeable — voir <a href="#heritage">Orienté objet</a></td></tr>
       <tr><td>Macro Library</td><td>un motif de <em>flux</em> à plusieurs sorties d'exécution — voir <a href="fonctions-events-timers.html#macros">Macros</a></td></tr>
-      <tr><td><a href="levels-gamemode.html#gameinstance">GameInstance</a></td><td>un état global qui doit survivre aux niveaux</td></tr>
+      <tr><td><a href="classes-framework.html#gameinstance">GameInstance</a></td><td>un état global qui doit survivre aux niveaux</td></tr>
     </tbody>
   </table>
   <div class="callout warn">
@@ -274,8 +680,8 @@
   </div>
 
   <footer class="pg">
-    <span><a href="levels-gamemode.html">← Levels & Game Framework</a></span>
-    <span><a href="oop.html">Suivant : Orienté objet →</a></span>
+    <span><a href="levels.html">← Levels</a></span>
+    <span><a href="feedback.html">Suivant : Materials, SFX & VFX →</a></span>
   </footer>
 </main>
 </div>
