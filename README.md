@@ -1,7 +1,6 @@
 # Codex
 
-Site statique **multi-langage** (100 % HTML/CSS/JS sans aucune dépendance) : un **aide-mémoire personnel** de programmation, pas un guide. Il résume ce que j'ai appris et retenu au fil du temps (algorithmes, syntaxe, façons de structurer un projet), par langage. Thème repris du
-mode sombre de GitHub, schémas SVG, code coloré.
+Site statique **multi-langage** (100 % HTML/CSS/JS sans aucune dépendance) : un **aide-mémoire personnel** de programmation, pas un guide. Il résume ce que j'ai appris et retenu au fil du temps (algorithmes, syntaxe, façons de structurer un projet), par langage.
 
 ## Architecture
 
@@ -50,20 +49,3 @@ cpp/                                dossier du langage C++ (console)
   procédures & fonctions),
   bit-manipulations.html (littéraux, masques, packing de nibbles)
 ```
-
-## Info-bulles
-
-Tout élément portant un attribut `data-tip` affiche une info-bulle au survol (et au focus clavier, ou au tap sur écran tactile) — aucune configuration par page, c'est géré par `nav.js` et `style.css` :
-
-```html
-<code data-tip="Le fil blanc : l'ordre d'exécution, pas une valeur.">Exec</code>
-<code data-tip="Vrai ou faux." data-tip-title="Boolean">Boolean</code>
-<code data-tip="Le nœud Branch" data-tip-img="../assets/img/branch.png" data-tip-alt="Nœud Branch">Branch</code>
-```
-
-- `data-tip` : le texte (texte brut ; un retour à la ligne s'écrit `&#10;`). Un `data-tip=""` vide réserve l'emplacement : rien ne s'affiche tant qu'il n'est pas rempli.
-- `data-tip-title` (facultatif) : un titre en gras au-dessus du texte.
-- `data-tip-img` / `data-tip-alt` (facultatifs) : une image (capture d'un nœud) au-dessus du texte.
-- Les éléments annotés sont soulignés en pointillés ; `Échap` ferme l'info-bulle.
-
-Tableau à ajouter
